@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 import sys
 import re
+import asyncio
 from threading import Timer
 from datetime import datetime, timedelta
 import asyncio
-from telethon import TelegramClient, events, sync
+from telethon import TelegramClient, events
 
 from border_msg import bordered
 from appconfig import load_config
@@ -14,7 +15,6 @@ OFFSET_2 = timedelta(hours=2)
 
 cfg = load_config()
 client = TelegramClient('telethon_session_1', cfg['api_id'], cfg['api_hash'])
-evloop = sync.asyncio.get_event_loop()
 
 
 async def delaysendto(secs, userstr, msgstr):
@@ -41,8 +41,11 @@ async def new_msg_evt(event):
             _time = datetime.strptime(_match.group(1), '%d.%m.%y %H:%M:%S')
             secs = (_time - datetime.now() - OFFSET_2).total_seconds()
             print('remaining seconds:', secs, 'msg:', _match.group(3))
-            delaysendto(secs, [_match.group(2), _match.group(3)])
+            await delaysendto(secs, _match.group(2), _match.group(3))
 
+async def main():
+    await client.start()
+    await client.run_until_disconnected()
 
-client.start()
-client.run_until_disconnected()
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
