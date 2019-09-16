@@ -6,6 +6,7 @@ from threading import Timer
 from datetime import datetime, timedelta
 import asyncio
 from telethon import TelegramClient, events
+import signal
 
 from border_msg import bordered
 from appconfig import load_config
@@ -35,7 +36,7 @@ async def new_msg_evt(event):
                                       link_preview=False,
                                       parse_mode='html')
     if (msg.message.startswith('.t') and msg.to_id.user_id == ME_ID):
-        _match = re.match('^\.t ([.\d]+ [:\d]+) *\[(.+)\] *(.+)',
+        _match = re.match(r'^\.t ([.\d]+ [:\d]+) *\[(.+)\] *(.+)',
                           msg.message)
         if (_match != None):
             _time = datetime.strptime(_match.group(1), '%d.%m.%y %H:%M:%S')
@@ -43,9 +44,16 @@ async def new_msg_evt(event):
             print('remaining seconds:', secs, 'msg:', _match.group(3))
             await delaysendto(secs, _match.group(2), _match.group(3))
 
+def terminate(sigNum, frame):
+    print(f'\nGraceful shutdown...')
+    client.loop.stop()
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, terminate)
+signal.signal(signal.SIGINT, terminate)
+
 async def main():
     await client.start()
     await client.run_until_disconnected()
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
+client.loop.run_until_complete(main())

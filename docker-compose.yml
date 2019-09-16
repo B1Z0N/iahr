@@ -1,0 +1,7 @@
+version: '3'
+services:
+  telethon-me:
+    build: ./
+    restart: always
+    tty: true
+    stdin_open: true
