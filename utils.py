@@ -1,7 +1,26 @@
 MAX_LEN = 20
 
+FRAME = {
+    'single': {
+        'H': '-',
+        'V': '│',
+        'TL': '╭',
+        'TR': '╮',
+        'BL': '╰',
+        'BR': '╯'
+    },
+    'double': {
+        'H': '=',
+        'V': '║',
+        'TL': '╔',
+        'TR': '╗',
+        'BL': '╚',
+        'BR': '╝'
+    }
+}
 
-def bordered(str: str) -> str:
+
+def bordered(str: str, fr_type='single') -> str:
     def _div(str):
         words = str.split()
         _res = []
@@ -19,10 +38,15 @@ def bordered(str: str) -> str:
     msg = [' '.join(row) for row in _div(str)]
     lng = len(max(msg, key=len))
 
+    # global FRAME
+    fr = FRAME[fr_type]
     res = (
-        '╭' + '-' * (lng + 2) + '╮\n' +
-        '\n'.join('│ ' + _norm(row, lng) + ' │' for row in msg) +
-        '\n╰' + '-' * (lng + 2) + '╯'
+        fr['TL'] + fr['H'] * (lng + 2) + fr['TR'] + '\n' +
+        '\n'.join(
+            fr['V'] + ' ' + _norm(row, lng) + ' ' + fr['V']
+            for row in msg
+        ) +
+        '\n' + fr['BL'] + fr['H'] * (lng + 2) + fr['BR']
     )
 
     return '<code>' + res + '</code>'
