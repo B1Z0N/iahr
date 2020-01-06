@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime, timedelta
 import asyncio
 from telethon import TelegramClient, events, types, tl
@@ -11,13 +12,19 @@ from utils import bordered
 
 load_dotenv(verbose=True)
 
-ME_ID = 343097987
-OFFSET_2 = timedelta(hours=2)
+# ME_ID = 343097987
 API_ID = os.getenv('API_ID')
 API_HASH = os.getenv('API_HASH')
 PICUTRES_PATH = os.path.join(os.path.expanduser('~'), 'Pictures/')
+SESSION_PATH = os.path.abspath('./sessions/tgai28')
+HELP_TEXT = '''
+.fr <text> - send framed text
+.toggle_frame - toggle frame type
+.flip_stickers - toggle stickers flipping
+.status - display status
+'''
 
-client = TelegramClient('telethon_session_1', API_ID, API_HASH)
+client = TelegramClient(SESSION_PATH, API_ID, API_HASH)
 flip_stickers = True
 frame_type = 'single'
 stickers_map = {}
@@ -29,15 +36,17 @@ async def on_new_message_me(event: events.NewMessage):
     print(f'command: {command}')
     if command == 'stop_ai':
         await client.disconnect()
-    if command == 'flip_stickers':
+    elif command == 'flip_stickers':
         global flip_stickers
         flip_stickers = not flip_stickers
         await msg.delete()
         await client.send_message(
             'me',
-            'Now I%s flip stickers!' % ('' if flip_stickers else ' don\'t')
+            'Now I{} flip stickers!'.format(
+                '' if flip_stickers else ' don\'t'
+            )
         )
-    if command == 'toggle_frame':
+    elif command == 'toggle_frame':
         global frame_type
         frame_type = 'double' if frame_type == 'single' else 'single'
         await msg.delete()
@@ -45,7 +54,7 @@ async def on_new_message_me(event: events.NewMessage):
             'me',
             'Now using %s message frame' % frame_type
         )
-    if not msg.entities and command == 'fr':
+    elif not msg.entities and command == 'fr':
         framed = bordered(text, fr_type=frame_type)
         await msg.delete()
         await client.send_message(
@@ -55,6 +64,19 @@ async def on_new_message_me(event: events.NewMessage):
             link_preview='false',
             reply_to=msg.reply_to_msg_id
         )
+    elif command == 'status':
+        text = '\n'.join([
+            f'Flipping stickers: {flip_stickers}',
+            f'Frame type: {frame_type}'
+        ])
+        await client.send_message(
+            'me',
+            '<code>' + text + '</code>',
+            reply_to=msg.id,
+            parse_mode='html'
+        )
+    elif command == 'help':
+        await client.send_message('me', HELP_TEXT, reply_to=msg.id)
 
 
 async def on_new_message_other(event: events.NewMessage):
@@ -67,19 +89,18 @@ async def on_new_message_other(event: events.NewMessage):
         img.flop()
         img.save(filename=temp_path)
         sent: tl.custom.Message = await msg.reply(file=temp_path)
-        stickers_map[msg.id] = {'chat_id': sent.chat_id, 'message_id': sent.id}
+        stickers_map[msg.id] = (sent.chat_id, sent.id)
         os.remove(temp_path)
 
 
 async def on_message_delete(event: events.MessageDeleted):
     global stickers_map
-    stickerids = [stickers_map[i]
-                  for i in event.deleted_ids if stickers_map[i]]
-    for info in stickerids:
-        await client.delete_messages(info['chat_id'], info['message_id'])
-    for _id in event.deleted_ids:
+    stickerids = [i for i in event.deleted_ids if i in stickers_map]
+    for _id in stickerids:
+        chat_id, msg_id = stickers_map[_id]
+        await client.delete_messages(chat_id, msg_id)
         del stickers_map[_id]
-        
+        print
 
 
 def terminate(sigNum, frame):
