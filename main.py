@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 import asyncio
-from telethon import TelegramClient, events, tl
+from telethon import TelegramClient, events, types, tl
 import signal
 from dotenv import load_dotenv
 from pathlib import Path
@@ -20,6 +20,7 @@ PICUTRES_PATH = os.path.join(os.path.expanduser('~'), 'Pictures/')
 client = TelegramClient('telethon_session_1', API_ID, API_HASH)
 flip_stickers = True
 frame_type = 'single'
+stickers_map = {}
 
 
 async def on_new_message_me(event: events.NewMessage):
@@ -34,7 +35,7 @@ async def on_new_message_me(event: events.NewMessage):
         await msg.delete()
         await client.send_message(
             'me',
-            'Now I%s flip stickers!' % (' don\'t' if flip_stickers else '')
+            'Now I%s flip stickers!' % ('' if flip_stickers else ' don\'t')
         )
     if command == 'toggle_frame':
         global frame_type
@@ -51,20 +52,34 @@ async def on_new_message_me(event: events.NewMessage):
             msg.chat_id,
             framed,
             parse_mode='html',
-            link_preview='false'
+            link_preview='false',
+            reply_to=msg.reply_to_msg_id
         )
 
 
 async def on_new_message_other(event: events.NewMessage):
     msg: tl.custom.message.Message = event.message
     if msg.sticker and msg.sticker.mime_type.endswith('webp') and flip_stickers:
+        global stickers_map
         temp_path = os.path.join(PICUTRES_PATH, 'tl.webp')
         await msg.download_media(file=temp_path)
         img = Image(filename=temp_path)
         img.flop()
         img.save(filename=temp_path)
-        await msg.reply(file=temp_path)
+        sent: tl.custom.Message = await msg.reply(file=temp_path)
+        stickers_map[msg.id] = {'chat_id': sent.chat_id, 'message_id': sent.id}
         os.remove(temp_path)
+
+
+async def on_message_delete(event: events.MessageDeleted):
+    global stickers_map
+    stickerids = [stickers_map[i]
+                  for i in event.deleted_ids if stickers_map[i]]
+    for info in stickerids:
+        await client.delete_messages(info['chat_id'], info['message_id'])
+    for _id in event.deleted_ids:
+        del stickers_map[_id]
+        
 
 
 def terminate(sigNum, frame):
@@ -90,6 +105,10 @@ async def main():
         event=events.NewMessage(
             incoming=True
         )
+    )
+    client.add_event_handler(
+        on_message_delete,
+        event=events.MessageDeleted()
     )
     await client.start()
     await client.run_until_disconnected()
