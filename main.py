@@ -1,59 +1,89 @@
-#!/usr/bin/python3
-import sys
-import re
-import asyncio
-from threading import Timer
+import os
 from datetime import datetime, timedelta
 import asyncio
-from telethon import TelegramClient, events
+from telethon import TelegramClient, events, tl
 import signal
+from dotenv import load_dotenv
+from pathlib import Path
+from wand.image import Image
 
-from border_msg import bordered
-from appconfig import load_config
+from utils import bordered
+
+load_dotenv(verbose=True)
 
 ME_ID = 343097987
 OFFSET_2 = timedelta(hours=2)
+API_ID = os.getenv('API_ID')
+API_HASH = os.getenv('API_HASH')
+PICUTRES_PATH = os.path.join(os.path.expanduser('~'), 'Pictures/')
 
-cfg = load_config()
-client = TelegramClient('telethon_session_1', cfg['api_id'], cfg['api_hash'])
-
-
-async def delaysendto(secs, userstr, msgstr):
-    await asyncio.sleep(secs)
-    await client.send_message(userstr, msgstr)
+client = TelegramClient('telethon_session_1', API_ID, API_HASH)
+flip_stickers = True
 
 
-@client.on(events.NewMessage)
-async def new_msg_evt(event):
-    msg = event.message
-    if (msg.entities == None and msg.out and len(msg.message) > 0):
+async def on_new_message_me(event: events.NewMessage):
+    command, text = event.pattern_match.groups()
+    msg: tl.custom.message.Message = event.message
+    print(f'command: {command}')
+    if command == 'stop_ai':
+        await client.disconnect()
+    if command == 'flip_stickers':
+        global flip_stickers
+        flip_stickers = not flip_stickers
+        await msg.delete()
+        await client.send_message(
+            'me',
+            'Now I%s flip stickers!' % (' don\'t' if flip_stickers else '')
+        )
+    if not msg.entities and command == 'fr':
+        framed = bordered(text)
+        await msg.delete()
+        await client.send_message(
+            msg.chat_id,
+            framed,
+            parse_mode='html',
+            link_preview='false'
+        )
 
-        if (msg.message.startswith('.fr')):
-            framed = bordered(re.sub('^.fr *', '', msg.message))
-            await client.edit_message(event.to_id,
-                                      message=msg.id,
-                                      text=framed,
-                                      link_preview=False,
-                                      parse_mode='html')
-    if (msg.message.startswith('.t') and msg.to_id.user_id == ME_ID):
-        _match = re.match(r'^\.t ([.\d]+ [:\d]+) *\[(.+)\] *(.+)',
-                          msg.message)
-        if (_match != None):
-            _time = datetime.strptime(_match.group(1), '%d.%m.%y %H:%M:%S')
-            secs = (_time - datetime.now() - OFFSET_2).total_seconds()
-            print('remaining seconds:', secs, 'msg:', _match.group(3))
-            await delaysendto(secs, _match.group(2), _match.group(3))
+
+async def on_new_message_other(event: events.NewMessage):
+    msg: tl.custom.message.Message = event.message
+    if msg.sticker and msg.sticker.mime_type.endswith('webp'):
+        temp_path = os.path.join(PICUTRES_PATH, 'tl.webp')
+        await msg.download_media(file=temp_path)
+        img = Image(filename=temp_path)
+        img.flop()
+        img.save(filename=temp_path)
+        await msg.reply(file=temp_path)
+        os.remove(temp_path)
+
 
 def terminate(sigNum, frame):
     print(f'\nGraceful shutdown...')
-    client.loop.stop()
-    sys.exit(0)
+    # client.loop.stop
+    # sys.exit(0)
 
-signal.signal(signal.SIGTERM, terminate)
-signal.signal(signal.SIGINT, terminate)
+
+# signal.signal(signal.SIGTERM, terminate)
+# signal.signal(signal.SIGINT, terminate)
+
 
 async def main():
+    client.add_event_handler(
+        on_new_message_me,
+        event=events.NewMessage(
+            pattern=r'\.(\w+)\s*(?:(.+))?',
+            outgoing=True
+        )
+    )
+    client.add_event_handler(
+        on_new_message_other,
+        event=events.NewMessage(
+            incoming=True
+        )
+    )
     await client.start()
     await client.run_until_disconnected()
 
-client.loop.run_until_complete(main())
+if __name__ == '__main__':
+    client.loop.run_until_complete(main())

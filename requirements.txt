@@ -1,1 +1,4 @@
+asyncio
+python-dotenv
 telethon
+wand
