@@ -81,7 +81,12 @@ async def on_new_message_me(event: events.NewMessage):
 
 async def on_new_message_other(event: events.NewMessage):
     msg: tl.custom.message.Message = event.message
-    if msg.sticker and msg.sticker.mime_type.endswith('webp') and flip_stickers:
+    if (
+        not msg.is_private and
+        msg.sticker and
+        msg.sticker.mime_type.endswith('webp') and
+        flip_stickers
+    ):
         global stickers_map
         temp_path = os.path.join(PICUTRES_PATH, 'tl.webp')
         await msg.download_media(file=temp_path)
