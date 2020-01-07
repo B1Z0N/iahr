@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 from pathlib import Path
 from wand.image import Image
 
-from utils import bordered
+from utils import bordered, to_staro_slav, is_cyrrillic
 
-load_dotenv(verbose=True)
+load_dotenv()
 
 # ME_ID = 343097987
 API_ID = os.getenv('API_ID')
@@ -64,6 +64,10 @@ async def on_new_message_me(event: events.NewMessage):
             link_preview='false',
             reply_to=msg.reply_to_msg_id
         )
+    elif command in ('st', 'ст'):
+        await msg.delete()
+        _text = to_staro_slav(text) if is_cyrrillic(text) else text
+        await msg.respond(_text)
     elif command == 'status':
         text = '\n'.join([
             f'Flipping stickers: {flip_stickers}',
