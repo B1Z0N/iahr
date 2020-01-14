@@ -75,7 +75,7 @@ async def on_new_message_me(event: events.NewMessage):
         ])
         await client.send_message(
             'me',
-            '<code>' + text + '</code>',
+            f'<code>{text}</code>',
             reply_to=msg.id,
             parse_mode='html'
         )
