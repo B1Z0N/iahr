@@ -79,11 +79,9 @@ def to_staro_slav(_str: str) -> str:
         else:
             return w
     _src = _src.replace('и', 'і')
+    _src = re.sub(r'(\w)\b', repl, _src)
     _src = [[c for c in w] for w in _src.split()]
     for i, w in enumerate(_str.split()):
         if w[0].istitle():
             _src[i][0] = w[0]
     return ' '.join(''.join(w) for w in _src)
-
-
-print(to_staro_slav('Привет. Как дела? чем занимаешься?'))
