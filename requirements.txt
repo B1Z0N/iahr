@@ -2,3 +2,4 @@ asyncio
 python-dotenv
 telethon
 wand
+cryptg

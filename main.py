@@ -2,7 +2,7 @@ import os
 import re
 from datetime import datetime, timedelta
 import asyncio
-from telethon import TelegramClient, events, types, tl
+from telethon import TelegramClient, events, types, tl, Button
 import signal
 from dotenv import load_dotenv
 from pathlib import Path

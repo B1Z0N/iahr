@@ -60,7 +60,7 @@ def bordered(str: str, fr_type='single') -> str:
         '\n' + fr['BL'] + fr['H'] * (lng + 2) + fr['BR']
     )
 
-    return '<code>' + res + '</code>'
+    return f'<code>{res}</code>'
 
 
 def is_cyrrillic(str: str) -> bool:
@@ -68,14 +68,22 @@ def is_cyrrillic(str: str) -> bool:
 
 
 def to_staro_slav(_str: str) -> str:
+    _src = _str.lower()
     for w, rep in ST_SL_REPLACES.items():
-        _str = _str.replace(w, rep)
+        _src = _src.replace(w, rep)
+
     def repl(match: re.Match):
         w = match.group(0).lower()
         if (w not in VOWELS) and (w not in ('ь', 'ъ', 'й')):
             return w + 'ъ'
         else:
             return w
+    _src = _src.replace('и', 'і')
+    _src = [[c for c in w] for w in _src.split()]
+    for i, w in enumerate(_str.split()):
+        if w[0].istitle():
+            _src[i][0] = w[0]
+    return ' '.join(''.join(w) for w in _src)
 
-    _str = re.sub(r'(\w)\b', repl, _str)
-    return _str
+
+print(to_staro_slav('Привет. Как дела? чем занимаешься?'))
