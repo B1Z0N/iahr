@@ -67,7 +67,7 @@ async def on_new_message_me(event: events.NewMessage):
     elif command in ('st', 'ст'):
         await msg.delete()
         _text = to_staro_slav(text) if is_cyrrillic(text) else text
-        await msg.respond(_text)
+        await msg.respond(_text, reply_to=msg.reply_to_msg_id)
     elif command == 'status':
         text = '\n'.join([
             f'Flipping stickers: {flip_stickers}',

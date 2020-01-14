@@ -33,11 +33,12 @@ ST_SL_REPLACES = {
 
 def bordered(str: str, fr_type='single') -> str:
     def _div(str):
-        words = str.split()
+        _words = str.split()
         _res = []
         while len(words) > 0:
-            word = words.pop(0)
-            if _res and len(' '.join(_res[-1])) + len(word) < MAX_LEN:
+            _word = words.pop()
+            _rowlen = len(' '.join(_res[-1])) + len(_word)
+            if _res and _rowlen < MAX_LEN:
                 _res[-1].append(word)
             else:
                 _res.append([word])
