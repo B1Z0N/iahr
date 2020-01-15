@@ -35,13 +35,13 @@ def bordered(str: str, fr_type='single') -> str:
     def _div(str):
         _words = str.split()
         _res = []
-        while len(words) > 0:
-            _word = words.pop()
-            _rowlen = len(' '.join(_res[-1])) + len(_word)
+        while len(_words) > 0:
+            _word = _words.pop()
+            _rowlen = len(' '.join(_res[-1])) + len(_word) if _res else 0
             if _res and _rowlen < MAX_LEN:
-                _res[-1].append(word)
+                _res[-1].append(_word)
             else:
-                _res.append([word])
+                _res.append([_word])
         return _res
 
     def _norm(str, l):
@@ -70,8 +70,6 @@ def is_cyrrillic(str: str) -> bool:
 
 def to_staro_slav(_str: str) -> str:
     _src = _str.lower()
-    for w, rep in ST_SL_REPLACES.items():
-        _src = _src.replace(w, rep)
 
     def repl(match: re.Match):
         w = match.group(0).lower()
@@ -79,10 +77,18 @@ def to_staro_slav(_str: str) -> str:
             return w + 'ъ'
         else:
             return w
-    _src = _src.replace('и', 'і')
+
     _src = re.sub(r'(\w)\b', repl, _src)
+    for w, rep in ST_SL_REPLACES.items():
+        _src = _src.replace(w, rep)
+    _src = _src.replace('и', 'і')
     _src = [[c for c in w] for w in _src.split()]
     for i, w in enumerate(_str.split()):
         if w[0].istitle():
             _src[i][0] = w[0]
     return ' '.join(''.join(w) for w in _src)
+
+# tests
+if __name__ == '__main__':
+    print(bordered('Hello, world!', fr_type='single'))
+    print(to_staro_slav('Привет. Как дела?'))
