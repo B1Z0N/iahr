@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from datetime import datetime, timedelta
 import asyncio
 from telethon import TelegramClient, events, types, tl, Button
@@ -9,14 +10,9 @@ from pathlib import Path
 from wand.image import Image
 
 from utils import bordered, to_staro_slav, is_cyrrillic
+from init_client import make_client
 
-load_dotenv()
-
-# ME_ID = 343097987
-API_ID = os.getenv('API_ID')
-API_HASH = os.getenv('API_HASH')
 PICUTRES_PATH = os.path.join(os.path.expanduser('~'), 'Pictures/')
-SESSION_PATH = os.path.abspath('./sessions/tgai28')
 HELP_TEXT = '''
 .fr <text> - send framed text
 .toggle_frame - toggle frame type
@@ -24,18 +20,32 @@ HELP_TEXT = '''
 .status - display status
 '''
 
-client = TelegramClient(SESSION_PATH, API_ID, API_HASH)
-flip_stickers = True
+client: TelegramClient
+flip_stickers = False
 frame_type = 'single'
 stickers_map = {}
 
-
 async def on_new_message_me(event: events.NewMessage):
+    command: str
+    text: str
     command, text = event.pattern_match.groups()
     msg: tl.custom.message.Message = event.message
     print(f'command: {command}')
     if command == 'stop_ai':
-        await client.disconnect()
+        await handle_exit()
+
+    elif command == 'get_msg':
+        (entity_like, cnt) = re.match(r'(\w+)(?:\s+)?(?:(\d+))?', text).groups()
+        cnt = int(cnt) if cnt else 5
+        try:
+            entity = await client.get_entity(entity_like)
+        except ValueError as _:
+            await client.send_message('me', 'User not found.')
+        else:
+            msgs = await client.get_messages(entity, limit=cnt)
+            msgs.reverse()
+            await client.forward_messages('me', msgs)
+        
     elif command == 'flip_stickers':
         global flip_stickers
         flip_stickers = not flip_stickers
@@ -46,6 +56,7 @@ async def on_new_message_me(event: events.NewMessage):
                 '' if flip_stickers else ' don\'t'
             )
         )
+
     elif command == 'toggle_frame':
         global frame_type
         frame_type = 'double' if frame_type == 'single' else 'single'
@@ -54,6 +65,7 @@ async def on_new_message_me(event: events.NewMessage):
             'me',
             'Now using %s message frame' % frame_type
         )
+
     elif not msg.entities and command == 'fr':
         framed = bordered(text, fr_type=frame_type)
         await msg.delete()
@@ -64,10 +76,12 @@ async def on_new_message_me(event: events.NewMessage):
             link_preview='false',
             reply_to=msg.reply_to_msg_id
         )
+
     elif command in ('st', 'ст'):
         await msg.delete()
         _text = to_staro_slav(text) if is_cyrrillic(text) else text
         await msg.respond(_text, reply_to=msg.reply_to_msg_id)
+
     elif command == 'status':
         text = '\n'.join([
             f'Flipping stickers: {flip_stickers}',
@@ -79,6 +93,7 @@ async def on_new_message_me(event: events.NewMessage):
             reply_to=msg.id,
             parse_mode='html'
         )
+
     elif command == 'help':
         await client.send_message('me', HELP_TEXT, reply_to=msg.id)
 
@@ -109,14 +124,21 @@ async def on_message_delete(event: events.MessageDeleted):
         chat_id, msg_id = stickers_map[_id]
         await client.delete_messages(chat_id, msg_id)
         del stickers_map[_id]
-        print
 
 
 def terminate(sigNum, frame):
-    print(f'\nGraceful shutdown...')
-    # client.loop.stop
-    # sys.exit(0)
+    print(f'\nStarting graceful shutdown...')
+    # _loop = client.loop
+    asyncio.ensure_future(
+        client.disconnect(),
+        loop=client.loop
+    ).add_done_callback(
+        lambda _: print('Disconnected.')
+    )
 
+
+async def handle_exit():
+    await client.disconnect()
 
 # signal.signal(signal.SIGTERM, terminate)
 # signal.signal(signal.SIGINT, terminate)
@@ -144,4 +166,8 @@ async def main():
     await client.run_until_disconnected()
 
 if __name__ == '__main__':
-    client.loop.run_until_complete(main())
+    load_dotenv()
+    client = make_client()
+    loop = client.loop
+    loop.run_until_complete(main())
+    loop.close()
