@@ -1,7 +1,7 @@
 docker-compose \
   -f docker-compose.yml \
-  pull
+  build
 
 docker-compose \
   -f docker-compose.yml \
-  up -d
+  push

@@ -36,7 +36,7 @@ def bordered(str: str, fr_type='single') -> str:
         _words = str.split()
         _res = []
         while len(_words) > 0:
-            _word = _words.pop()
+            _word = _words.pop(0)
             _rowlen = len(' '.join(_res[-1])) + len(_word) if _res else 0
             if _res and _rowlen < MAX_LEN:
                 _res[-1].append(_word)

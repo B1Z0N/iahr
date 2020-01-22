@@ -1,6 +1,7 @@
 version: '3'
 services:
   tgai28:
+    image: kraftwerk28/tgai28
     build: ./
     volumes:
       - ./sessions:/opt/app/sessions
