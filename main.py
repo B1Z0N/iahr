@@ -121,7 +121,7 @@ async def on_new_message_me(event: events.NewMessage):
     if not command and append_dot and text[-1].isalpha():
         await msg.delete()
         await msg.respond(
-            text + '.',
+            text[0].upper() + text[1:] + '.',
             reply_to=msg.reply_to_msg_id
         )
 
