@@ -17,21 +17,30 @@ HELP_TEXT = '''
 .fr <text> - send framed text
 .toggle_frame - toggle frame type
 .flip_stickers - toggle stickers flipping
+.toggle_dot - if do append dot to the messages
 .status - display status
+.help - display this message
 '''
 
-client: TelegramClient
+client: TelegramClient = None
 flip_stickers = False
+append_dot = False
 frame_type = 'single'
 stickers_map = {}
 
+
 async def on_new_message_me(event: events.NewMessage):
-    command: str
-    text: str
+    command: str; text: str
     command, text = event.pattern_match.groups()
     msg: tl.custom.message.Message = event.message
     print(f'command: {command}')
+
     if command == 'stop_ai':
+        await msg.delete()
+        await client.send_message(
+            'me',
+            'AI server stopped...'
+        )
         await handle_exit()
 
     elif command == 'get_msg':
@@ -45,7 +54,7 @@ async def on_new_message_me(event: events.NewMessage):
             msgs = await client.get_messages(entity, limit=cnt)
             msgs.reverse()
             await client.forward_messages('me', msgs)
-        
+
     elif command == 'flip_stickers':
         global flip_stickers
         flip_stickers = not flip_stickers
@@ -63,7 +72,17 @@ async def on_new_message_me(event: events.NewMessage):
         await msg.delete()
         await client.send_message(
             'me',
-            'Now using %s message frame' % frame_type
+            'Now using {} message frame'.format(frame_type)
+        )
+
+    elif command == 'toggle_dot':
+        global append_dot
+        append_dot = not append_dot
+        await client.send_message(
+            'me',
+            'Now I{} append dot to the end!'.format(
+                '' if append_dot else ' don\'t'
+            )
         )
 
     elif not msg.entities and command == 'fr':
@@ -85,17 +104,26 @@ async def on_new_message_me(event: events.NewMessage):
     elif command == 'status':
         text = '\n'.join([
             f'Flipping stickers: {flip_stickers}',
-            f'Frame type: {frame_type}'
+            f'Frame type: {frame_type}',
+            f'Appending dot: {append_dot}',
+
         ])
         await client.send_message(
             'me',
             f'<code>{text}</code>',
             reply_to=msg.id,
-            parse_mode='html'
+            parse_mode='HTML'
         )
 
     elif command == 'help':
         await client.send_message('me', HELP_TEXT, reply_to=msg.id)
+
+    if not command and append_dot and text[-1].isalpha():
+        await msg.delete()
+        await msg.respond(
+            text + '.',
+            reply_to=msg.reply_to_msg_id
+        )
 
 
 async def on_new_message_other(event: events.NewMessage):
@@ -148,7 +176,7 @@ async def main():
     client.add_event_handler(
         on_new_message_me,
         event=events.NewMessage(
-            pattern=r'\.(\w+)\s*(?:(.+))?',
+            pattern=r'(?:\.(\w+))?\s*(?:(.+))?',
             outgoing=True
         )
     )
