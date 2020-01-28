@@ -3,3 +3,5 @@ python-dotenv
 telethon
 wand
 cryptg
+pydub
+requests
