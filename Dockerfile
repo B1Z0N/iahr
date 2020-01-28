@@ -10,4 +10,6 @@ COPY --from=build \
   /root/.local/lib/python3.8/site-packages \
   /root/.local/lib/python3.8/site-packages
 RUN mkdir -p sessions/
+RUN apt-get update && \
+  apt-get --no-install-recommends install -y ffmpeg
 CMD python main.py

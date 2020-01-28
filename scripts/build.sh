@@ -1,8 +1,7 @@
 docker-compose \
   -f docker-compose.yml \
   -f docker-compose.deploy.yml \
-  build
-
+  build && \
 docker-compose \
   -f docker-compose.yml \
   -f docker-compose.deploy.yml \

@@ -21,6 +21,7 @@ HELP_TEXT = '''
 .status - display status
 .help - display this message
 '''
+VOICE_API_URL = ''
 
 client: TelegramClient = None
 flip_stickers = False
@@ -118,6 +119,31 @@ async def on_new_message_me(event: events.NewMessage):
     elif command == 'help':
         await client.send_message('me', HELP_TEXT, reply_to=msg.id)
 
+    elif command == 'say':
+        await msg.delete()
+        try:
+            wav_name = 'temp_wav__.wav'
+            temp_name = 'temp__.ogg'
+
+            _url = f'{VOICEAPI_URL}/say?q={url.quote(text)}'
+            resp = requests.get(_url)
+            open(wav_name, 'wb').write(resp.content)
+
+            conv = AudioSegment.from_wav(wav_name)
+            conv.export(temp_name, format='ogg')
+            # raw = open(temp_name, 'rb').read()
+
+            await client.send_file(
+                msg.chat,
+                temp_name,
+                voice_note=True,
+                reply_to=msg.reply_to_msg_id
+            )
+            os.remove(temp_name)
+            os.remove(wav_name)
+        except Exception as e:
+            print(e)
+
     if not command and append_dot and text[-1].isalpha():
         await msg.delete()
         await msg.respond(
@@ -195,6 +221,7 @@ async def main():
 
 if __name__ == '__main__':
     load_dotenv()
+    VOICE_API_URL = os.getenv('VOICEAPI_URL')
     client = make_client()
     loop = client.loop
     loop.run_until_complete(main())
