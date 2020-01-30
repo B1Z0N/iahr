@@ -32,12 +32,26 @@ append_dot = False
 frame_type = 'single'
 stickers_map = {}
 
+async def flip_sticker(msg: tl.custom.message.Message):
+    global stickers_map
+    temp_path = 'tl.webp'
+    await msg.download_media(file=temp_path)
+
+    img = Image(filename=temp_path)
+    img.flop()
+    img.save(filename=temp_path)
+
+    sent: tl.custom.Message = await msg.reply(file=temp_path)
+    stickers_map[msg.id] = (sent.chat_id, sent.id)
+    os.remove(temp_path)
+
 
 async def on_new_message_me(event: events.NewMessage):
-    command: str; text: str
+    command: str
+    text: str
     command, text = event.pattern_match.groups()
     msg: tl.custom.message.Message = event.message
-    print(f'command: {command}')
+    print(f'Command: {command}.')
 
     if command == 'stop_ai':
         await msg.delete()
@@ -122,27 +136,37 @@ async def on_new_message_me(event: events.NewMessage):
     elif command == 'help':
         await client.send_message('me', HELP_TEXT, reply_to=msg.id)
 
-    elif command in ('say', 'сей'):
+    elif command in ('say', 'сей', 'гл'):
         await msg.delete()
-        wav_name = 'temp_wav__.wav'
-        temp_name = 'temp__.ogg'
+        try:
+            wav_name = 'temp_wav__.wav'
+            temp_name = 'temp__.ogg'
 
-        _url = f'{VOICE_API_URL}/say?q={url.quote(text)}'
-        resp = requests.get(_url)
-        open(wav_name, 'wb').write(resp.content)
+            _url = f'{VOICE_API_URL}/say?q={url.quote(text)}'
+            resp = requests.get(_url)
+            open(wav_name, 'wb').write(resp.content)
 
-        conv = AudioSegment.from_wav(wav_name)
-        conv.export(temp_name, format='ogg')
-        # raw = open(temp_name, 'rb').read()
+            conv = AudioSegment.from_wav(wav_name)
+            conv.export(temp_name, format='ogg')
+            # raw = open(temp_name, 'rb').read()
 
-        await client.send_file(
-            msg.chat,
-            temp_name,
-            voice_note=True,
-            reply_to=msg.reply_to_msg_id
-        )
-        os.remove(temp_name)
-        os.remove(wav_name)
+            await client.send_file(
+                msg.chat,
+                temp_name,
+                voice_note=True,
+                reply_to=msg.reply_to_msg_id
+            )
+            os.remove(temp_name)
+            os.remove(wav_name)
+        except Exception as e:
+            print(e)
+
+    elif command == 'flip':
+        target: tl.custom.Message = await msg.get_reply_message()
+        if (target and target.sticker):
+            target.sticker
+            await msg.delete()
+            await flip_sticker(target)
 
     if not command and append_dot and text[-1].isalpha():
         await msg.delete()
@@ -160,15 +184,7 @@ async def on_new_message_other(event: events.NewMessage):
         msg.sticker.mime_type.endswith('webp') and
         flip_stickers
     ):
-        global stickers_map
-        temp_path = os.path.join(PICUTRES_PATH, 'tl.webp')
-        await msg.download_media(file=temp_path)
-        img = Image(filename=temp_path)
-        img.flop()
-        img.save(filename=temp_path)
-        sent: tl.custom.Message = await msg.reply(file=temp_path)
-        stickers_map[msg.id] = (sent.chat_id, sent.id)
-        os.remove(temp_path)
+        await flip_sticker(msg)
 
 
 async def on_message_delete(event: events.MessageDeleted):
