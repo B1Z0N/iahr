@@ -147,15 +147,18 @@ async def on_new_message_me(event: events.NewMessage):
             resp = requests.get(_url)
             open(wav_name, 'wb').write(resp.content)
 
-            subprocess.run([
-                'ffmpeg',
-                '-i',
-                wav_name,
-                '-acodec',
-                'libopus',
-                temp_name,
-                '-y'
-            ])
+            subprocess.run(
+                [
+                    'ffmpeg',
+                    '-i',
+                    wav_name,
+                    '-acodec',
+                    'libopus',
+                    temp_name,
+                    '-y'
+                ],
+                stdout=subprocess.DEVNULL
+            )
 
             await client.send_file(
                 msg.chat,
