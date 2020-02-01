@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import requests
+import subprocess
 from datetime import datetime, timedelta
 import urllib.parse as url
 from pydub import AudioSegment
@@ -139,16 +140,22 @@ async def on_new_message_me(event: events.NewMessage):
     elif command in ('say', 'сей', 'гл'):
         await msg.delete()
         try:
-            wav_name = 'temp_wav__.wav'
+            wav_name = 'temp__.wav'
             temp_name = 'temp__.ogg'
 
             _url = f'{VOICE_API_URL}/say?q={url.quote(text)}'
             resp = requests.get(_url)
             open(wav_name, 'wb').write(resp.content)
 
-            conv = AudioSegment.from_wav(wav_name)
-            conv.export(temp_name, format='ogg')
-            # raw = open(temp_name, 'rb').read()
+            subprocess.run([
+                'ffmpeg',
+                '-i',
+                wav_name,
+                '-acodec',
+                'libopus',
+                temp_name,
+                '-y'
+            ])
 
             await client.send_file(
                 msg.chat,
@@ -156,8 +163,8 @@ async def on_new_message_me(event: events.NewMessage):
                 voice_note=True,
                 reply_to=msg.reply_to_msg_id
             )
-            os.remove(temp_name)
-            os.remove(wav_name)
+            os.unlink(temp_name)
+            os.unlink(wav_name)
         except Exception as e:
             print(e)
 
