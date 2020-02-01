@@ -157,7 +157,8 @@ async def on_new_message_me(event: events.NewMessage):
                     temp_name,
                     '-y'
                 ],
-                stdout=subprocess.DEVNULL
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
             )
 
             await client.send_file(
