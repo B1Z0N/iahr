@@ -1,37 +1,41 @@
 import os
 import re
 import sys
-import requests
 import subprocess
-from datetime import datetime, timedelta
 import urllib.parse as url
-from pydub import AudioSegment
 import asyncio
-from telethon import TelegramClient, events, types, tl, Button
-import signal
+from typing import List
+# import signal
+import requests
+from telethon import TelegramClient, events, types, tl, Button, client
 from dotenv import load_dotenv
-from pathlib import Path
 from wand.image import Image
 
-from utils import bordered, to_staro_slav, is_cyrrillic
+from utils import bordered, to_staro_slav, is_cyrrillic, mention
 from init_client import make_client
 
 PICUTRES_PATH = os.path.join(os.path.expanduser('~'), 'Pictures/')
 HELP_TEXT = '''
 .fr <text> - send framed text
-.toggle_frame - toggle frame type
 .flip_stickers - toggle stickers flipping
+.flip - flip sticker to which reply message is
+.toggle_frame - toggle frame type
 .toggle_dot - if do append dot to the messages
+.toggle_tagall - toggle tagging
 .status - display status
 .help - display this message
+.[st|ст] <text> - staroslav text
 '''
-VOICE_API_URL = ''
+VOICE_API_URL: str
+TAG_ALL_LIMIT = 50
 
 client: TelegramClient = None
 flip_stickers = False
 append_dot = False
 frame_type = 'single'
 stickers_map = {}
+allow_tag_all = True
+
 
 async def flip_sticker(msg: tl.custom.message.Message):
     global stickers_map
@@ -48,11 +52,15 @@ async def flip_sticker(msg: tl.custom.message.Message):
 
 
 async def on_new_message_me(event: events.NewMessage):
+    global allow_tag_all
+    global flip_stickers
+    global frame_type
+    global append_dot
+    
     command: str
     text: str
     command, text = event.pattern_match.groups()
     msg: tl.custom.message.Message = event.message
-    print(f'Command: {command}.')
 
     if command == 'stop_ai':
         await msg.delete()
@@ -75,7 +83,6 @@ async def on_new_message_me(event: events.NewMessage):
             await client.forward_messages('me', msgs)
 
     elif command == 'flip_stickers':
-        global flip_stickers
         flip_stickers = not flip_stickers
         await msg.delete()
         await client.send_message(
@@ -86,7 +93,6 @@ async def on_new_message_me(event: events.NewMessage):
         )
 
     elif command == 'toggle_frame':
-        global frame_type
         frame_type = 'double' if frame_type == 'single' else 'single'
         await msg.delete()
         await client.send_message(
@@ -95,7 +101,6 @@ async def on_new_message_me(event: events.NewMessage):
         )
 
     elif command == 'toggle_dot':
-        global append_dot
         append_dot = not append_dot
         await client.send_message(
             'me',
@@ -125,7 +130,7 @@ async def on_new_message_me(event: events.NewMessage):
             f'Flipping stickers: {flip_stickers}',
             f'Frame type: {frame_type}',
             f'Appending dot: {append_dot}',
-
+            f'Allow tag all: {allow_tag_all}'
         ])
         await client.send_message(
             'me',
@@ -179,6 +184,16 @@ async def on_new_message_me(event: events.NewMessage):
             await msg.delete()
             await flip_sticker(target)
 
+    if command == 'toggle_tagall':
+        await msg.delete()
+        allow_tag_all = not allow_tag_all
+        await client.send_message(
+            'me',
+            'Now I{} allow tagging all participants'.format(
+                '' if allow_tag_all else ' don\'t'
+            )
+        )
+
     if not command and append_dot and text[-1].isalpha():
         await msg.delete()
         await msg.respond(
@@ -196,6 +211,19 @@ async def on_new_message_other(event: events.NewMessage):
         flip_stickers
     ):
         await flip_sticker(msg)
+
+
+async def on_new_message_all(event: events.NewMessage):
+    command: str
+    text: str
+    command, text = event.pattern_match.groups()
+    msg: tl.custom.message.Message = event.message
+    if command == 'tagall' and allow_tag_all:
+        users: List[tl.types.User] = await client.get_participants(msg.chat)
+        if len(users) > TAG_ALL_LIMIT:
+            return
+        unames = ' '.join(mention(u) for u in users if not u.bot)
+        await msg.respond(unames, parse_mode='html')
 
 
 async def on_message_delete(event: events.MessageDeleted):
@@ -226,18 +254,18 @@ async def handle_exit():
 
 
 async def main():
+    command_re = re.compile(r'(?:\.(\w+))?\s*(?:(.+))?', re.MULTILINE)
     client.add_event_handler(
         on_new_message_me,
-        event=events.NewMessage(
-            pattern=r'(?:\.(\w+))?\s*(?:(.+))?',
-            outgoing=True
-        )
+        event=events.NewMessage(pattern=command_re, outgoing=True)
+    )
+    client.add_event_handler(
+        on_new_message_all,
+        event=events.NewMessage(pattern=command_re)
     )
     client.add_event_handler(
         on_new_message_other,
-        event=events.NewMessage(
-            incoming=True
-        )
+        event=events.NewMessage(incoming=True)
     )
     client.add_event_handler(
         on_message_delete,
