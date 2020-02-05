@@ -1,4 +1,5 @@
 import re
+from telethon import tl
 
 MAX_LEN = 20
 FRAME = {
@@ -87,6 +88,12 @@ def to_staro_slav(_str: str) -> str:
         if w[0].istitle():
             _src[i][0] = w[0]
     return ' '.join(''.join(w) for w in _src)
+
+def mention(user: tl.types.User):
+    if user.username:
+        return '@' + user.username
+    name = user.first_name or user.last_name
+    return f'<a href="tg://user?id={user.id}">{name}</a>'
 
 # tests
 if __name__ == '__main__':

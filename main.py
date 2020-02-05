@@ -56,7 +56,7 @@ async def on_new_message_me(event: events.NewMessage):
     global flip_stickers
     global frame_type
     global append_dot
-    
+
     command: str
     text: str
     command, text = event.pattern_match.groups()
@@ -144,38 +144,46 @@ async def on_new_message_me(event: events.NewMessage):
 
     elif command in ('say', 'сей', 'гл'):
         await msg.delete()
+        wav_name = 'temp__.wav'
+        temp_name = 'temp__.ogg'
+
+        # May be broken due to API changes!
         try:
-            wav_name = 'temp__.wav'
-            temp_name = 'temp__.ogg'
-
-            _url = f'{VOICE_API_URL}/say?q={url.quote(text)}'
-            resp = requests.get(_url)
-            open(wav_name, 'wb').write(resp.content)
-
-            subprocess.run(
-                [
-                    'ffmpeg',
-                    '-i',
-                    wav_name,
-                    '-acodec',
-                    'libopus',
-                    temp_name,
-                    '-y'
-                ],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
+            resp = requests.get(
+                f'{VOICE_API_URL}/say',
+                params={'q': url.quote(text)},
+                timeout=5
             )
+        except requests.exceptions.Timeout as e:
+            await client.send_message(
+                'me',
+                'Timeout making voice API request'
+            )
+            return
+        open(wav_name, 'wb').write(resp.content)
 
-            await client.send_file(
-                msg.chat,
+        subprocess.run(
+            [
+                'ffmpeg',
+                '-i',
+                wav_name,
+                '-acodec',
+                'libopus',
                 temp_name,
-                voice_note=True,
-                reply_to=msg.reply_to_msg_id
-            )
-            os.unlink(temp_name)
-            os.unlink(wav_name)
-        except Exception as e:
-            print(e)
+                '-y'
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+        await client.send_file(
+            msg.chat_id,
+            temp_name,
+            voice_note=True,
+            reply_to=msg.reply_to_msg_id
+        )
+        os.unlink(temp_name)
+        os.unlink(wav_name)
 
     elif command == 'flip':
         target: tl.custom.Message = await msg.get_reply_message()
@@ -219,11 +227,12 @@ async def on_new_message_all(event: events.NewMessage):
     command, text = event.pattern_match.groups()
     msg: tl.custom.message.Message = event.message
     if command == 'tagall' and allow_tag_all:
-        users: List[tl.types.User] = await client.get_participants(msg.chat)
+        users = await client.get_participants(msg.chat_id)
         if len(users) > TAG_ALL_LIMIT:
             return
-        unames = ' '.join(mention(u) for u in users if not u.bot)
-        await msg.respond(unames, parse_mode='html')
+        msg_str = ' '.join(mention(u) for u in users if not u.bot)
+        sent = await msg.respond(msg_str, parse_mode='html')
+        stickers_map[msg.id] = (sent.chat_id, sent.id)
 
 
 async def on_message_delete(event: events.MessageDeleted):
@@ -254,7 +263,7 @@ async def handle_exit():
 
 
 async def main():
-    command_re = re.compile(r'(?:\.(\w+))?\s*(?:(.+))?', re.MULTILINE)
+    command_re = re.compile(r'(?:\.(\w+))?\s*(?:(.+))?', re.DOTALL)
     client.add_event_handler(
         on_new_message_me,
         event=events.NewMessage(pattern=command_re, outgoing=True)
