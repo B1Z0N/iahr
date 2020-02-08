@@ -115,7 +115,7 @@ async def on_new_message_me(event: events.NewMessage):
         await client.send_message(
             msg.chat_id,
             framed,
-            parse_mode='html',
+            parse_mode='HTML',
             link_preview='false',
             reply_to=msg.reply_to_msg_id
         )
@@ -201,6 +201,22 @@ async def on_new_message_me(event: events.NewMessage):
                 '' if allow_tag_all else ' don\'t'
             )
         )
+    
+    if command == 'chat_id':
+        await msg.delete()
+        await client.send_message(
+            'me',
+            f'{msg.chat.title}: <code>{msg.chat_id}</code>',
+            parse_mode='HTML'
+        )
+    
+    if command == 'user_id':
+        await msg.delete()
+        users = await client.get_participants(msg.chat_id, search=text, limit=20)
+        await client.send_message(
+            'me',
+            '\n'.join(f'{mention(u)}: <code>{u.id}</code>' for u in users)
+        )
 
     if not command and append_dot and text[-1].isalpha():
         await msg.delete()
@@ -231,7 +247,7 @@ async def on_new_message_all(event: events.NewMessage):
         if len(users) > TAG_ALL_LIMIT:
             return
         msg_str = ' '.join(mention(u) for u in users if not u.bot)
-        sent = await msg.respond(msg_str, parse_mode='html')
+        sent = await msg.respond(msg_str, parse_mode='HTML')
         stickers_map[msg.id] = (sent.chat_id, sent.id)
 
 
