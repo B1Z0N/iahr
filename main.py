@@ -246,7 +246,12 @@ async def on_new_message_all(event: events.NewMessage):
         users = await client.get_participants(msg.chat_id)
         if len(users) > TAG_ALL_LIMIT:
             return
-        msg_str = ' '.join(mention(u) for u in users if not u.bot)
+        u: tl.types.User = {}
+        msg_str = ' '.join(
+            mention(u)
+            for u in users
+            if not u.bot and not u.is_self
+        )
         sent = await msg.respond(msg_str, parse_mode='HTML')
         stickers_map[msg.id] = (sent.chat_id, sent.id)
 
