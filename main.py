@@ -201,7 +201,7 @@ async def on_new_message_me(event: events.NewMessage):
                 '' if allow_tag_all else ' don\'t'
             )
         )
-    
+
     if command == 'chat_id':
         await msg.delete()
         await client.send_message(
@@ -209,13 +209,14 @@ async def on_new_message_me(event: events.NewMessage):
             f'{msg.chat.title}: <code>{msg.chat_id}</code>',
             parse_mode='HTML'
         )
-    
+
     if command == 'user_id':
         await msg.delete()
         users = await client.get_participants(msg.chat_id, search=text, limit=20)
         await client.send_message(
             'me',
-            '\n'.join(f'{mention(u)}: <code>{u.id}</code>' for u in users)
+            '\n'.join(f'{mention(u)}: <code>{u.id}</code>' for u in users),
+            parse_mode='HTML'
         )
 
     if not command and append_dot and text[-1].isalpha():
