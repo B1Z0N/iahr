@@ -11,7 +11,7 @@ from telethon import TelegramClient, events, types, tl, Button, client
 from dotenv import load_dotenv
 from wand.image import Image
 
-from utils import bordered, to_staro_slav, is_cyrrillic, mention
+import utils
 from init_client import make_client
 
 PICUTRES_PATH = os.path.join(os.path.expanduser('~'), 'Pictures/')
@@ -110,7 +110,7 @@ async def on_new_message_me(event: events.NewMessage):
         )
 
     elif not msg.entities and command == 'fr':
-        framed = bordered(text, fr_type=frame_type)
+        framed = utils.bordered(text, fr_type=frame_type)
         await msg.delete()
         await client.send_message(
             msg.chat_id,
@@ -122,7 +122,7 @@ async def on_new_message_me(event: events.NewMessage):
 
     elif command in ('st', 'ст'):
         await msg.delete()
-        _text = to_staro_slav(text) if is_cyrrillic(text) else text
+        _text = utils.to_staro_slav(text) if utils.is_cyrrillic(text) else text
         await msg.respond(_text, reply_to=msg.reply_to_msg_id)
 
     elif command == 'status':
@@ -215,7 +215,8 @@ async def on_new_message_me(event: events.NewMessage):
         users = await client.get_participants(msg.chat_id, search=text, limit=20)
         await client.send_message(
             'me',
-            '\n'.join(f'{mention(u)}: <code>{u.id}</code>' for u in users),
+            '\n'.join(
+                f'{utils.mention(u)}: <code>{u.id}</code>' for u in users),
             parse_mode='HTML'
         )
 
@@ -249,11 +250,25 @@ async def on_new_message_all(event: events.NewMessage):
             return
         u: tl.types.User = {}
         msg_str = ' '.join(
-            mention(u)
+            utils.mention(u)
             for u in users
             if not u.bot and not u.is_self
         )
         sent = await msg.respond(msg_str, parse_mode='HTML')
+        stickers_map[msg.id] = (sent.chat_id, sent.id)
+
+    match = re.match(
+        r'^с такими приколами тебе сюда:\s*(.+)',
+        text,
+        flags=re.IGNORECASE
+    )
+    if match:
+        tuda = match[1]
+        TEMP_FILE = 'wsj.jpg'
+        pic = utils.with_such_jokes(tuda)
+        pic.save(TEMP_FILE)
+        sent = await msg.reply(file=TEMP_FILE)
+        os.unlink(TEMP_FILE)
         stickers_map[msg.id] = (sent.chat_id, sent.id)
 
 

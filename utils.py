@@ -1,7 +1,13 @@
+from os import path
 import re
 from telethon import tl
+import json
+from PIL import ImageFont, Image, ImageDraw
+from typing import Tuple
+
 
 MAX_LEN = 20
+
 FRAME = {
     'single': {
         'H': '-',
@@ -20,6 +26,7 @@ FRAME = {
         'BR': '╝'
     }
 }
+
 LATIN = 'abcdefghijklmnopqrstuvwxyz'
 VOWELS = 'аеєиіїоуыюя'
 ST_SL_REPLACES = {
@@ -89,11 +96,72 @@ def to_staro_slav(_str: str) -> str:
             _src[i][0] = w[0]
     return ' '.join(''.join(w) for w in _src)
 
+
+def jsonclass(path):
+    def wrapper(cls):
+        class WrapperClass(cls):
+            def __init__(self, *args, **kwargs):
+                super(WrapperClass, self).__init__(*args, **kwargs)
+
+            def save(self):
+                with open(path, 'w') as f:
+                    json.dump(vars(self), f)
+
+            def load():
+                with open(path, 'r') as f:
+                    d = json.load(f)
+                    return WrapperClass(**d)
+        return WrapperClass
+
+    return wrapper
+
+
 def mention(user: tl.types.User):
     if user.username:
-        return '@' + user.username
-    name = user.first_name or user.last_name
+        return f'@{user.username}'
+    name = user.first_name
+    if user.last_name:
+        name += ' ' + user.last_name
     return f'<a href="tg://user?id={user.id}">{name}</a>'
+
+
+def wrap(text: str, font: ImageFont, maxwidth: int) -> Tuple[str, int]:
+    res = []
+    for w in text.split():
+        if not res or font.getsize(res[-1] + ' ' + text)[0] > maxwidth:
+            res.append(w)
+        else:
+            res[-1] += ' ' + w
+    return '\n'.join(res), max(font.getsize(r)[0] for r in res)
+
+
+def draw_text(image: Image, text: str):
+    pass
+
+RES_DIR = 'resources/'
+
+def with_such_jokes(text) -> Image:
+    BOX_SIZE = (94, 80)
+    BOX_POS = (260, 140)
+
+    img = Image.open(path.join(RES_DIR, 'with_such_jokes.jpg'))
+    box = Image.new('RGBA', BOX_SIZE, (0, 0, 0, 0))
+    d = ImageDraw.Draw(box)
+    font = ImageFont.truetype(path.join(RES_DIR, 'arial.ttf'), size=24)
+
+    text, maxwidth = wrap(text, font, BOX_SIZE[0])
+    d.text(
+        ((BOX_SIZE[0] - maxwidth) / 2, 0),
+        text,
+        font=font,
+        fill='#ffffff',
+        stroke_width=2,
+        stroke_fill='#000000',
+        align='center'
+    )
+    img.paste(box, BOX_POS, box)
+    return img
+
 
 # tests
 if __name__ == '__main__':

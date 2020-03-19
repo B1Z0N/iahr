@@ -1,5 +1,6 @@
 FROM python:3.8.1 AS base
-RUN apt-get update && apt-get install --no-install-recommends -y ffmpeg
+RUN apt-get update && \
+  apt-get install --no-install-recommends -y ffmpeg
 
 FROM python:3.8.1 AS build
 WORKDIR /opt/build

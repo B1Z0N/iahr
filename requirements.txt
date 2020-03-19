@@ -4,3 +4,4 @@ telethon
 wand
 cryptg
 requests
+pillow
