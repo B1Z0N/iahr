@@ -6,6 +6,7 @@ from PIL import ImageFont, Image, ImageDraw
 from typing import Tuple
 
 
+RES_DIR = 'resources/'
 MAX_LEN = 20
 
 FRAME = {
@@ -128,7 +129,9 @@ def mention(user: tl.types.User):
 def wrap(text: str, font: ImageFont, maxwidth: int) -> Tuple[str, int]:
     res = []
     for w in text.split():
-        if not res or font.getsize(res[-1] + ' ' + text)[0] > maxwidth:
+        if not res:
+            res.append(w)
+        elif font.getsize(res[-1] + ' ' + w)[0] > maxwidth:
             res.append(w)
         else:
             res[-1] += ' ' + w
@@ -138,28 +141,30 @@ def wrap(text: str, font: ImageFont, maxwidth: int) -> Tuple[str, int]:
 def draw_text(image: Image, text: str):
     pass
 
-RES_DIR = 'resources/'
 
 def with_such_jokes(text) -> Image:
-    BOX_SIZE = (94, 80)
-    BOX_POS = (260, 140)
+    BOX_SIZE = (104, 120)
+    BOX_POS = (256, 138)
 
     img = Image.open(path.join(RES_DIR, 'with_such_jokes.jpg'))
-    box = Image.new('RGBA', BOX_SIZE, (0, 0, 0, 0))
-    d = ImageDraw.Draw(box)
+    d = ImageDraw.Draw(img)
     font = ImageFont.truetype(path.join(RES_DIR, 'arial.ttf'), size=24)
 
-    text, maxwidth = wrap(text, font, BOX_SIZE[0])
+    text, maxwidth = wrap(text, font, maxwidth=BOX_SIZE[0])
     d.text(
-        ((BOX_SIZE[0] - maxwidth) / 2, 0),
+        (
+            BOX_POS[0] + (BOX_SIZE[0] - maxwidth) / 2,
+            BOX_POS[1],
+        ),
         text,
         font=font,
+        spacing=0,
         fill='#ffffff',
         stroke_width=2,
         stroke_fill='#000000',
         align='center'
     )
-    img.paste(box, BOX_POS, box)
+    # img.paste(box, BOX_POS, box)
     return img
 
 
