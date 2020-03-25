@@ -163,8 +163,6 @@ async def on_new_message_me(event: events.NewMessage):
                 'Timeout making voice API request'
             )
             return
-        except Exception as e:
-            print(e)
         open(wav_name, 'wb').write(resp.content)
 
         subprocess.run(
