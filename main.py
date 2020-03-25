@@ -5,6 +5,7 @@ import subprocess
 import urllib.parse as url
 import asyncio
 from typing import List
+import json
 # import signal
 import requests
 from telethon import TelegramClient, events, types, tl, Button, client
@@ -147,19 +148,23 @@ async def on_new_message_me(event: events.NewMessage):
         wav_name = 'temp__.wav'
         temp_name = 'temp__.ogg'
 
+        data = {'phrase': text}
         # May be broken due to API changes!
         try:
-            resp = requests.get(
+            resp = requests.post(
                 f'{VOICE_API_URL}/say',
-                params={'q': url.quote(text)},
+                data=json.dumps(data),
                 timeout=5
             )
         except requests.exceptions.Timeout as e:
+            print(e)
             await client.send_message(
                 'me',
                 'Timeout making voice API request'
             )
             return
+        except Exception as e:
+            print(e)
         open(wav_name, 'wb').write(resp.content)
 
         subprocess.run(

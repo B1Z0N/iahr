@@ -4,6 +4,7 @@ from telethon import tl
 import json
 from PIL import ImageFont, Image, ImageDraw
 from typing import Tuple
+from PyQt5 import QtCore
 
 
 RES_DIR = 'resources/'
