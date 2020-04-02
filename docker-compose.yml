@@ -2,3 +2,7 @@ version: '3'
 services:
   tgai28:
     build: ./
+    image: kraftwerk28/tgai28
+    volumes:
+      - $HOME/deployments/tgai28/sessions:/opt/app/sessions
+    restart: always

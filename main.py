@@ -143,51 +143,6 @@ async def on_new_message_me(event: events.NewMessage):
     elif command == 'help':
         await client.send_message('me', HELP_TEXT, reply_to=msg.id)
 
-    elif command in ('say', 'сей', 'гл'):
-        await msg.delete()
-        wav_name = 'temp__.wav'
-        temp_name = 'temp__.ogg'
-
-        data = {'phrase': text}
-        # May be broken due to API changes!
-        try:
-            resp = requests.post(
-                f'{VOICE_API_URL}/say',
-                data=json.dumps(data),
-                timeout=5
-            )
-        except requests.exceptions.Timeout as e:
-            print(e)
-            await client.send_message(
-                'me',
-                'Timeout making voice API request'
-            )
-            return
-        open(wav_name, 'wb').write(resp.content)
-
-        subprocess.run(
-            [
-                'ffmpeg',
-                '-i',
-                wav_name,
-                '-acodec',
-                'libopus',
-                temp_name,
-                '-y'
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-
-        await client.send_file(
-            msg.chat_id,
-            temp_name,
-            voice_note=True,
-            reply_to=msg.reply_to_msg_id
-        )
-        os.unlink(temp_name)
-        os.unlink(wav_name)
-
     elif command == 'flip':
         target: tl.custom.Message = await msg.get_reply_message()
         if (target and target.sticker):
@@ -247,7 +202,58 @@ async def on_new_message_all(event: events.NewMessage):
     text: str
     command, text = event.pattern_match.groups()
     msg: tl.custom.message.Message = event.message
-    if command == 'tagall' and allow_tag_all:
+
+    if command in ('say', 'сей', 'гл'):
+        if msg.out:
+            await msg.delete()
+        wav_name = 'temp__.wav'
+        temp_name = 'temp__.ogg'
+
+        data = {'phrase': text}
+        # May be broken due to API changes!
+        try:
+            resp = requests.post(
+                f'{VOICE_API_URL}/say',
+                data=json.dumps(data),
+                timeout=5
+            )
+        except requests.exceptions.Timeout as e:
+            print(e)
+            await client.send_message(
+                'me',
+                'Timeout making voice API request'
+            )
+            return
+        open(wav_name, 'wb').write(resp.content)
+
+        subprocess.run(
+            [
+                'ffmpeg',
+                '-i',
+                wav_name,
+                '-acodec',
+                'libopus',
+                temp_name,
+                '-y'
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+        sent = await client.send_file(
+            msg.chat_id,
+            temp_name,
+            voice_note=True,
+            reply_to=msg.reply_to_msg_id if msg.out else msg.id
+        )
+
+        if not msg.out:
+            stickers_map[msg.id] = (sent.chat_id, sent.id)
+
+        os.unlink(temp_name)
+        os.unlink(wav_name)
+
+    elif command == 'tagall' and allow_tag_all:
         users = await client.get_participants(msg.chat_id)
         if len(users) > TAG_ALL_LIMIT:
             return
