@@ -6,3 +6,5 @@ services:
     volumes:
       - $HOME/deployments/tgai28/sessions:/opt/app/sessions
     restart: always
+    env_file:
+      - api.env
