@@ -26,13 +26,13 @@ class Query:
         self.command = command
         self.args = args # Could be: List[str], Query, None
     
-    def is_subquery():
+    def is_subquery(self):
         return type(self.args) == type(self)
 
-    def is_noargs():
+    def is_noargs(self):
         return self.args is None
 
-    def is_simple_args():
+    def is_simple_args(self):
         return type(self.args) == list
 
     @classmethod
@@ -64,37 +64,23 @@ class Query:
             return cls(command, args)
 
 
-def test_query(qstr):
-    q = Query.from_str(qstr)
-    def print_query(q):
-        print("Command:", q.command)
-        if type(q.args) == type([]):
-            print("Args:", q.args)
-        elif q.args is None:
-            pass
-        else: 
-            print_query(q.args)
-        
-    print_query(q)
-
-test_query(input())
-
-
 class Routine:
     def __init__(self, handler: Callable, about: str):
         self.about = about
         self.handler = handler
-        self.allow_me = True
-        self.allow_others = False
-    
+        self.rights = {'me'}
+ 
     def help(self):
         return self.about
     
-    def toggle_allow_others():
-        self.allow_others = not self.allow_others
+    def toggle_allow(self, usr: str):
+        if usr not in self.rights:
+            self.rights.add(usr)
+        else:
+            self.rights.remove(usr)
 
-    def toggle_allow_me():
-        self.allow_me = not self.allow_me
+    def is_allowed(self, usr: str):
+        return usr in self.rights
     
     def get_handler(self, subprop=None):
         if subprop is None:
@@ -108,36 +94,56 @@ class Executer:
         self.query = Query.from_str(qstr)
         self.dict = commands
 
-    def run():
-        return __run(self.query, self.dict)
+    def run(self):
+        return Executer.__run(self.query, self.dict)
 
-    @staticmethod
-    def __run(query, dct):
+    @classmethod
+    def __run(cls, query, dct):
         cmds = query.command.split('.')
-        handler = self.dct[cmds[0]].get_handler(cmds[1] if len(cmds) > 1 else None)
+        handler = dct[cmds[0]].get_handler(cmds[1] if len(cmds) > 1 else None)
         
         if query.is_noargs():
             return handler()
         elif query.is_subquery():
-            res =  __run(query.args)
+            res = cls.__run(query.args, dct)
             return handler(res)
         else:
-            return handler(*self.args)
-        
-    
+            return handler(*query.args)
+
+
 class Manager(metaclass=SingletonMeta):
-    commands = {}
+
+    def __help(self, cmd=None):
+        if cmd is not None:
+            return cmd + ': ' + self.commands[cmd].help()
+
+        helplst = [cmd + ': ' + routine.help() for cmd, routine in self.commands.items()]
+        return '\n'.join(helplst)
+
+    def __allow(self, cmd: str, usr: str):
+        self.commands[cmd].toggle_allow(usr)
+
+    def __init__(self):
+        self.commands = {
+            'help' : Routine(self.__help, 
+                        'Get help on command or full help'),
+            'allow' : Routine(self.__allow, 
+                        'Toggle execution rights of a command for "me", "others" or "UNAME"'),
+        }
     
-    def add(command: str, handler: Callable, about: str):
-        command = command.strip().split('.')
+    def add(self, command: str, handler: Callable, about: str):
+        command = command.strip(' .').split('.')
         if len(command) != 1:
-            raise SyntaxException("Commands shouldn't contain dots inside")
+            raise SyntaxError("Commands shouldn't contain dots inside")
         
-        commands[command[0]] = Routine(handler, about)
-   
-    def exec(command: str):
+        self.commands[command[0]] = Routine(handler, about)
+    
+    def exec(self, command: str):
         runner = Executer(command, self.commands)
         return runner.run()
 
 app = Manager()
+app1 = Manager()
 
+assert(app == app1)
+assert(app.commands == app1.commands)
