@@ -15,15 +15,25 @@ def test_query(qstr):
     print_query(q)
 
 # test_query(input())
+async def main():
+    async def idf(x):
+        return x
+    async def concat(x, y):
+        return x + y
+    async def toUpper(x):
+        return x.upper()
 
-app.add('.id', lambda x: x, "Just the function that returns passed argument")
-app.add('.concat', lambda x, y: x + y, "Concatenate two strings")
-app.add('toUpper', lambda x: x.upper(), "To upper register")
+    app.add('.id', idf, "Just the function that returns passed argument")
+    app.add('.concat', concat, "Concatenate two strings")
+    app.add('toUpper', toUpper, "To upper register")
 
-print(app.exec('.id .toUpper .concat [First this, ] [Then that]'))
+    print(await app.exec('.id .toUpper .concat [First this, ] [Then that]'))
 
-print(app.exec('.help'))
-print(app.exec('.help toUpper'))
-print(app.exec('.help help'))
+    print(await app.exec('.help'))
+    print(await app.exec('.help toUpper'))
+    print(await app.exec('.help help'))
 
-app.exec('.allow help me')
+    await app.exec('.allow help me')
+
+import asyncio
+asyncio.run(main())
