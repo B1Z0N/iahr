@@ -1,7 +1,7 @@
-from telethon import event
+from telethon import events
 
-from app import InfoParameter, app, EntityGroup as grp
-from senders import TextSender
+from app import InfoParameter
+from senders import TextSender, eventless
 
 
 @TextSender(about='Get help about a command or list of all commands')
@@ -12,35 +12,31 @@ async def help(event, cmd=None):
         helplst = [cmd + ': ' + routine.help() for cmd, routine in app.commands.items()]
         res = '\n'.join(helplst)
     
-    return event.message, res
+    return res
 
 
-@TextSender('.allowusr', 'Allow "me", "others", "all" or $UNAME to run a command')
-async def allow_usr(event, usr, cmd=None):        
-    client = par.event.client
-    group = grp.from_str(usr)    
-    usr = client.get_entity(usr).id if group is None else group 
-
+def __access_action(action: str, entity: str, cmd=None):
     if cmd is not None:
-        app.commands[cmd].allow_usr(usr)
+        getattr(app.commands[cmd], action)(entity)
     else:
         for routine in app.commands.values():
-            routine.allow_usr(usr) 
+            getattr(routine, action)(entity)
 
 
-@TextSender
-async def allow_chat(par, chat=None, cmd=None):
-    pass
+@VoidSender('.allowusr', 'Allow [UNAME] or "$others" to run a command or all commands')
+async def allow_usr(_, usr, cmd=None):        
+    __access_action('allow_usr', usr, cmd=cmd)
 
+@VoidSender('.allowchat', 'Allow [CHATNAME] or "$others" to run a command or all commands')
+async def allow_chat(_, chat, cmd=None):
+    __access_action('allow_chat', chat, cmd=cmd)
 
-@TextSender
-async def ban_usr(par, usr=None, cmd=None):
-    pass
+@VoidSender('banusr', 'Ban [UNAME] or "$others" from running a command or all commands')
+async def ban_usr(_, usr, cmd=None):
+    __access_action('ban_usr', usr, cmd=cmd)
 
+@VoidSender('banchat', 'Ban [CHATNAME] or "$others" from running a command or all commands')
+async def ban_chat(_, chat, cmd=None):
+    __access_action('ban_chat', chat, cmd=cmd)
 
-@TextSender
-async def ban_chat(par, chat=None, cmd=None):
-    pass
-
-        
 

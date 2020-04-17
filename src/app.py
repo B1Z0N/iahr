@@ -1,11 +1,14 @@
-import re
-
-from utils import SingletonMeta
-from typing import Iterable, Union, Callable
-from enum import Enum
 from telethon import events
 
-class SyntaxError(Exception):
+from utils import SingletonMeta, AccessList
+from senders import ABCSender, IncompatibleSendersError
+
+import re
+from enum import Enum
+from typing import Iterable, Union, Callable
+
+
+class CommandSyntaxError(Exception):
     """ 
         Plug exception to tell that some input is faulty 
     """
@@ -41,10 +44,10 @@ class Query:
         try:
             res = cls.__parse(qstr)
         except ValueError as e:
-            raise SyntaxError(*e.args)
+            raise CommandSyntaxError(*e.args)
 
         if res is None:
-            raise SyntaxError()
+            raise CommandSyntaxError()
         return res
  
     @classmethod
@@ -65,73 +68,37 @@ class Query:
             return cls(command, args)
 
 
-class EntityGroup(Enum):
-    ME = 1
-    OTHERS = 2
-    ALL = 3
-
-    @classmethod
-    def from_str(cls, s):
-        return getattr(cls, s, None)
-
-
 class Routine:
-    @staticmethod
-    def __allow(whitelist, blacklist, ent):
-        pass
-    
-    @staticmethod
-    def __ban(whitelist, blacklist, ent):
-        pass
-    
-    @staticmethod
-    def __is_allowed(whitelist, blacklist, ent):
-        pass
-
     def __init__(self, handler: Callable, about: str):
         self.about = about
         self.handler = handler
-        
-        self.usrwhitelist = {EntityGroup.ME} 
-        # blacklist is much more powerful than whitelist
-        self.usrblacklist = set()
-        
-        self.chatwhitelist = {EntityGroup.ALL}
-        self.chatblacklist = set()
-
+        self.usraccess = AccessList(is_allow_others=False)
+        self.chataccess = AccessList(is_allow_others=True)       
+ 
     def help(self):
         return self.about
     
     def allow_usr(self, usr: str):
-        self.__allow(self.usrwhitelist, self.usrblacklist, usr)
-
+        self.usraccess.allow(usr)
     def ban_usr(self, usr: str):
-        self.__ban(self.usrwhitelist, self.usrblacklist, usr)
-    
+        self.usraccess.ban(usr)
     def is_allowed_usr(self, usr: str):
-        return self.__is_allowed(self.usrwhitelist, self.usrblacklist, usr)
+        return self.usraccess.is_allowed(usr)
 
     def allow_chat(self, chat: str):
-        self.__allow(self.chatwhitelist, self.chatblacklist, chat)
-
+        self.chataccess.allow(chat)
     def ban_chat(self, chat: str):
-        self.__ban(self.chatwhitelist, self.chatblacklist, chat)
-    
+        self.chataccess.ban(chat)
     def is_allowed_chat(self, chat: str):
-        return self.__is_allowed(self.chatwhitelist, self.chatblacklist, chat)
+        return self.chataccess.is_allowed(chat)
 
-
-    def get_handler(self, usr: str, chat: str, subprop=None):
+    def get_handler(self, usr: str, chat: str):
         if not is_allowed_usr(usr) or not is_allowed_chat(chat):
             return
         if usr is None or chat is None:
             return
-
-        if subprop is None:
-            return self.handler
-        else:
-            return getattr(self.handler, subprop, None)
-
+        
+        return self.handler
 
 @dataclass
 class ActionData:
@@ -146,26 +113,25 @@ class Executer:
         self.dict = commands
         self.action = action
 
-    async def run(self):
+    async def run(self) -> ABCSender:
         return await Executer.__run(
             self.query, self.dict, self.action
         )
 
     @classmethod
-    async def __run(cls, query, dct, action):
-        cmds = query.command.split('.')
-        routine = dct[cmds[0]]
-        subcommand = cmds[1] if len(cmds) > 1 else None
-        handler = routine.get_handler(action.uid, action.chatid, subcommand)
-        event = action.event
+    async def __run(cls, query, dct, action) -> ABCSender:
+        handler = dct[query.command].get_handler(action.uid, action.chatid)        
 
         if query.is_noargs():
-            return await handler(event)
+            return await handler(action.event)
         elif query.is_subquery():
-            res = await cls.__run(query.args, dct, event).res
-            return await handler(event, res)
+            subquery = query.args
+            sender = await cls.__run(subquery, dct, action)
+            if type(handler) != type(sender):
+                raise IncompatibleSendersError             
+            return await handler(action.event, *sender.res.args)
         else:
-            return await handler(event, *query.args)
+            return await handler(action.event, *query.args)
 
 
 class Manager(metaclass=SingletonMeta):
@@ -175,7 +141,7 @@ class Manager(metaclass=SingletonMeta):
     def add(self, command: str, handler: Callable, about: str):
         command = command.strip(' .').split('.')
         if len(command) != 1:
-            raise SyntaxError("Commands shouldn't contain dots inside")
+            raise CommandSyntaxError("Commands shouldn't contain dots inside")
         
         self.commands[command[0]] = Routine(handler, about)
     
