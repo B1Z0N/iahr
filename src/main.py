@@ -8,7 +8,6 @@ from engine import reg
 API_ID = 'API_ID'
 API_HASH = 'API_HASH'
 SESSIONPATH = 'SESSION_PATH'
-VOICE_API_URL = 'VOICEAPI_URL'
 
 
 def make_client():
@@ -19,7 +18,7 @@ def make_client():
     return client
 
 
-async def main():
+async def main(client):
     await reg(client)
     await client.start()
     await client.run_until_disconnected()
@@ -27,5 +26,6 @@ async def main():
 
 if __name__ == '__main__': 
     client = make_client()
-    client.loop.run_until_complete(main())
+    client.loop.run_until_complete(main(client))
     client.loop.close()
+

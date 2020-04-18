@@ -17,10 +17,12 @@ class SingletonMeta(type):
 
 
 class AccessList:
+    """
+        Users and groups access manager
+    """
     # Current user is enabled by default and can't be disabled
 
     OTHERS = '$others'    
-    ME = '$me'
     
     def __init__(self, is_allow_others=False):
         self.whitelist = set()
@@ -28,9 +30,6 @@ class AccessList:
         self.is_allow_others = is_allow_others
 
     def __access_modifier(self, entity: str, lst: set, desirable: bool):
-        if entity == self.ME:
-            return
-    
         if entity != self.OTHERS and self.is_allow_others is desirable:
             lst.add(entity)
         else:
@@ -44,5 +43,6 @@ class AccessList:
         self.__access_modifier(entity, self.blacklist, desirable=True)
 
     def is_allowed(self, entity: str):
-        return self.is_allow_others or entity in self.whitelist or entity == self.ME
+        return self.is_allow_others or entity in self.whitelist
+
 

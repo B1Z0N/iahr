@@ -23,11 +23,11 @@ def __access_action(action: str, entity: str, cmd=None):
             getattr(routine, action)(entity)
 
 
-@VoidSender('.allowusr', 'Allow [UNAME] or "$others" to run a command or all commands')
+@VoidSender('allowusr', 'Allow [UNAME] or "$others" to run a command or all commands')
 async def allow_usr(_, usr, cmd=None):        
     __access_action('allow_usr', usr, cmd=cmd)
 
-@VoidSender('.allowchat', 'Allow [CHATNAME] or "$others" to run a command or all commands')
+@VoidSender('allowchat', 'Allow [CHATNAME] or "$others" to run a command or all commands')
 async def allow_chat(_, chat, cmd=None):
     __access_action('allow_chat', chat, cmd=cmd)
 
@@ -38,5 +38,4 @@ async def ban_usr(_, usr, cmd=None):
 @VoidSender('banchat', 'Ban [CHATNAME] or "$others" from running a command or all commands')
 async def ban_chat(_, chat, cmd=None):
     __access_action('ban_chat', chat, cmd=cmd)
-
 
