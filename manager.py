@@ -1,14 +1,22 @@
 from telethon import events
 
 from utils import SingletonMeta, AccessList
-from senders import ABCSender, IncompatibleSendersError
 
 import re
 from enum import Enum
 from typing import Iterable, Union, Callable
+from dataclasses import dataclass
 
 COMMAND_DELIMITER = '.'
 COMMAND_DELIMITER_ESCAPED = r'\.'
+
+
+class IncompatibleSendersError(RuntimeError):
+    """
+        Raise when next sender doesn't accept args from previous one
+    """
+    pass
+
 
 class CommandSyntaxError(Exception):
     """ 
@@ -16,20 +24,28 @@ class CommandSyntaxError(Exception):
     """
     pass
 
+class PermissionsError(RuntimeError):
+    """
+        Exception telling that this user or this chat can't use particular command
+    """
+    pass
 
 
 class Query:
     """ 
         Class-representation of our command string in python code
     """
-    # must be different and escaped 
-    # if it is special symbol of re syntax
-    LEFT_DELIMITER = r'\['
-    RIGHT_DELIMITER = r'\]'
+    # argument delimiters
+    LEFT_DELIMITER = '['
+    RIGHT_DELIMITER = ']'
+    # escaped ones(if it is special to re syntax)
+    ELEFT_DELIMITER = r'\['
+    ERIGHT_DELIMITER = r'\]'
+
     # matches all [some text] including [some \[text\]] 
     DELIMITER_RE = re.compile(
         r'{0}([^{1}{0}\{1}*(?:\\.[^{1}{0}\{1}*)*)]'.format(
-            LEFT_DELIMITER, RIGHT_DELIMITER
+            ELEFT_DELIMITER, ERIGHT_DELIMITER
         ))
     
     def __init__(self, command: str, args):
@@ -76,7 +92,9 @@ class Query:
             if subcommand is None and qstr:
                 is_single_word_args = not qstr.startswith(cls.LEFT_DELIMITER) or \
                                       not qstr.endswith(cls.RIGHT_DELIMITER)
+                print(qstr)
                 args = qstr.split() if is_single_word_args else re.findall(cls.DELIMITER_RE, qstr)
+                print(args)
             else:
                 args = subcommand
             
@@ -115,11 +133,11 @@ class Routine:
         """
             Try to get handler if allowed
         """
-        if not is_allowed_usr(usr) or not is_allowed_chat(chat):
+        if not self.is_allowed_usr(usr) or not self.is_allowed_chat(chat):
+            print(self.is_allowed_usr(usr))
             return
         if usr is None or chat is None:
             return
-        
         return self.handler
 
 @dataclass
@@ -132,7 +150,7 @@ class ActionData:
             uid and chatid automatically from event, but i'm not
             sure it is possible on every type of event
     """
-    event: event.common.EventCommon
+    event: events.common.EventCommon
     uid: int
     chatid: int
 
@@ -150,19 +168,24 @@ class Executer:
         self.query = Query.from_str(qstr)
         self.dict = commands
         self.action = action
+        print(self.dict)
 
-    async def run(self) -> ABCSender:
+    async def run(self):
         return await Executer.__run(
             self.query, self.dict, self.action
         )
 
     @classmethod
-    async def __run(cls, query, dct, action) -> ABCSender:
+    async def __run(cls, query, dct, action):
         handler = dct[query.command].get_handler(action.uid, action.chatid)        
+        if handler is None:
+            raise PermissionsError
 
         if query.is_noargs():
+            print('no args')
             return await handler(action.event)
         elif query.is_subquery():
+            print('subq')
             subquery = query.args
             sender = await cls.__run(subquery, dct, action)
             try:
@@ -170,6 +193,7 @@ class Executer:
             except (AttributeError, ValueError, TypeError):
                 raise IncompatibleSendersError
         else:
+            print('simple')
             return await handler(action.event, *query.args)
 
 
@@ -186,9 +210,8 @@ class Manager(metaclass=SingletonMeta):
         command = command.strip(' ' + COMMAND_DELIMITER).split(COMMAND_DELIMITER)
         if len(command) != 1:
             raise CommandSyntaxError("Commands shouldn't contain dots inside")
-        
         self.commands[command[0]] = Routine(handler, about)
-    
+
     async def exec(self, qstr, action: ActionData):
         """
             Execute query where qstr is raw command text

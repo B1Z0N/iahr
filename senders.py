@@ -1,14 +1,8 @@
-from abc import ABC, abstractmethod
+from manager import app
+
 from functools import wraps
-
-from app import app
-
-
-class IncompatibleSendersError(RuntimeError):
-    """
-        Raise when next sender doesn't accept args from previous one
-    """
-    pass
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 
 @dataclass
@@ -73,6 +67,8 @@ def create_sender(name, sendf):
                 
                 Doesn't change handler itself, just registers appropriate wrapper
             """
+            nonlocal name
+            nonlocal about
             name = handler.__name__ if name is None else name
             about = name if about is None else about
             wrapped = wraps(handler)(Sender(handler))
@@ -90,17 +86,18 @@ async def any_send(event, *args, **kwargs):
         Shortcut for sending response to the same chat
         the event occured on
     """
+    print('anysend')
     chat = await event.get_input_chat()
     client = event.client
     return await client.send_message(chat, *args, **kwargs)
 
 
 async def __text_send(self):
-    return await any_send(self.event, self.res)
+    return await any_send(self.event, self.res.args[0])
 TextSender = create_sender('TextSender', __text_send)
 
 async def __media_send(self):
-    return await any_send(self.event, file=self.res)
+    return await any_send(self.event, file=self.res.args[0])
 Text2MediaSender = create_sender('MediaSender', __media_send)
 
 async def __void_send(self):

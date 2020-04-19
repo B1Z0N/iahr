@@ -2,19 +2,20 @@ import os
 
 from telethon import TelegramClient
 
-from engine import reg
+from engines import reg
+import default_commands
 
 # constants
 API_ID = 'API_ID'
 API_HASH = 'API_HASH'
-SESSIONPATH = 'SESSION_PATH'
+SESSION_PATH = 'SESSION_PATH'
 
 
 def make_client():
-    API_ID = os.getenv(API_ID)
-    API_HASH = os.getenv(API_HASH)
-    SESSION_PATH = os.path.abspath(os.getenv(SESSION_PATH))
-    client = TelegramClient(SESSION_PATH, API_ID, API_HASH)
+    api_id = os.getenv(API_ID)
+    api_hash = os.getenv(API_HASH)
+    session_path = os.path.abspath(os.getenv(SESSION_PATH))
+    client = TelegramClient(session_path, api_id, api_hash)
     return client
 
 

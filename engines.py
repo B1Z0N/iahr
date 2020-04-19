@@ -1,26 +1,45 @@
-import app
 from telethon import TelegramClient, events, types
 
-from senders import IncompatibleSendersError
-from app import CommandSyntaxError, ActionData
-from app import COMMAND_DELIMITER as delimiter, COMMAND_DELIMITER_ESCAPED as edelimiter
+from manager import CommandSyntaxError, IncompatibleSendersError, PermissionsError
+from manager import COMMAND_DELIMITER as delimiter, COMMAND_DELIMITER_ESCAPED as edelimiter
+from manager import app, ActionData
+from utils import AccessList
+
+import re
 
 command_re = re.compile(r'{}[^\W]+.*'.format(edelimiter))
 
+async def check_me(client):
+    me = await client.get_me()
+    myid = me.id
+    def check(eid):
+        return AccessList.ME if eid == myid else eid
+    return check
+
 async def newmsg_ngn(event: events.NewMessage):
     txt = event.message.raw_text
-    if txt.startswith('.'):
-        cid = event.chat_id
-        uid = event.message.user_id 
+    me = await check_me(event.client)
+    import traceback
+
+    if txt.startswith(delimiter):
+        cid = me(event.chat_id)
+        uid = me(event.message.from_id)
         try:
-            sender = app.exec(event.message.raw_text, 
-                                ActionData(event, cid, uid))
+            sender = await app.exec(txt, 
+                                ActionData(event, uid, cid))
         except CommandSyntaxError:
-            event.message.reply('Wrong command syntax')
+            await event.reply('Wrong command syntax')
         except IncompatibleSendersError:
-            event.message.reply('This command are incompatible')
+            await event.reply('This commands are incompatible')
+        except PermissionsError:
+            await event.reply("You can't use this command now")
+        except Exception as e:
+            traceback.print_exc()
         else:
-            sender.send()
+            try:
+                await sender.send()
+            except Exception:
+                traceback.print_exc()
 
 async def reg(client):
     client.add_event_handler(
