@@ -165,9 +165,10 @@ class Executer:
         elif query.is_subquery():
             subquery = query.args
             sender = await cls.__run(subquery, dct, action)
-            if type(handler) != type(sender):
-                raise IncompatibleSendersError             
-            return await handler(action.event, *sender.res.args)
+            try:
+                return await handler(action.event, *sender.res.args)
+            except (AttributeError, ValueError, TypeError):
+                raise IncompatibleSendersError
         else:
             return await handler(action.event, *query.args)
 
