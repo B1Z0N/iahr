@@ -86,7 +86,6 @@ async def any_send(event, *args, **kwargs):
         Shortcut for sending response to the same chat
         the event occured on
     """
-    print('anysend')
     chat = await event.get_input_chat()
     client = event.client
     return await client.send_message(chat, *args, **kwargs)

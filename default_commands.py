@@ -1,6 +1,6 @@
 from telethon import events
 
-from senders import TextSender, VoidSender
+from senders import TextSender, VoidSender, MultiArgs
 from manager import app
 
 @TextSender(about='Get help about a command or list of all commands')
@@ -44,8 +44,8 @@ async def ban_chat(event, chat, cmd=None):
    await  __access_action(event, 'ban_chat', chat, cmd=cmd)
 
 @TextSender()
-async def concat(_, fst, snd):
-    return fst + snd
+async def concat(_, *args):
+    return ''.join(args)
 
 @TextSender()
 async def idx(_, thing):
@@ -55,3 +55,6 @@ async def idx(_, thing):
 async def upper(_, txt):
     return txt.upper()
 
+@TextSender()
+async def split(_, txt):
+    return MultiArgs(txt.split())

@@ -11,24 +11,34 @@ COMMAND_DELIMITER = '.'
 COMMAND_DELIMITER_ESCAPED = r'\.'
 
 
-class IncompatibleSendersError(RuntimeError):
+class ExecutionError(RuntimeError):
     """
         Raise when next sender doesn't accept args from previous one
+        or when wrong arguments were passed to the command
+        or when a command function is buggy
     """
     pass
 
-
-class CommandSyntaxError(Exception):
+class CommandSyntaxError(ExecutionError):
     """ 
         Plug exception to tell that some input is faulty 
     """
-    pass
+    def __init__(self):
+        super().__init__("Wrong syntax, see **.synhelp**")
 
-class PermissionsError(RuntimeError):
+class PermissionsError(ExecutionError):
     """
         Exception telling that this user or this chat can't use particular command
     """
-    pass
+    def __init__(self, command):
+        super().__init__("You can't use **{}** command".format(command))
+
+class NonExistantCommandError(ExecutionError):
+    """
+        Exception telling that this command is not registered yet
+    """
+    def __init__(self, command):
+        super().__init__("**{}** command does not exist".format(command))
 
 
 class Query:
@@ -72,13 +82,14 @@ class Query:
 
     @classmethod
     def from_str(cls, qstr):
+
         try:
             res = cls.__parse(qstr)
         except ValueError as e:
-            raise CommandSyntaxError(*e.args)
+            raise CommandSyntaxError
 
         if res is None:
-            raise CommandSyntaxError()
+            raise CommandSyntaxError
         return res
  
     @classmethod
@@ -92,9 +103,7 @@ class Query:
             if subcommand is None and qstr:
                 is_single_word_args = not qstr.startswith(cls.LEFT_DELIMITER) or \
                                       not qstr.endswith(cls.RIGHT_DELIMITER)
-                print(qstr)
                 args = qstr.split() if is_single_word_args else re.findall(cls.DELIMITER_RE, qstr)
-                print(args)
             else:
                 args = subcommand
             
@@ -134,7 +143,6 @@ class Routine:
             Try to get handler if allowed
         """
         if not self.is_allowed_usr(usr) or not self.is_allowed_chat(chat):
-            print(self.is_allowed_usr(usr))
             return
         if usr is None or chat is None:
             return
@@ -168,7 +176,6 @@ class Executer:
         self.query = Query.from_str(qstr)
         self.dict = commands
         self.action = action
-        print(self.dict)
 
     async def run(self):
         return await Executer.__run(
@@ -177,24 +184,25 @@ class Executer:
 
     @classmethod
     async def __run(cls, query, dct, action):
-        handler = dct[query.command].get_handler(action.uid, action.chatid)        
-        if handler is None:
-            raise PermissionsError
+        try:
+            handler = dct[query.command].get_handler(action.uid, action.chatid)        
+        except KeyError:
+            raise NonExistantCommandError(query.command)
 
-        if query.is_noargs():
-            print('no args')
-            return await handler(action.event)
-        elif query.is_subquery():
-            print('subq')
-            subquery = query.args
-            sender = await cls.__run(subquery, dct, action)
-            try:
+        if handler is None:
+            raise PermissionsError(query.command)
+
+        try:
+            if query.is_noargs():
+                return await handler(action.event)
+            elif query.is_subquery():
+                subquery = query.args
+                sender = await cls.__run(subquery, dct, action)
                 return await handler(action.event, *sender.res.args)
-            except (AttributeError, ValueError, TypeError):
-                raise IncompatibleSendersError
-        else:
-            print('simple')
-            return await handler(action.event, *query.args)
+            else:
+                return await handler(action.event, *query.args)
+        except (AttributeError, ValueError, TypeError) as e:
+            raise ExecutionError(*e.args)
 
 
 class Manager(metaclass=SingletonMeta):

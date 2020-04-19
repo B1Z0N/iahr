@@ -1,6 +1,7 @@
 from telethon import TelegramClient, events, types
 
-from manager import CommandSyntaxError, IncompatibleSendersError, PermissionsError
+from manager import CommandSyntaxError, PermissionsError, \
+        ExecutionError, NonExistantCommandError
 from manager import COMMAND_DELIMITER as delimiter, COMMAND_DELIMITER_ESCAPED as edelimiter
 from manager import app, ActionData
 from utils import AccessList
@@ -27,19 +28,17 @@ async def newmsg_ngn(event: events.NewMessage):
         try:
             sender = await app.exec(txt, 
                                 ActionData(event, uid, cid))
-        except CommandSyntaxError:
-            await event.reply('Wrong command syntax')
-        except IncompatibleSendersError:
-            await event.reply('This commands are incompatible')
-        except PermissionsError:
-            await event.reply("You can't use this command now")
+        except (CommandSyntaxError, PermissionsError, NonExistantCommandError) as e:
+            await event.reply(str(e))
+        except ExecutionError:
+            await event.reply(
+                'Incompatible commands, wrong arguments or just a buggy function'
+            )
         except Exception as e:
             traceback.print_exc()
         else:
-            try:
-                await sender.send()
-            except Exception:
-                traceback.print_exc()
+            await sender.send()
+
 
 async def reg(client):
     client.add_event_handler(
