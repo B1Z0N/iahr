@@ -57,6 +57,12 @@ class Query:
         r'{0}([^{1}{0}\{1}*(?:\\.[^{1}{0}\{1}*)*)]'.format(
             ELEFT_DELIMITER, ERIGHT_DELIMITER
         ))
+
+    @classmethod
+    def unescape(cls, s):
+        l, el = cls.LEFT_DELIMITER, cls.ELEFT_DELIMITER
+        r, er = cls.RIGHT_DELIMITER, cls.ERIGHT_DELIMITER
+        return s.replace(el, l).replace(er, r)
     
     def __init__(self, command: str, args):
         self.command = command

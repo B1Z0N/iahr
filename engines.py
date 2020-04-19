@@ -26,8 +26,9 @@ async def newmsg_ngn(event: events.NewMessage):
         cid = me(event.chat_id)
         uid = me(event.message.from_id)
         try:
-            sender = await app.exec(txt, 
-                                ActionData(event, uid, cid))
+            sender = await app.exec(
+                txt, ActionData(event, uid, cid)
+            )
         except (CommandSyntaxError, PermissionsError, NonExistantCommandError) as e:
             await event.reply(str(e))
         except ExecutionError:

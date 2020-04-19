@@ -1,4 +1,4 @@
-from manager import app
+from manager import app, Query
 
 from functools import wraps
 from abc import ABC, abstractmethod
@@ -31,7 +31,8 @@ class ABCSender(ABC):
             (to chat or some other type of communication)
             based on input event and command result
         """
-        pass
+        pass    
+
 
     async def __call__(self, event, *args, **kwargs):
         """
@@ -92,7 +93,8 @@ async def any_send(event, *args, **kwargs):
 
 
 async def __text_send(self):
-    return await any_send(self.event, self.res.args[0])
+    res = Query.unescape(self.res.args[0])
+    return await any_send(self.event, res)
 TextSender = create_sender('TextSender', __text_send)
 
 async def __media_send(self):
