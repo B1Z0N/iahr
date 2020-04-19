@@ -43,18 +43,23 @@ async def ban_usr(event, usr, cmd=None):
 async def ban_chat(event, chat, cmd=None):
    await  __access_action(event, 'ban_chat', chat, cmd=cmd)
 
-@TextSender()
-async def concat(_, *args):
+@TextSender(event=False)
+async def concat(*args):
     return ''.join(args)
 
-@TextSender()
-async def idx(_, thing):
+@TextSender(event=False)
+async def idx(thing):
     return thing
 
-@TextSender()
-async def upper(_, txt):
+@TextSender(event=False)
+async def upper(txt):
     return txt.upper()
 
-@TextSender()
-async def split(_, txt):
-    return MultiArgs(txt.split())
+
+@TextSender(event=False, multiret=True)
+async def split(txt):
+    return txt.split()
+
+@TextSender(event=False, multiret=True)
+async def nstr(s, n):
+    return [s] * int(n) 
