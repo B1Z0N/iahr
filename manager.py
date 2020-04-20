@@ -6,6 +6,8 @@ import re
 from enum import Enum
 from typing import Iterable, Union, Callable
 from dataclasses import dataclass
+from  abc import ABC, abstractmethod
+
 
 COMMAND_DELIMITER = '.'
 COMMAND_DELIMITER_ESCAPED = r'\.'
@@ -218,7 +220,7 @@ class Manager(metaclass=SingletonMeta):
     """
         Contains { command_name : routine } key-value pair
         manages addition of new commands and starting it's
-        execution by Executer
+        execution by Executer. Only for text-based commands!
     """
     def __init__(self):
         self.commands = {}

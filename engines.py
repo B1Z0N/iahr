@@ -4,7 +4,7 @@ from manager import CommandSyntaxError, PermissionsError, \
         ExecutionError, NonExistantCommandError
 from manager import COMMAND_DELIMITER as delimiter, COMMAND_DELIMITER_ESCAPED as edelimiter
 from manager import app, ActionData
-from registrar import reg
+from register import reg
 
 from utils import AccessList
 
@@ -44,8 +44,8 @@ async def newmsg_ngn(event: events.NewMessage):
             await sender.send()
 
 
-async def regsiter(client):
-    reg.init_client(client)    
+async def init(client):
+    reg.init(client)    
     client.add_event_handler(
         newmsg_ngn,
         event=events.NewMessage(pattern=command_re)

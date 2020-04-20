@@ -48,5 +48,13 @@ class AccessList:
 
     def is_allowed(self, entity: str):
         return self.is_allow_others or entity in self.whitelist or entity == self.ME
+    
+    @classmethod
+    async def check_me(cls, client):
+        me = await client.get_me()
+        myid = me.id
+        def check(eid):
+            return cls.ME if eid == myid else eid
+        return check
 
 

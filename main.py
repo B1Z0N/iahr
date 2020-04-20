@@ -2,8 +2,8 @@ import os
 
 from telethon import TelegramClient
 
-from engines import reg
 import default_commands
+from register import init
 
 # constants
 API_ID = 'API_ID'
@@ -20,7 +20,7 @@ def make_client():
 
 
 async def main(client):
-    await reg(client)
+    init(client)
     await client.start()
     await client.run_until_disconnected()
 

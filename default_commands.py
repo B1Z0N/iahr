@@ -6,6 +6,7 @@ from manager import app
 import asyncio
 
 
+
 @TextSender(about='Get help about a command or list of all commands')
 async def help(event, cmd=None):
     if cmd is not None:
@@ -46,24 +47,24 @@ async def ban_usr(event, usr, cmd=None):
 async def ban_chat(event, chat, cmd=None):
    await  __access_action(event, 'ban_chat', chat, cmd=cmd)
 
-@TextSender(event=False)
+@TextSender(take_event=False)
 async def concat(*args):
     return ''.join(args)
 
-@TextSender(event=False)
+@TextSender(take_event=False)
 async def idx(thing):
     return thing
 
-@TextSender(event=False)
+@TextSender(take_event=False)
 async def upper(txt):
     return txt.upper()
 
 
-@TextSender(event=False, multiret=True)
+@TextSender(take_event=False, multiret=True)
 async def split(txt):
     return txt.split()
 
-@TextSender(event=False, multiret=True)
+@TextSender(take_event=False, multiret=True)
 async def nstr(n, s):
     return [s] * int(n) 
 
@@ -74,6 +75,11 @@ async def always_typing(event, seconds):
 
 async def smsg(event, txt):
     await event.client.send_message(event.chat_id, txt)
+
+@TextSender(on_event=events.MessageEdited)
+async def edit(event):
+    await smsg(event, "I saw what you did here")
+
 
 @VoidSender()
 async def nmsg(event, n, txt):

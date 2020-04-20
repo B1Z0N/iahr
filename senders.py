@@ -1,5 +1,5 @@
 from manager import app, Query
-from registrar import reg
+from register import reg
 
 from functools import wraps
 from abc import ABC, abstractmethod
