@@ -63,6 +63,9 @@ class Query:
         l, el = cls.LEFT_DELIMITER, cls.ELEFT_DELIMITER
         r, er = cls.RIGHT_DELIMITER, cls.ERIGHT_DELIMITER
         return s.replace(el, l).replace(er, r)
+
+    def full_command(self):
+        return COMMAND_DELIMITER + self.command
     
     def __init__(self, command: str, args):
         self.command = command
@@ -191,7 +194,7 @@ class Executer:
     @classmethod
     async def __run(cls, query, dct, action):
         try:
-            handler = dct[query.command].get_handler(action.uid, action.chatid)        
+            handler = dct[query.full_command()].get_handler(action.uid, action.chatid)        
         except KeyError:
             raise NonExistantCommandError(query.command)
 
@@ -220,11 +223,11 @@ class Manager(metaclass=SingletonMeta):
     def __init__(self):
         self.commands = {}
     
-    def add(self, command: str, handler: Callable, about: str):
-        command = command.strip(' ' + COMMAND_DELIMITER).split(COMMAND_DELIMITER)
+    def add(self, command: str, handler: Callable, about: str, delimiter=COMMAND_DELIMITER):
+        command = command.strip(' ' + delimiter).split(delimiter)
         if len(command) != 1:
-            raise CommandSyntaxError("Commands shouldn't contain dots inside")
-        self.commands[command[0]] = Routine(handler, about)
+            raise CommandSyntaxError("Commands shouldn't contain '{}' inside".format(delimiter))
+        self.commands[delimiter + command[0]] = Routine(handler, about)
 
     async def exec(self, qstr, action: ActionData):
         """

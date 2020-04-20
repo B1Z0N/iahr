@@ -4,6 +4,8 @@ from manager import CommandSyntaxError, PermissionsError, \
         ExecutionError, NonExistantCommandError
 from manager import COMMAND_DELIMITER as delimiter, COMMAND_DELIMITER_ESCAPED as edelimiter
 from manager import app, ActionData
+from registrar import reg
+
 from utils import AccessList
 
 import re
@@ -31,7 +33,8 @@ async def newmsg_ngn(event: events.NewMessage):
             )
         except (CommandSyntaxError, PermissionsError, NonExistantCommandError) as e:
             await event.reply(str(e))
-        except ExecutionError:
+        except ExecutionError as e:
+            print(str(e))
             await event.reply(
                 'Incompatible commands, wrong arguments or just a buggy function'
             )
@@ -41,7 +44,8 @@ async def newmsg_ngn(event: events.NewMessage):
             await sender.send()
 
 
-async def reg(client):
+async def regsiter(client):
+    reg.init_client(client)    
     client.add_event_handler(
         newmsg_ngn,
         event=events.NewMessage(pattern=command_re)

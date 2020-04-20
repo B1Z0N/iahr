@@ -3,6 +3,9 @@ from telethon import events
 from senders import TextSender, VoidSender, MultiArgs
 from manager import app
 
+import asyncio
+
+
 @TextSender(about='Get help about a command or list of all commands')
 async def help(event, cmd=None):
     if cmd is not None:
@@ -61,5 +64,22 @@ async def split(txt):
     return txt.split()
 
 @TextSender(event=False, multiret=True)
-async def nstr(s, n):
+async def nstr(n, s):
     return [s] * int(n) 
+
+@VoidSender('altyp')
+async def always_typing(event, seconds):
+    async with event.client.action(event.chat_id, 'typing'):
+        await asyncio.sleep(int(seconds))
+
+async def smsg(event, txt):
+    await event.client.send_message(event.chat_id, txt)
+
+@VoidSender()
+async def nmsg(event, n, txt):
+    n = int(n)
+    if n > 15:
+        await smsg(event, "**telepyth**: Am i a joke to u?")
+    else:
+        for i in range(n):
+            await smsg(event, txt)

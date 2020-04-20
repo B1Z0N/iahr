@@ -1,9 +1,9 @@
 from manager import app, Query
+from registrar import reg
 
 from functools import wraps
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-
 
 @dataclass
 class MultiArgs:
@@ -18,6 +18,7 @@ class MultiArgs:
             return str(self.args[0])
         else:
             return str(self.args)
+
 
 class ABCSender(ABC):
     """
@@ -74,7 +75,9 @@ def create_sender(name, sendf):
     """
     Sender = type(name, (ABCSender,), { 'send' : sendf })
 
-    def create_decorator(name=None, about=None, event=True, multiret=False):
+    def create_decorator(name=None, about=None, 
+            take_event=True, multiret=False, on_event=None
+        ):
         """
             Parameterized decorator based on command name and it's description
             event - true if function takes event as the first argument,
@@ -93,9 +96,9 @@ def create_sender(name, sendf):
             nonlocal about
             name = handler.__name__ if name is None else name
             about = name if about is None else about
-            wrapped = wraps(handler)(Sender(handler, event, multiret))
+            wrapped = wraps(handler)(Sender(handler, take_event, multiret))
 
-            app.add(name, wrapped, about)
+            reg.reg(name, wrapped, about, on_event)
             return handler
 
         return decorator
