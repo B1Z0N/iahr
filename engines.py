@@ -23,7 +23,7 @@ async def newmsg_ngn(event: events.NewMessage):
     txt = event.message.raw_text
     me = await check_me(event.client)
     import traceback
-
+    print(txt)
     if txt.startswith(delimiter):
         cid = me(event.chat_id)
         uid = me(event.message.from_id)

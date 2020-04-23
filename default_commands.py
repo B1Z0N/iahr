@@ -93,7 +93,7 @@ async def delete(event):
 @VoidSender()
 async def nmsg(event, n, txt):
     n = int(n)
-    if n > 15:
+    if n > 500:
         await smsg(event, "**telepyth**: Am i a joke to u?")
     else:
         for i in range(n):

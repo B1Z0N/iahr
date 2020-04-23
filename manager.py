@@ -83,12 +83,25 @@ class Query:
             raise CommandSyntaxError
         print(tree) 
         return cls.__to_q(tree)
- 
+
+    @classmethod
+    def __single_word_helper(cls, args, subargs):
+        if not args: return subargs
+        elif len(args) == 1: return [cls.__to_q((args[0], subargs))]
+        
+        command, *itsargs = args
+        if command.startswith(COMMAND_DELIMITER):
+            return [cls(command[1:], cls.__single_word_helper(itsargs, subargs))]
+        else:
+            return args
+
     @classmethod
     def __to_q(cls, tree):
         command, args = tree
         if command.startswith(COMMAND_DELIMITER):
-            args = [cls.__to_q(arg) for arg in args]
+            args = [cls.__to_q(arg) if type(arg) == tuple else arg for arg in args]
+            command, *subcomms = command.split()
+            args = cls.__single_word_helper(subcomms, args)
             return cls(command[1:], args)
         else:
             return command
