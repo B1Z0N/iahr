@@ -1,9 +1,11 @@
 import os
+from dotenv import load_dotenv
 
 from telethon import TelegramClient
 
 import default_commands
 from register import init
+
 
 # constants
 API_ID = 'API_ID'
@@ -26,6 +28,7 @@ async def main(client):
 
 
 if __name__ == '__main__': 
+    load_dotenv()
     client = make_client()
     client.loop.run_until_complete(main(client))
     client.loop.close()

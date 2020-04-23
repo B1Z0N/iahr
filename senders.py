@@ -1,9 +1,10 @@
-from manager import app, Query
+from manager import Query
 from register import reg
 
 from functools import wraps
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+
 
 @dataclass
 class MultiArgs:
@@ -128,7 +129,7 @@ TextSender = create_sender('TextSender', __text_send)
 
 async def __media_send(self):
     return await any_send(self.event, file=self.res.args[0])
-Text2MediaSender = create_sender('MediaSender', __media_send)
+MediaSender = create_sender('MediaSender', __media_send)
 
 async def __void_send(self):
     pass

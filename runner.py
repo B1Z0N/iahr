@@ -128,6 +128,10 @@ class Routine:
  
     def help(self):
         return self.about
+ 
+    ##################################################
+    # Rights to run this handler
+    ##################################################
     
     def allow_usr(self, usr: str):
         self.usraccess.allow(usr)

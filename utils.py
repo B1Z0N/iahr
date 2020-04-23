@@ -94,11 +94,6 @@ class AccessList:
 class ActionData:
     """
         Contains event and shortcut info about it's author
-        
-        TODO:
-            may be eliminated, easying client code, by getting 
-            uid and chatid automatically from event, but i'm not
-            sure it is possible on every type of event
     """
     event: events.common.EventCommon
     uid: int
@@ -116,7 +111,7 @@ class ActionData:
 
 class Tokenizer:
     """
-        Class to add structure to command text
+        Class to tokenize to command text
     """
 
     class ParseError(Exception):
@@ -183,11 +178,9 @@ class Tokenizer:
         """
             Recursive lists from string
         """
-        print(s)
         s = leftdel.unescaped_replace(s, ' ( ')
         s = rightdel.unescaped_replace(s, ' ) ')
         obj = cls(s)
-        print(s)
         return obj.perform()
     
     @classmethod

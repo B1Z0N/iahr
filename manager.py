@@ -15,6 +15,9 @@ class Manager(metaclass=SingletonMeta):
         self.commands = {}
     
     def add(self, command: str, handler: Callable, about: str, delimiter=Query.COMMAND_DELIMITER):
+        """
+            Add a handler and it's name to the list
+        """
         delimiter = delimiter.original
         command = command.strip(' ' + delimiter).split(delimiter)
         if len(command) != 1:
@@ -24,7 +27,6 @@ class Manager(metaclass=SingletonMeta):
     async def exec(self, qstr, event):
         """
             Execute query where qstr is raw command text
-            and action is info about event and it's authors
         """
         action = await ActionData.from_event(event)
         runner = Executer(qstr, self.commands, action)
@@ -32,4 +34,5 @@ class Manager(metaclass=SingletonMeta):
 
 
 app = Manager()
+
 
