@@ -1,5 +1,30 @@
 from enum import Enum
+from dataclasses import dataclass
 import re
+
+
+class Delimiter:
+    RE_ESCAPINGS = r'.^$*+-?()[]{}\|'
+
+    def __init__(self, delim: str):
+        self.re_sensitive = delim in self.RE_ESCAPINGS
+        self.original = delim
+        self.escaped = '\\' + delim
+
+    def in_re(self):
+        return self.escaped if self.re_sensitive else self.original
+    
+    def unescape(self, s):
+        return self.escaped_replace(s, self.original)
+
+    def escape(self, s):
+        return self.unescaped_replace(s, self.escaped)
+
+    def escaped_replace(self, string, to):
+        return string.replace(self.escaped, to)
+
+    def unescaped_replace(self, string, to):
+        return re.sub(r'(?<!\\){}'.format(self.in_re()), to, string)
 
 
 class SingletonMeta(type):
@@ -124,12 +149,15 @@ class Tokenizer:
         return self.parse_root(toks)
     
     @classmethod
-    def from_str(cls, s, leftdel, rightdel):
+    def from_str(cls, s, leftdel: Delimiter, rightdel: Delimiter):
         """
             Recursive lists from string
         """
-        s = s.replace(leftdel, ' ( ').replace(rightdel, ' ) ')
+        print(s)
+        s = leftdel.unescaped_replace(s, ' ( ')
+        s = rightdel.unescaped_replace(s, ' ) ')
         obj = cls(s)
+        print(s)
         return obj.perform()
     
     @classmethod

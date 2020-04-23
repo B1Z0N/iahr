@@ -1,16 +1,17 @@
 from telethon import events
 
 from senders import TextSender, VoidSender, MultiArgs
-from manager import app, COMMAND_DELIMITER as delimiter
+from manager import app, Query
 
 import asyncio
 
+delimiter = Query.COMMAND_DELIMITER
 
 
 @TextSender(about='Get help about a command or list of all commands')
 async def help(event, cmd=None):
     if cmd is not None:
-        val = app.commands.get(delimiter + cmd)
+        val = app.commands.get(delimiter.original + cmd)
         if val is None:
             res = "No such command(check full help and pass it without dot)"
         else:

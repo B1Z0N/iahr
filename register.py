@@ -1,11 +1,9 @@
 from telethon import events
 
-from utils import SingletonMeta, AccessList
+from utils import SingletonMeta, AccessList, Delimiter
 from manager import CommandSyntaxError, PermissionsError, \
         ExecutionError, NonExistantCommandError
-from manager import COMMAND_DELIMITER, COMMAND_DELIMITER_ESCAPED
-from manager import app, ActionData
-
+from manager import app, ActionData, Query
 
 from dataclasses import dataclass
 from typing import Callable
@@ -32,13 +30,12 @@ class Register(metaclass=SingletonMeta):
         e.g. EditMessage, ChatAction...
     """
     
-    NON_NEW_MSG_COMMAND = '!'
-    NEW_MSG_COMMAND = COMMAND_DELIMITER    
-    NEW_MSG_COMMAND_ESCAPED = COMMAND_DELIMITER_ESCAPED    
+    NON_NEW_MSG_COMMAND_DELIMITER = Delimiter('!')
+    NEW_MSG_COMMAND_DELIMITER = Query.COMMAND_DELIMITER 
 
-    COMMAND_RE = re.compile(r'{}[^\W]+.*'.format(NEW_MSG_COMMAND_ESCAPED))
+    COMMAND_RE = re.compile(r'{}[^\W]+.*'.format(NEW_MSG_COMMAND_DELIMITER.in_re()))
 
-    PREFIX_DELIMITER = '_'
+    PREFIX_DELIMITER = Delimiter('_')
 
     PREFIXES = { 
         events.MessageEdited : 'edit', 
@@ -60,16 +57,16 @@ class Register(metaclass=SingletonMeta):
         etype = cls.to_type(etype)
         pr = cls.PREFIXES.get(etype)
         if pr is None:
-            return cls.NEW_MSG_COMMAND
-        return cls.NON_NEW_MSG_COMMAND + pr + cls.PREFIX_DELIMITER
+            return cls.NEW_MSG_COMMAND_DELIMITER.original
+        return cls.NON_NEW_MSG_COMMAND_DELIMITER.original + pr + cls.PREFIX_DELIMITER.original
 
     @classmethod
     def reg_new_msg(cls, name, handler, about):
-        app.add(name, handler, about, delimiter=cls.NEW_MSG_COMMAND)
+        app.add(name, handler, about, delimiter=cls.NEW_MSG_COMMAND_DELIMITER)
         
     def reg_others(self, name, handler, about, event):
         app.add(self.prefix(event) + name,
-                handler, about, delimiter=self.NON_NEW_MSG_COMMAND)
+                handler, about, delimiter=self.NON_NEW_MSG_COMMAND_DELIMITER)
         if self.client is not None:
             self.client.add_event_handler(handler, event)
         else:
@@ -105,22 +102,22 @@ class Register(metaclass=SingletonMeta):
         me = await AccessList.check_me(event.client)
  
         try:
-            if txt.startswith(cls.NEW_MSG_COMMAND):
+            if txt.startswith(cls.NEW_MSG_COMMAND_DELIMITER.original):
                 cid = me(event.chat_id)
                 uid = me(event.message.from_id)
-            try:
-                sender = await app.exec(
-                    txt, ActionData(event, uid, cid)
-                )
-            except (CommandSyntaxError, PermissionsError, NonExistantCommandError) as e:
-                await event.reply(str(e))
-            except ExecutionError as e:
-                print(str(e))
-                await event.reply(
-                    'Incompatible commands, wrong arguments or just a buggy function'
-                )
-            else:
-               await sender.send()
+                try:
+                    sender = await app.exec(
+                        txt, ActionData(event, uid, cid)
+                    )
+                except (CommandSyntaxError, PermissionsError, NonExistantCommandError) as e:
+                    await event.reply(str(e))
+                except ExecutionError as e:
+                    print(str(e))
+                    await event.reply(
+                        'Incompatible commands, wrong arguments or just a buggy function'
+                    )
+                else:
+                   await sender.send()
         except Exception as e:
             traceback.print_exc()
 

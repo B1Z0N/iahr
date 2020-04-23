@@ -1,16 +1,12 @@
 from telethon import events
 
-from utils import SingletonMeta, AccessList, Tokenizer
+from utils import SingletonMeta, AccessList, Tokenizer, Delimiter
 
 import re
 from enum import Enum
 from typing import Iterable, Union, Callable
 from dataclasses import dataclass
 from  abc import ABC, abstractmethod
-
-
-COMMAND_DELIMITER = '.'
-COMMAND_DELIMITER_ESCAPED = r'\.'
 
 
 class ExecutionError(RuntimeError):
@@ -48,41 +44,49 @@ class Query:
         Class-representation of our command string in python code
     """
     # argument delimiters
-    LEFT_DELIMITER = '['
-    RIGHT_DELIMITER = ']'
-    # escaped ones(if it is special to re syntax)
-    ELEFT_DELIMITER = r'\['
-    ERIGHT_DELIMITER = r'\]'
+    LEFT_DELIMITER = Delimiter(r'[')
+    RIGHT_DELIMITER = Delimiter(r']')
 
-    # matches all [some text] including [some \[text\]] 
+    COMMAND_DELIMITER = Delimiter(r'.')
+
+    # matches all [some text] including [some \[text\]](not needed now) 
     DELIMITER_RE = re.compile(
         r'{0}([^{1}{0}\{1}*(?:\\.[^{1}{0}\{1}*)*)]'.format(
-            ELEFT_DELIMITER, ERIGHT_DELIMITER
+            LEFT_DELIMITER.in_re(), RIGHT_DELIMITER.in_re()
         ))
 
     @classmethod
     def unescape(cls, s):
-        l, el = cls.LEFT_DELIMITER, cls.ELEFT_DELIMITER
-        r, er = cls.RIGHT_DELIMITER, cls.ERIGHT_DELIMITER
-        d, ed = COMMAND_DELIMITER, COMMAND_DELIMITER_ESCAPED
-        return s.replace(el, l).replace(er, r).replace(ed, d)
+        s = cls.LEFT_DELIMITER.unescape(s)
+        s = cls.RIGHT_DELIMITER.unescape(s)
+        s = cls.COMMAND_DELIMITER.unescape(s)
+        return s
 
     def full_command(self):
-        return COMMAND_DELIMITER + self.command
+        return self.COMMAND_DELIMITER.original + self.command
     
+    @classmethod
+    def is_command(cls, s):
+        return s.startswith(cls.COMMAND_DELIMITER.original)
+
+
+
     def __init__(self, command: str, args):
         self.command = command
         self.args = args # Could be: List[str | Query]
     
     @classmethod
     def from_str(cls, qstr):
-        qstr = cls.LEFT_DELIMITER + qstr + cls.RIGHT_DELIMITER
+        qstr = cls.LEFT_DELIMITER.original + qstr + cls.RIGHT_DELIMITER.original
         try:
             tree = Tokenizer.from_str(qstr, cls.LEFT_DELIMITER, cls.RIGHT_DELIMITER)
         except Tokenizer.ParseError as e:
             raise CommandSyntaxError
         print(tree) 
-        return cls.__to_q(tree)
+        res = cls.__to_q(tree)
+        print(res.command, res.args)
+        return res        
+
 
     @classmethod
     def __single_word_helper(cls, args, subargs):
@@ -91,7 +95,7 @@ class Query:
         
         res = []
         for i, arg in enumerate(args):
-            if arg.startswith(COMMAND_DELIMITER):
+            if cls.is_command(arg):
                 cmd, itsargs = arg[1:], args[i + 1:]
                 res.append(cls(cmd, cls.__single_word_helper(itsargs, subargs)))
                 break
@@ -103,7 +107,7 @@ class Query:
     @classmethod
     def __to_q(cls, tree):
         command, args = tree
-        if command.startswith(COMMAND_DELIMITER):
+        if cls.is_command(command):
             args = [cls.__to_q(arg) if type(arg) == tuple else arg for arg in args]
             command, *subcomms = command.split()
             args = cls.__single_word_helper(subcomms, args)
@@ -216,7 +220,8 @@ class Manager(metaclass=SingletonMeta):
     def __init__(self):
         self.commands = {}
     
-    def add(self, command: str, handler: Callable, about: str, delimiter=COMMAND_DELIMITER):
+    def add(self, command: str, handler: Callable, about: str, delimiter=Query.COMMAND_DELIMITER):
+        delimiter = delimiter.original
         command = command.strip(' ' + delimiter).split(delimiter)
         if len(command) != 1:
             raise CommandSyntaxError("Commands shouldn't contain '{}' inside".format(delimiter))
