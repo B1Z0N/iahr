@@ -4,6 +4,7 @@ from utils import SingletonMeta, AccessList, Delimiter
 from manager import CommandSyntaxError, PermissionsError, \
         ExecutionError, NonExistantCommandError
 from manager import app, ActionData, Query
+from runner import CommandDelimiter
 
 from dataclasses import dataclass
 from typing import Callable
@@ -30,7 +31,7 @@ class Register(metaclass=SingletonMeta):
         e.g. EditMessage, ChatAction...
     """
     
-    NON_NEW_MSG_COMMAND_DELIMITER = Delimiter('!')
+    NON_NEW_MSG_COMMAND_DELIMITER = CommandDelimiter('!')
     NEW_MSG_COMMAND_DELIMITER = Query.COMMAND_DELIMITER 
 
     COMMAND_RE = re.compile(r'{}[^\W]+.*'.format(NEW_MSG_COMMAND_DELIMITER.in_re()))
@@ -99,16 +100,10 @@ class Register(metaclass=SingletonMeta):
     @classmethod
     async def run(cls, event):
         txt = event.message.raw_text
-        me = await AccessList.check_me(event.client)
- 
         try:
-            if txt.startswith(cls.NEW_MSG_COMMAND_DELIMITER.original):
-                cid = me(event.chat_id)
-                uid = me(event.message.from_id)
+            if cls.NEW_MSG_COMMAND_DELIMITER.is_command(txt):
                 try:
-                    sender = await app.exec(
-                        txt, ActionData(event, uid, cid)
-                    )
+                    sender = await app.exec(txt, event)
                 except (CommandSyntaxError, PermissionsError, NonExistantCommandError) as e:
                     await event.reply(str(e))
                 except ExecutionError as e:

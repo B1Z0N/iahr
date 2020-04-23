@@ -1,4 +1,5 @@
-from enum import Enum
+from telethon import events
+
 from dataclasses import dataclass
 import re
 
@@ -50,6 +51,11 @@ class AccessList:
 
     OTHERS = '$others'    
     ME = '$me'
+
+    
+    @classmethod    
+    def is_special(cls, ent):
+        return ent in (cls.OTHERS, cls.ME)
     
     def __init__(self, is_allow_others=False):
         self.whitelist = set()
@@ -82,6 +88,30 @@ class AccessList:
         def check(eid):
             return cls.ME if eid == myid else eid
         return check
+
+
+@dataclass
+class ActionData:
+    """
+        Contains event and shortcut info about it's author
+        
+        TODO:
+            may be eliminated, easying client code, by getting 
+            uid and chatid automatically from event, but i'm not
+            sure it is possible on every type of event
+    """
+    event: events.common.EventCommon
+    uid: int
+    chatid: int
+
+    @classmethod
+    async def from_event(cls, event: events.NewMessage):
+        me = await AccessList.check_me(event.client)
+        return cls(
+            event,
+            me(event.message.from_id),
+            me(event.chat_id),
+        )
 
 
 class Tokenizer:

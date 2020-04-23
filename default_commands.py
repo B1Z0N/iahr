@@ -2,6 +2,7 @@ from telethon import events
 
 from senders import TextSender, VoidSender, MultiArgs
 from manager import app, Query
+from utils import AccessList
 
 import asyncio
 
@@ -25,7 +26,7 @@ async def help(event, cmd=None):
 is_integer = lambda x: x.lstrip('-').isdigit()
 
 async def __access_action(event, action: str, entity: str, cmd=None):
-    if not is_integer(entity):
+    if not AccessList.is_special(entity) and not is_integer(entity):
         entity = await event.client.get_entity(entity)
         entity = entity.id
 
