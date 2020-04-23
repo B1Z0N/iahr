@@ -89,11 +89,16 @@ class Query:
         if not args: return subargs
         elif len(args) == 1: return [cls.__to_q((args[0], subargs))]
         
-        command, *itsargs = args
-        if command.startswith(COMMAND_DELIMITER):
-            return [cls(command[1:], cls.__single_word_helper(itsargs, subargs))]
-        else:
-            return args
+        res = []
+        for i, arg in enumerate(args):
+            if arg.startswith(COMMAND_DELIMITER):
+                cmd, itsargs = arg[1:], args[i + 1:]
+                res.append(cls(cmd, cls.__single_word_helper(itsargs, subargs)))
+                break
+            else:
+                res.append(arg) 
+
+        return res
 
     @classmethod
     def __to_q(cls, tree):
