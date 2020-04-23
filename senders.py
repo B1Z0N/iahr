@@ -36,6 +36,11 @@ class ABCSender(ABC):
         self.pass_event = pass_event
         self.multiret = multiret
 
+    def __str__(self):
+        return '{{ fun: {}, passevent: {}, multiret: {}, res: {} }}'.format(
+            self.fun, self.pass_event, self.multiret, self.res
+        )
+
     @abstractmethod
     async def send(self):
         """

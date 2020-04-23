@@ -1,4 +1,5 @@
 from enum import Enum
+import re
 
 
 class SingletonMeta(type):
@@ -57,4 +58,89 @@ class AccessList:
             return cls.ME if eid == myid else eid
         return check
 
+
+class Tokenizer:
+    """
+        Class to add structure to command text
+    """
+
+    class ParseError(Exception):
+        def __init__(self):
+            super().__init__("Error parsing the query")
+    
+    TOKS = re.compile(' +|[^\(\)]+|[()]')
+
+    def __init__(self, s):
+        self.s = s
+
+    def tokenize(self):
+        """
+            Tokenize a string.
+            Tokens yielded are of the form (type, string)
+            Possible values for 'type' are '(', ')' and 'WORD'
+        """
+        s = self.s
+        for match in self.TOKS.finditer(s):
+            s = match.group(0)
+            if s[0] == ' ':
+                continue
+            if s[0] in '()':
+                yield (s, s)
+            else:
+                yield ('WORD', s.strip())
+    
+    @classmethod
+    def parse_inner(cls, toks):
+        """
+            Parse once we're inside an opening bracket.
+        """
+        ty, name = next(toks)
+        if ty != 'WORD': raise cls.ParseError
+        children = []
+        while True:
+            ty, s = next(toks)
+            if ty == '(':
+                children.append(cls.parse_inner(toks))
+            elif ty == ')':
+                return (name, children)
+    
+    @classmethod
+    def parse_root(cls, toks):
+        """
+            Parse this grammar:
+            ROOT ::= '(' INNER
+            INNER ::= WORD ROOT* ')'
+            WORD ::= [A-Za-z]+
+        """
+        ty, _ = next(toks)
+        if ty != '(': raise cls.ParseError
+        return cls.parse_inner(toks)
+
+    def perform(self):
+        """
+            Commodity function that glues it alltogether 
+        """
+        toks = self.tokenize()
+        return self.parse_root(toks)
+    
+    @classmethod
+    def from_str(cls, s, leftdel, rightdel):
+        """
+            Recursive lists from string
+        """
+        s = s.replace(leftdel, ' ( ').replace(rightdel, ' ) ')
+        obj = cls(s)
+        return obj.perform()
+    
+    @classmethod
+    def show_children(cls, tree):
+        """
+            Pretty print commands and it's args
+        """
+        name, children = tree
+        if not children: return
+        print('{} -> {}'.format(name, ' '.join(child[0] for child in children)))
+        for child in children:
+            cls.show_children(child)
+    
 

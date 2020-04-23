@@ -1,7 +1,7 @@
 from telethon import events
 
 from senders import TextSender, VoidSender, MultiArgs
-from manager import app
+from manager import app, COMMAND_DELIMITER as delimiter
 
 import asyncio
 
@@ -10,7 +10,11 @@ import asyncio
 @TextSender(about='Get help about a command or list of all commands')
 async def help(event, cmd=None):
     if cmd is not None:
-        res = cmd + ': ' + app.commands[cmd].help()
+        val = app.commands.get(delimiter + cmd)
+        if val is None:
+            res = "No such command(check full help and pass it without dot)"
+        else:
+            res = '**' + cmd + '**: ' + val.help()
     else:
         helplst = ['**' + cmd  + '**' + ': \n' + routine.help() + '\n' for cmd, routine in app.commands.items()]
         res = '\n'.join(helplst)
@@ -79,6 +83,11 @@ async def smsg(event, txt):
 @TextSender(on_event=events.MessageEdited)
 async def edit(event):
     await smsg(event, "I saw what you did here")
+
+
+@TextSender(on_event=events.ChatAction)
+async def delete(event):
+    await smsg(event, "Fuck you for deleting messages")
 
 
 @VoidSender()

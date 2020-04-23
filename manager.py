@@ -1,6 +1,6 @@
 from telethon import events
 
-from utils import SingletonMeta, AccessList
+from utils import SingletonMeta, AccessList, Tokenizer
 
 import re
 from enum import Enum
@@ -64,61 +64,34 @@ class Query:
     def unescape(cls, s):
         l, el = cls.LEFT_DELIMITER, cls.ELEFT_DELIMITER
         r, er = cls.RIGHT_DELIMITER, cls.ERIGHT_DELIMITER
-        return s.replace(el, l).replace(er, r)
+        d, ed = COMMAND_DELIMITER, COMMAND_DELIMITER_ESCAPED
+        return s.replace(el, l).replace(er, r).replace(ed, d)
 
     def full_command(self):
         return COMMAND_DELIMITER + self.command
     
     def __init__(self, command: str, args):
         self.command = command
-        self.args = args # Could be: List[str], Query, None
+        self.args = args # Could be: List[str | Query]
     
-    def is_subquery(self):
-        """ 
-            If it's args are just another query
-        """
-        return type(self.args) == type(self)
-
-    def is_noargs(self):
-        """
-            If it takes no args(except an event)
-        """
-        return self.args is None
-
-    def is_simple_args(self):
-        """
-            If it takes a list of args
-        """
-        return type(self.args) == list
-
     @classmethod
     def from_str(cls, qstr):
-
+        qstr = cls.LEFT_DELIMITER + qstr + cls.RIGHT_DELIMITER
         try:
-            res = cls.__parse(qstr)
-        except ValueError as e:
+            tree = Tokenizer.from_str(qstr, cls.LEFT_DELIMITER, cls.RIGHT_DELIMITER)
+        except Tokenizer.ParseError as e:
             raise CommandSyntaxError
-
-        if res is None:
-            raise CommandSyntaxError
-        return res
+        print(tree) 
+        return cls.__to_q(tree)
  
     @classmethod
-    def __parse(cls, qstr): 
-        qstr = qstr.strip() + ' '
-        if qstr.startswith(COMMAND_DELIMITER):
-            command = qstr[1:qstr.index(' ')]
-            qstr = qstr[qstr.index(' '):].strip()
- 
-            subcommand = cls.__parse(qstr)
-            if subcommand is None and qstr:
-                is_single_word_args = not qstr.startswith(cls.LEFT_DELIMITER) or \
-                                      not qstr.endswith(cls.RIGHT_DELIMITER)
-                args = qstr.split() if is_single_word_args else re.findall(cls.DELIMITER_RE, qstr)
-            else:
-                args = subcommand
-            
-            return cls(command, args)
+    def __to_q(cls, tree):
+        command, args = tree
+        if command.startswith(COMMAND_DELIMITER):
+            args = [cls.__to_q(arg) for arg in args]
+            return cls(command[1:], args)
+        else:
+            return command
 
 
 class Routine:
@@ -204,14 +177,14 @@ class Executer:
             raise PermissionsError(query.command)
 
         try:
-            if query.is_noargs():
-                return await handler(action.event)
-            elif query.is_subquery():
-                subquery = query.args
-                sender = await cls.__run(subquery, dct, action)
-                return await handler(action.event, *sender.res.args)
-            else:
-                return await handler(action.event, *query.args)
+            args = []
+            for arg in query.args:
+                if type(arg) == Query:
+                    call = await cls.__run(arg, dct, action)
+                    args.extend(call.res.args)
+                else:
+                    args.append(arg)
+            return await handler(action.event, *args)
         except (AttributeError, ValueError, TypeError) as e:
             raise ExecutionError(*e.args)
 
