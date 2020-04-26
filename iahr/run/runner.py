@@ -1,4 +1,4 @@
-from utils import AccessList, Tokenizer, Delimiter, ActionData
+from ..utils import AccessList, Tokenizer, Delimiter, ActionData
 
 from telethon import events
 

@@ -1,6 +1,6 @@
-from utils import SingletonMeta, ActionData
-from runner import Executer, Query, Routine
-from runner import ExecutionError, CommandSyntaxError, PermissionsError, NonExistantCommandError
+from ..utils import SingletonMeta, ActionData
+from .runner import Executer, Query, Routine
+from .runner import ExecutionError, CommandSyntaxError, PermissionsError, NonExistantCommandError
 
 from typing import Iterable, Union, Callable
 

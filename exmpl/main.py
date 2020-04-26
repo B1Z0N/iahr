@@ -2,10 +2,9 @@ import os
 from dotenv import load_dotenv
 
 from telethon import TelegramClient
+from iahr.reg import init
 
-import default_commands
-from register import init
-
+import commands 
 
 # constants
 API_ID = 'API_ID'

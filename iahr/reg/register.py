@@ -1,10 +1,7 @@
 from telethon import events
 
-from utils import SingletonMeta, Delimiter
-from runner import CommandDelimiter
-from manager import CommandSyntaxError, PermissionsError, \
-        ExecutionError, NonExistantCommandError
-from manager import app, Query
+from ..utils import SingletonMeta, Delimiter
+from .. import run
 
 from dataclasses import dataclass
 from typing import Callable
@@ -37,8 +34,8 @@ class Register(metaclass=SingletonMeta):
     # All about delimiters and helpers
     ##################################################
  
-    NON_NEW_MSG_COMMAND_DELIMITER = CommandDelimiter('!')
-    NEW_MSG_COMMAND_DELIMITER = Query.COMMAND_DELIMITER 
+    NON_NEW_MSG_COMMAND_DELIMITER = run.CommandDelimiter('!')
+    NEW_MSG_COMMAND_DELIMITER = run.Query.COMMAND_DELIMITER 
 
     COMMAND_RE = re.compile(r'{}[^\W]+.*'.format(NEW_MSG_COMMAND_DELIMITER.in_re()))
 
@@ -97,7 +94,7 @@ class Register(metaclass=SingletonMeta):
         """
             Register new message handler to our manager
         """
-        app.add(name, handler, about, delimiter=cls.NEW_MSG_COMMAND_DELIMITER)
+        run.app.add(name, handler, about, delimiter=cls.NEW_MSG_COMMAND_DELIMITER)
         
     def reg_others(self, name, handler, about, event):
         """
@@ -110,7 +107,7 @@ class Register(metaclass=SingletonMeta):
             you to create new `run` function like the one here, but with this command
             delimiter and don't forget to pass correct event type to the `app.exec`.
         """
-        app.add(self.prefix(event) + name,
+        run.app.add(self.prefix(event) + name,
                 handler, about, delimiter=self.NON_NEW_MSG_COMMAND_DELIMITER)
         if self.client is not None:
             self.client.add_event_handler(handler, event)
@@ -152,7 +149,7 @@ class Register(metaclass=SingletonMeta):
         try:
             if cls.NEW_MSG_COMMAND_DELIMITER.is_command(txt):
                 try:
-                    sender = await app.exec(txt, event)
+                    sender = await run.app.exec(txt, event)
                 except (CommandSyntaxError, PermissionsError, NonExistantCommandError) as e:
                     await event.reply(str(e))
                 except ExecutionError as e:

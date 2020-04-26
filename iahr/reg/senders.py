@@ -1,5 +1,5 @@
-from manager import Query
-from register import reg
+from .. import run
+from .register import reg
 
 from functools import wraps
 from abc import ABC, abstractmethod
@@ -123,7 +123,7 @@ async def any_send(event, *args, **kwargs):
 
 
 async def __text_send(self):    
-    res = Query.unescape(str(self.res))
+    res = run.Query.unescape(str(self.res))
     return await any_send(self.event, res)
 TextSender = create_sender('TextSender', __text_send)
 

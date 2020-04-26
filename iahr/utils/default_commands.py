@@ -1,8 +1,8 @@
 from telethon import events
 
-from senders import TextSender, VoidSender, MultiArgs
-from manager import app, Query
-from utils import AccessList
+from ..reg import TextSender, VoidSender, MultiArgs
+from ..run import app, Query
+from .utils import AccessList
 
 import asyncio
 
