@@ -30,7 +30,6 @@ is_integer = lambda x: x.lstrip('-').isdigit()
 async def __access_action(event, action: str, entity: str, cmd=None):
     if not AccessList.is_special(entity) and not is_integer(entity):
         entity = await event.client.get_entity(entity)
-        print(entity)
         entity = entity.id
 
     if cmd is not None:

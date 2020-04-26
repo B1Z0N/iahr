@@ -80,8 +80,6 @@ class AccessList:
         self.__access_modifier(entity, self.blacklist, desirable=True)
 
     def is_allowed(self, entity: str):
-        print(self)
-        print('ent:', entity)        
         me = entity == self.ME
         return me or (self.allow_others and entity not in self.blacklist)\
                 or (not self.allow_others and entity in self.whitelist)
