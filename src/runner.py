@@ -123,8 +123,8 @@ class Routine:
     def __init__(self, handler: Callable, about: str):
         self.about = about
         self.handler = handler
-        self.usraccess = AccessList(is_allow_others=False)
-        self.chataccess = AccessList(is_allow_others=True)       
+        self.usraccess = AccessList(allow_others=False)
+        self.chataccess = AccessList(allow_others=True)       
  
     def help(self):
         return self.about
@@ -151,10 +151,11 @@ class Routine:
         """
             Try to get handler if allowed
         """
-        if not self.is_allowed_usr(usr) or not self.is_allowed_chat(chat):
-            return
         if usr is None or chat is None:
             return
+        if not self.is_allowed_usr(usr) or not self.is_allowed_chat(chat):
+            return
+
         return self.handler
 
 

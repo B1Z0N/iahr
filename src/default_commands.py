@@ -23,11 +23,14 @@ async def help(event, cmd=None):
     
     return res
 
+
+
 is_integer = lambda x: x.lstrip('-').isdigit()
 
 async def __access_action(event, action: str, entity: str, cmd=None):
     if not AccessList.is_special(entity) and not is_integer(entity):
         entity = await event.client.get_entity(entity)
+        print(entity)
         entity = entity.id
 
     if cmd is not None:
@@ -53,50 +56,14 @@ async def ban_usr(event, usr, cmd=None):
 async def ban_chat(event, chat, cmd=None):
    await  __access_action(event, 'ban_chat', chat, cmd=cmd)
 
-@TextSender(take_event=False)
-async def concat(*args):
-    return ''.join(args)
-
-@TextSender(take_event=False)
-async def idx(thing):
-    return thing
-
-@TextSender(take_event=False)
-async def upper(txt):
-    return txt.upper()
 
 
-@TextSender(take_event=False, multiret=True)
-async def split(txt):
-    return txt.split()
-
-@TextSender(take_event=False, multiret=True)
-async def nstr(n, s):
-    return [s] * int(n) 
-
-@VoidSender('altyp')
-async def always_typing(event, seconds):
-    async with event.client.action(event.chat_id, 'typing'):
-        await asyncio.sleep(int(seconds))
-
-async def smsg(event, txt):
-    await event.client.send_message(event.chat_id, txt)
-
-@TextSender(on_event=events.MessageEdited)
-async def edit(event):
-    await smsg(event, "I saw what you did here")
 
 
-@TextSender(on_event=events.ChatAction)
-async def delete(event):
-    await smsg(event, "Fuck you for deleting messages")
 
 
-@VoidSender()
-async def nmsg(event, n, txt):
-    n = int(n)
-    if n > 10:
-        await smsg(event, "**telepyth**: Am i a joke to u?")
-    else:
-        for i in range(n):
-            await smsg(event, txt)
+
+
+
+
+

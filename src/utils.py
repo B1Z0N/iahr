@@ -49,29 +49,30 @@ class AccessList:
     """
     # Current user is enabled by default and can't be disabled
 
-    OTHERS = '$others'    
-    ME = '$me'
+    OTHERS = '*'    
+    ME = 'me'
 
     
     @classmethod    
     def is_special(cls, ent):
         return ent in (cls.OTHERS, cls.ME)
     
-    def __init__(self, is_allow_others=False):
+    def __init__(self, allow_others=False):
         self.whitelist = set()
         self.blacklist = set()
-        self.is_allow_others = is_allow_others
+        self.allow_others = allow_others
 
     def __access_modifier(self, entity: str, lst: set, desirable: bool):
         if entity == self.ME:
             return
 
-        if entity != self.OTHERS and self.is_allow_others is desirable:
+        if entity != self.OTHERS and self.allow_others is desirable:
             lst.add(entity)
         else:
-            self.whitelist = self.blacklist = set()
-            self.is_allow_others = not desirable
-        
+            self.whitelist = set()
+            self.blacklist = set()
+            self.allow_others = not desirable
+ 
     def allow(self, entity: str):
         self.__access_modifier(entity, self.whitelist, desirable=False)
                
@@ -79,8 +80,16 @@ class AccessList:
         self.__access_modifier(entity, self.blacklist, desirable=True)
 
     def is_allowed(self, entity: str):
-        return self.is_allow_others or entity in self.whitelist or entity == self.ME
-    
+        print(self)
+        print('ent:', entity)        
+        me = entity == self.ME
+        return me or (self.allow_others and entity not in self.blacklist)\
+                or (not self.allow_others and entity in self.whitelist)
+
+    def __repr__(self):
+        return 'whitelist: {}, blacklist: {}, allow_others: {},'\
+                .format(self.whitelist, self.blacklist, self.allow_others)
+
     @classmethod
     async def check_me(cls, client):
         me = await client.get_me()
@@ -102,10 +111,12 @@ class ActionData:
     @classmethod
     async def from_event(cls, event: events.NewMessage):
         me = await AccessList.check_me(event.client)
+        uid = event.message.from_id
+        c = await event.message.get_chat()
         return cls(
             event,
-            me(event.message.from_id),
-            me(event.chat_id),
+            me(uid),
+            me(c.id)
         )
 
 
