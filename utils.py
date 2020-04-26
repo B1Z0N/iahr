@@ -117,8 +117,11 @@ class Tokenizer:
     class ParseError(Exception):
         def __init__(self):
             super().__init__("Error parsing the query")
-    
-    TOKS = re.compile(' +|[^\(\)]+|[()]')
+    # match 
+    # 1) spaces 
+    # 2) any characters (including `\)` and `\(`) without `(` and `)`
+    # 3) `(` and `)`
+    TOKS = re.compile(r' +|((\\\()|(\\\))|([^\(\)]))+|[()]')
 
     def __init__(self, s):
         self.s = s
@@ -135,9 +138,9 @@ class Tokenizer:
             if s[0] == ' ':
                 continue
             if s[0] in '()':
-                yield (s, s)
+                yield s, s
             else:
-                yield ('WORD', s.strip())
+                yield 'WORD', self.unescape(s.strip())
     
     @classmethod
     def parse_inner(cls, toks):
@@ -152,7 +155,7 @@ class Tokenizer:
             if ty == '(':
                 children.append(cls.parse_inner(toks))
             elif ty == ')':
-                return (name, children)
+                return name, children
     
     @classmethod
     def parse_root(cls, toks):
@@ -178,11 +181,20 @@ class Tokenizer:
         """
             Recursive lists from string
         """
+        s = cls.escape(s)
         s = leftdel.unescaped_replace(s, ' ( ')
         s = rightdel.unescaped_replace(s, ' ) ')
         obj = cls(s)
         return obj.perform()
-    
+   
+    @staticmethod
+    def escape(s):
+        return s.replace('(', r'\(').replace(')', r'\)')
+
+    @staticmethod
+    def unescape(s):
+        return s.replace(r'\(', '(').replace(r'\)', ')')
+ 
     @classmethod
     def show_children(cls, tree):
         """
