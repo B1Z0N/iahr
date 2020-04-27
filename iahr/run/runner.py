@@ -1,4 +1,5 @@
-from ..utils import AccessList, Tokenizer, Delimiter, ActionData
+from ..utils import AccessList, ActionData, Delimiter
+from ..utils import Tokenizer, parenthesify, ParseError
 
 from telethon import events
 
@@ -62,6 +63,9 @@ class Query:
     RIGHT_DELIMITER = Delimiter(r']')
     COMMAND_DELIMITER = CommandDelimiter(r'.')
 
+    add_pars = parenthesify(LEFT_DELIMITER.original, RIGHT_DELIMITER.original, COMMAND_DELIMITER.original)
+
+
     @classmethod
     def unescape(cls, s):
         s = cls.LEFT_DELIMITER.unescape(s)
@@ -81,35 +85,18 @@ class Query:
     def from_str(cls, qstr):
         qstr = cls.LEFT_DELIMITER.original + qstr + cls.RIGHT_DELIMITER.original
         try:
+            qstr = cls.add_pars(qstr)     
             tree = Tokenizer.from_str(qstr, cls.LEFT_DELIMITER, cls.RIGHT_DELIMITER)
-        except Tokenizer.ParseError as e:
-            raise CommandSyntaxError
+        except ParseError as e:
+            raise CommandSyntaxError(str(e))
         
         return cls.__to_q(tree)
-
-    @classmethod
-    def __single_word_helper(cls, args, subargs):
-        if not args: return subargs
-        elif len(args) == 1: return [cls.__to_q((args[0], subargs))]
-        
-        res = []
-        for i, arg in enumerate(args):
-            if cls.COMMAND_DELIMITER.is_command(arg):
-                cmd, itsargs = arg[1:], args[i + 1:]
-                res.append(cls(cmd, cls.__single_word_helper(itsargs, subargs)))
-                break
-            else:
-                res.append(arg) 
-
-        return res
 
     @classmethod
     def __to_q(cls, tree):
         command, args = tree
         if cls.COMMAND_DELIMITER.is_command(command):
             args = [cls.__to_q(arg) if type(arg) == tuple else arg for arg in args]
-            command, *subcomms = command.split()
-            args = cls.__single_word_helper(subcomms, args)
             return cls(command[1:], args)
         else:
             return command

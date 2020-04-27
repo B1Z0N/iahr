@@ -118,14 +118,66 @@ class ActionData:
         )
 
 
+##################################################
+# All about parsing
+##################################################
+
+
+class ParseError(Exception):
+    def __init__(self, e):
+        super().__init__('Error parsing the query: ({})'.format(e))
+
+
+def parenthesify(left, right, command_delimiter): 
+    def space_or_ending(s, start):
+        space_i = s.find(' ', start)
+        right_i = s.find(right, start)
+
+        if space_i == -1:
+            return right_i
+        elif space_i < right_i:
+            return space_i
+        else:
+            return right_i
+
+    def do(s, i):
+        par_cnt, res = 0, ''
+        while s[i] != right:
+            if s[i] == ' ':
+                res += s[i]
+                i += 1
+            elif s[i] == left:
+                subres, i = do(s, i + 1)
+                res += subres
+                i += 1
+            else:
+                initial, start, i = s[i], i, space_or_ending(s, i)
+                res += left + s[start:i]
+                if initial == command_delimiter:
+                    par_cnt += 1
+                else:
+                    res += right
+        
+        return res + right * par_cnt, i
+
+    def wrapper(s):
+        if not s.startswith(left):
+            s = left + s + right
+        
+        try:
+            res = do(s, 1)
+        except IndexError as e:
+            raise ParseError(str(e))              
+        else:
+            return res[0]    
+ 
+    return wrapper 
+
 class Tokenizer:
     """
         Class to tokenize to command text
     """
 
-    class ParseError(Exception):
-        def __init__(self):
-            super().__init__("Error parsing the query")
     # match 
     # 1) spaces 
     # 2) any characters (including `\)` and `\(`) without `(` and `)`
@@ -157,8 +209,10 @@ class Tokenizer:
             Parse once we're inside an opening bracket.
         """
         ty, name = next(toks)
-        if ty != 'WORD': raise cls.ParseError
         children = []
+        if ty != 'WORD': 
+            raise ParseError('Bracket should be starting with word')
+        
         while True:
             ty, s = next(toks)
             if ty == '(':
@@ -203,7 +257,7 @@ class Tokenizer:
     @staticmethod
     def unescape(s):
         return s.replace(r'\(', '(').replace(r'\)', ')')
- 
+
     @classmethod
     def show_children(cls, tree):
         """

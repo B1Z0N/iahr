@@ -42,12 +42,12 @@ class Register(metaclass=SingletonMeta):
     PREFIX_DELIMITER = Delimiter('_')
 
     PREFIXES = { 
-        events.MessageEdited : 'edit', 
-        events.MessageDeleted : 'del', 
-        events.MessageRead : 'read', 
-        events.ChatAction : 'chataction' , 
-        events.UserUpdate : 'usrupdate', 
-        events.Album : 'album',
+        events.MessageEdited : 'onedit', 
+        events.MessageDeleted : 'ondel', 
+        events.MessageRead : 'onread', 
+        events.ChatAction : 'onchataction' , 
+        events.UserUpdate : 'onusrupdate', 
+        events.Album : 'onalbum',
     }    
 
     @staticmethod
@@ -150,9 +150,9 @@ class Register(metaclass=SingletonMeta):
             if cls.NEW_MSG_COMMAND_DELIMITER.is_command(txt):
                 try:
                     sender = await run.app.exec(txt, event)
-                except (CommandSyntaxError, PermissionsError, NonExistantCommandError) as e:
+                except (run.CommandSyntaxError, run.PermissionsError, run.NonExistantCommandError) as e:
                     await event.reply(str(e))
-                except ExecutionError as e:
+                except run.ExecutionError as e:
                     print(str(e))
                     await event.reply(
                         'Incompatible commands, wrong arguments or just a buggy function'
