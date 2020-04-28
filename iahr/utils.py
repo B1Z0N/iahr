@@ -66,13 +66,13 @@ class AccessList:
         if entity == self.ME:
             return
 
-        if entity != self.OTHERS and self.allow_others is desirable:
-            lst.add(entity)
-        else:
+        if entity == self.OTHERS:
             self.whitelist = set()
             self.blacklist = set()
             self.allow_others = not desirable
- 
+        elif self.allow_others is desirable:
+            lst.add(entity)
+
     def allow(self, entity: str):
         self.__access_modifier(entity, self.whitelist, desirable=False)
                

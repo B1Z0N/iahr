@@ -99,7 +99,9 @@ class Query:
         if not rawargs: return [], {}
         args, kwargs = [], {}
         def divide(arg): 
-            if len(arg) == 2:
+            if type(arg) == cls:
+                args.append(arg)
+            elif len(arg) == 2:
                 kwargs[arg[0]] = arg[1] 
             else:
                 args.append(arg[0])
@@ -206,7 +208,7 @@ class Executer:
     @classmethod
     async def __run(cls, query, dct, action):
         async def proc(subquery):
-            return cls.__run(subquery, dct, action)
+            return await cls.__run(subquery, dct, action)
         
         try:
             handler = \
