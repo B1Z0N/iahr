@@ -129,10 +129,10 @@ class ParseError(Exception):
 
 
 def parenthesify(left, right, command_delimiter): 
-    def space_or_ending(s, start):
+    def next_delim(s, start):
         space_i = s.find(' ', start)
         right_i = s.find(right, start)
-
+ 
         if space_i == -1:
             return right_i
         elif space_i < right_i:
@@ -140,29 +140,34 @@ def parenthesify(left, right, command_delimiter):
         else:
             return right_i
 
+    def surround(s):
+        return s if s.startswith(left) else left + s + right
+
     def do(s, i):
         par_cnt, res = 0, ''
+        cmd_args = False
         while s[i] != right:
-            if s[i] == ' ':
+            if s[i] == left:
+                subres, i = do(s, i + 1)
+                res += surround(subres)
+                i += 1
+            elif s[i] == command_delimiter:
+                cmd_args = True
+                start, i = i, next_delim(s, i)
+                res += left + s[start:i]
+                par_cnt += 1
+            elif s[i] == ' ' or cmd_args is False:
                 res += s[i]
                 i += 1
-            elif s[i] == left:
-                subres, i = do(s, i + 1)
-                res += subres
-                i += 1
             else:
-                initial, start, i = s[i], i, space_or_ending(s, i)
-                res += left + s[start:i]
-                if initial == command_delimiter:
-                    par_cnt += 1
-                else:
-                    res += right
-        
+                start, i = i, next_delim(s, i)
+                res += left + s[start:i] + right
+
+            
         return res + right * par_cnt, i
 
     def wrapper(s):
-        if not s.startswith(left):
-            s = left + s + right
+        s = surround(s)
         
         try:
             res = do(s, 1)

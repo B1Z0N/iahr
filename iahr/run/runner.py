@@ -21,8 +21,8 @@ class CommandSyntaxError(ExecutionError):
     """ 
         Plug exception to tell that some input is faulty 
     """
-    def __init__(self):
-        super().__init__("Wrong syntax, see **.synhelp**")
+    def __init__(self, e):
+        super().__init__("Wrong syntax, see **.synhelp**:({})".format(str(e)))
 
 
 class PermissionsError(ExecutionError):
@@ -65,6 +65,7 @@ class Query:
 
     add_pars = parenthesify(LEFT_DELIMITER.original, RIGHT_DELIMITER.original, COMMAND_DELIMITER.original)
 
+    KWARGS_RE = re.compile(r'(?<!\\)')
 
     @classmethod
     def unescape(cls, s):
