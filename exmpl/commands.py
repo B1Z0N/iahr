@@ -17,3 +17,8 @@ async def idx(_, s):
 @TextSender(multiret=True)
 async def split(_, s):
     return s.split()
+
+
+@TextSender()
+async def kwtest(_, arg1, arg2):
+    return arg1, arg2

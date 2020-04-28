@@ -6,7 +6,7 @@ if [ -z "$1" ]; then
 fi
 
 VENV_FOLDER="$(pwd)/${1}"
-PYTHON=$(which python)
+PYTHON=$(which python3)
 
 source "${VENV_FOLDER}/bin/activate"
 export PYTHONPATH="$(cd ../ && pwd)"

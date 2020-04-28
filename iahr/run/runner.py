@@ -65,7 +65,7 @@ class Query:
 
     add_pars = parenthesify(LEFT_DELIMITER.original, RIGHT_DELIMITER.original, COMMAND_DELIMITER.original)
 
-    KWARGS_RE = re.compile(r'(?<!\\)')
+    KWARGS_RE = re.compile(r'(?<!\\)=')
 
     @classmethod
     def unescape(cls, s):
@@ -78,9 +78,10 @@ class Query:
     # All about parsing
     ##################################################
     
-    def __init__(self, command: str, args):
+    def __init__(self, command: str, args, kwargs):
         self.command = command
-        self.args = args # Could be: List[str | Query]
+        self.args = list(args) # Could be: List[str | Query]
+        self.kwargs = dict(kwargs) # Could be: Dict[str: [str | Query]]
     
     @classmethod
     def from_str(cls, qstr):
@@ -90,17 +91,32 @@ class Query:
             tree = Tokenizer.from_str(qstr, cls.LEFT_DELIMITER, cls.RIGHT_DELIMITER)
         except ParseError as e:
             raise CommandSyntaxError(str(e))
-        
+        print(tree) 
         return cls.__to_q(tree)
+
+    @classmethod
+    def __process_args(cls, rawargs):
+        if not rawargs: return [], {}
+        args, kwargs = [], {}
+        def divide(arg): 
+            if len(arg) == 2:
+                kwargs[arg[0]] = arg[1] 
+            else:
+                args.append(arg[0])
+
+        rawargs = map(cls.__to_q, rawargs) 
+        [divide(arg) for arg in rawargs]
+        return args, kwargs
 
     @classmethod
     def __to_q(cls, tree):
         command, args = tree
+        args, kwargs = cls.__process_args(args) 
+
         if cls.COMMAND_DELIMITER.is_command(command):
-            args = [cls.__to_q(arg) if type(arg) == tuple else arg for arg in args]
-            return cls(command[1:], args)
+            return cls(command[1:], args, kwargs)
         else:
-            return command
+            return (*re.split(cls.KWARGS_RE, command, 1), ) 
 
 
 class Routine:
@@ -166,8 +182,32 @@ class Executer:
             self.query, self.dict, self.action
         )
 
+    
+    async def __process_args(rawargs, rawkwargs, subprocess: Callable):
+        if not rawargs and not rawkwargs: return [], {}
+        print(rawargs, rawkwargs)
+        args, kwargs = [], {}
+        for arg in rawargs:
+            if type(arg) == Query:
+                call = await subprocess(arg)
+                args.extend(call.res.args)
+            else:
+                args.append(arg)
+
+        for key, val in rawkwargs.items():
+            if type(val) == Query:
+                call = await subprocess(val)
+                kwargs[key] = call.res.args[0]
+            else:
+                kwargs[key] = val
+
+        return args, kwargs
+
     @classmethod
     async def __run(cls, query, dct, action):
+        async def proc(subquery):
+            return cls.__run(subquery, dct, action)
+        
         try:
             handler = \
                 dct[query.COMMAND_DELIMITER.full_command(query.command)]\
@@ -176,16 +216,10 @@ class Executer:
             raise NonExistantCommandError(query.command)
         if handler is None: 
             raise PermissionsError(query.command)
-
+        
         try:
-            args = []
-            for arg in query.args:
-                if type(arg) == Query:
-                    call = await cls.__run(arg, dct, action)
-                    args.extend(call.res.args)
-                else:
-                    args.append(arg)
-            return await handler(action.event, *args)
+            args, kwargs = await cls.__process_args(query.args, query.kwargs, proc) 
+            return await handler(action.event, *args, **kwargs)
         except (AttributeError, ValueError, TypeError) as e:
             raise ExecutionError(*e.args)
 
