@@ -1,22 +1,21 @@
 from telethon import events
 
-from ..reg import TextSender, VoidSender, MultiArgs
+from ..reg import TextSender, VoidSender, MultiArgs, reg
 from ..run import app, Query
 from ..utils import AccessList
 
-import asyncio
-from pprint import pformat
-
 
 delimiter = Query.COMMAND_DELIMITER
+ndelimiter = reg.NON_NEW_MSG_COMMAND_DELIMITER
 admin_commands = {'.allowusr', '.allowchat', '.banusr', '.banchat'}
 
 def __process_list(single, is_cmds=False):
     if type(single) != str: return [single]
     lst = single.split()
-    return [
-        Query.COMMAND_DELIMITER.full_command(cmd) for cmd in lst
-    ] if is_cmds else lst
+    for i, cmd in enumerate(lst):
+        if is_cmds and not ndelimiter.is_command(cmd):
+            lst[i] = delimiter.full_command(cmd)
+    return lst
 
 
 @TextSender(about='Get help about a command or list of all commands')
@@ -69,7 +68,7 @@ async def __access_action(event, action: str, entity: str, cmd, admintoo=False):
         cmds = app.commands.keys()
             
     
-    entres = {}
+    entres = []
     for entity in entities:
         cmdres = {}
         for cmd in cmds:
@@ -77,10 +76,9 @@ async def __access_action(event, action: str, entity: str, cmd, admintoo=False):
                 routine = app.commands.get(cmd)
                 if routine is not None:
                     cmdres[cmd] = getattr(routine, action)(entity)
-        entres[entity] = cmdres
+        entres.append((entity, cmdres))
             
     return entres
-
 
 @VoidSender('allowusr', 'Allow [UNAME] or "$others" to run a command or all commands')
 async def allow_usr(event, usr=None, cmd=None):        
@@ -107,12 +105,22 @@ async def ban_chat(event, chat=None, cmd=None):
         chat = await __chat_from_event(event)
     await  __access_action(event, 'ban_chat', chat, cmd=cmd)
 
+async def __perm_format(event, lst):
+    res = ''
+    for ent, perms in lst:
+        perms = '\n  '.join(cmd + (' - enabled' if flag else ' - disabled') for cmd, flag in perms.items())
+        if ent != AccessList.ME:
+            ent = await event.client.get_entity(ent)
+            ent = ent.username 
+        res += '{}:\n  {}\n'.format(ent, perms)
+    return res
+
 @TextSender('allowedchat', 'Get chat allowed commands')
 async def is_allowed_chat(event, chat=None, cmd=None):
     if chat is None:
         chat = await __chat_from_event(event)
     res = await __access_action(event, 'is_allowed_chat', chat, cmd, admintoo=True)
-    return pformat(res)
+    return await __perm_format(event, res)
     
 
 @TextSender('allowedusr', 'Get usr allowed commands')
@@ -120,5 +128,6 @@ async def is_allowed_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
     res = await __access_action(event, 'is_allowed_usr', usr, cmd, admintoo=True)
-    return pformat(res)
+    return await __perm_format(event, res)
+
 
