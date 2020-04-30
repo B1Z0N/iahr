@@ -112,7 +112,7 @@ async def __perm_format(event, lst):
         if ent != AccessList.ME:
             ent = await event.client.get_entity(ent)
             ent = ent.username 
-        res += '{}:\n  {}\n'.format(ent, perms)
+        res += '**{}**:\n  {}\n'.format(ent, perms)
     return res
 
 @TextSender('allowedchat', 'Get chat allowed commands')

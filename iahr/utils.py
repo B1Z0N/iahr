@@ -24,8 +24,11 @@ class Delimiter:
     def escaped_replace(self, string, to):
         return string.replace(self.escaped, to)
 
+    def unescaped_re(self):
+        return r'(?<!\\){}'.format(self.in_re())
+
     def unescaped_replace(self, string, to):
-        return re.sub(r'(?<!\\){}'.format(self.in_re()), to, string)
+        return re.sub(self.unescaped_re(), to, string)
 
 
 class SingletonMeta(type):
@@ -128,11 +131,15 @@ class ParseError(Exception):
         super().__init__('Error parsing the query: ({})'.format(e))
 
 
-def parenthesify(left, right, command_delimiter): 
+def parenthesify(ldel, rdel, cmd_del, raw_del): 
+    left, right = ldel.original, rdel.original
+    cmdd, raw = cmd_del.original, raw_del.original
+
     def next_delim(s, start):
         space_i = s.find(' ', start)
-        right_i = s.find(right, start)
- 
+        rmatch = re.search(rdel.unescaped_re(), s[start:])
+        right_i = -1 if rmatch is None else rmatch.start() + start
+
         if space_i == -1:
             return right_i
         elif space_i < right_i:
@@ -143,28 +150,52 @@ def parenthesify(left, right, command_delimiter):
     def surround(s):
         return s if s.startswith(left) else left + s + right
 
+    def is_left_raw(s, i):
+        return s[i] == raw and i + 1 < len(s) and s[i + 1] == left
+    def is_right_raw(s, i):
+        return s[i] == right and i + 1 < len(s) and s[i + 1] == raw
+   
+    def is_unescaped(c):
+        def _(s, i):
+            return i < len(s) and s[i] == c and i > 0 and s[i - 1] != '\\'
+        return _
+    
+    is_command, is_left, is_right = is_unescaped(cmdd), \
+        is_unescaped(left), is_unescaped(right)
+
+    def full_escape(s):
+        return cmd_del.escape(rdel.escape(ldel.escape(s)))
+    
+    def do_raw(s, i):
+        start = i + 2
+        while not is_right_raw(s, i) and i < len(s):
+            i += 1
+        return surround(full_escape(s[start:i])), i + 2
+   
     def do(s, i):
-        par_cnt, res = 0, ''
-        cmd_args = False
-        while s[i] != right:
-            if s[i] == left:
+        open_cnt, res = 0, ''
+        cmd_arg = False
+        while not is_right(s, i):
+            if is_left_raw(s, i):
+                subres, i = do_raw(s, i)
+                res += subres
+            elif is_left(s, i):
                 subres, i = do(s, i + 1)
                 res += surround(subres)
                 i += 1
-            elif s[i] == command_delimiter:
-                cmd_args = True
+            elif is_command(s, i):
                 start, i = i, next_delim(s, i)
                 res += left + s[start:i]
-                par_cnt += 1
-            elif s[i] == ' ' or cmd_args is False:
+                open_cnt += 1
+                cmd_arg = True
+            elif s[i] == ' ' or not cmd_arg:
                 res += s[i]
                 i += 1
             else:
                 start, i = i, next_delim(s, i)
                 res += left + s[start:i] + right
-
             
-        return res + right * par_cnt, i
+        return res + right * open_cnt, i
 
     def wrapper(s):
         s = surround(s)
@@ -177,6 +208,7 @@ def parenthesify(left, right, command_delimiter):
             return res[0]    
  
     return wrapper 
+
 
 class Tokenizer:
     """
@@ -205,8 +237,8 @@ class Tokenizer:
                 continue
             if s[0] in '()':
                 yield s, s
-            else:
-                yield 'WORD', self.unescape(s.strip())
+            else: 
+                yield 'WORD', self.unescape(s[1:-1])
     
     @classmethod
     def parse_inner(cls, toks):
@@ -250,8 +282,9 @@ class Tokenizer:
             Recursive lists from string
         """
         s = cls.escape(s)
-        s = leftdel.unescaped_replace(s, ' ( ')
-        s = rightdel.unescaped_replace(s, ' ) ')
+        # surround it with double delimiters for correct space handling
+        s = leftdel.unescaped_replace(s, "('")
+        s = rightdel.unescaped_replace(s, "')")
         obj = cls(s)
         return obj.perform()
    

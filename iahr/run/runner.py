@@ -48,7 +48,6 @@ class CommandDelimiter(Delimiter):
     def is_command(self, s):
         return s.startswith(self.original)
 
-
 class Query:
     """ 
         Class-representation of our command string in python code
@@ -62,8 +61,9 @@ class Query:
     LEFT_DELIMITER = Delimiter(r'[')
     RIGHT_DELIMITER = Delimiter(r']')
     COMMAND_DELIMITER = CommandDelimiter(r'.')
+    RAW_DELIMITER = Delimiter(r'r')    
 
-    add_pars = parenthesify(LEFT_DELIMITER.original, RIGHT_DELIMITER.original, COMMAND_DELIMITER.original)
+    add_pars = parenthesify(LEFT_DELIMITER, RIGHT_DELIMITER, COMMAND_DELIMITER, RAW_DELIMITER)
 
     KWARGS_RE = re.compile(r'(?<!\\)=')
 

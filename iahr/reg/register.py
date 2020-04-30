@@ -126,7 +126,7 @@ class Register(metaclass=SingletonMeta):
         self.delayed = []
 
 
-    def init(self, client):
+    async def init(self, client):
         """
             Complete registering handlers directly to the client
             when one is supplied. Also register our own `run` as
@@ -140,6 +140,7 @@ class Register(metaclass=SingletonMeta):
             self.run, events.NewMessage(pattern=self.COMMAND_RE)
         )
 
+            
     @classmethod
     async def run(cls, event):
         """

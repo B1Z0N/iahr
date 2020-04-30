@@ -6,25 +6,24 @@ from iahr.reg import init
 
 import commands 
 
+
 # constants
-API_ID = 'API_ID'
-API_HASH = 'API_HASH'
-SESSION_PATH = 'SESSION_PATH'
+API_ID = 'TG_API_ID'
+API_HASH = 'TG_API_HASH'
+TG_SESSION_PATH = 'TG_SESSION_PATH'
 
 
 def make_client():
     api_id = os.getenv(API_ID)
     api_hash = os.getenv(API_HASH)
-    session_path = os.path.abspath(os.getenv(SESSION_PATH))
-    client = TelegramClient(session_path, api_id, api_hash)
+    tg_session_path = os.path.abspath(os.getenv(TG_SESSION_PATH))
+    client = TelegramClient(tg_session_path, api_id, api_hash)
     return client
 
-
 async def main(client):
-    init(client)
+    await init(client)
     await client.start()
     await client.run_until_disconnected()
-
 
 if __name__ == '__main__': 
     load_dotenv()
