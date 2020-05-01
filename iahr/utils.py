@@ -127,8 +127,8 @@ class ActionData:
 
 
 class ParseError(Exception):
-    def __init__(self, e):
-        super().__init__('Error parsing the query: ({})'.format(e))
+    def __init__(self, s):
+        super().__init__('parsing the query: {}'.format(s))
 
 
 def parenthesify(ldel, rdel, cmd_del, raw_del): 
@@ -168,14 +168,19 @@ def parenthesify(ldel, rdel, cmd_del, raw_del):
     
     def do_raw(s, i):
         start = i + 2
-        while not is_right_raw(s, i) and i < len(s):
+        while i < len(s) and not is_right_raw(s, i):
             i += 1
+        if i == len(s):
+            raise ParseError(f"unbalanced raw scopes '{raw}{left} {right}{raw}'")
         return surround(full_escape(s[start:i])), i + 2
    
     def do(s, i):
         open_cnt, res = 0, ''
         cmd_arg = False
         while not is_right(s, i):
+            if len(s) == i:
+                raise ParseError(f"unbalanced scopes '{left} {right}'")
+
             if is_left_raw(s, i):
                 subres, i = do_raw(s, i)
                 res += subres
@@ -197,17 +202,7 @@ def parenthesify(ldel, rdel, cmd_del, raw_del):
             
         return res + right * open_cnt, i
 
-    def wrapper(s):
-        s = surround(s)
-        
-        try:
-            res = do(s, 1)
-        except IndexError as e:
-            raise ParseError(str(e))              
-        else:
-            return res[0]    
- 
-    return wrapper 
+    return lambda s: do(surround(s), 1)[0]
 
 
 class Tokenizer:

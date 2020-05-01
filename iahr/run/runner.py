@@ -3,7 +3,7 @@ from ..utils import Tokenizer, parenthesify, ParseError
 
 from telethon import events
 
-import re
+import re, logging
 from dataclasses import dataclass
 from typing import Callable
 
@@ -22,7 +22,7 @@ class CommandSyntaxError(ExecutionError):
         Plug exception to tell that some input is faulty 
     """
     def __init__(self, e):
-        super().__init__("Wrong syntax, see **.synhelp**:({})".format(str(e)))
+        super().__init__("wrong syntax, see **.synhelp**, {}".format(str(e)))
 
 
 class PermissionsError(ExecutionError):
@@ -30,7 +30,7 @@ class PermissionsError(ExecutionError):
         Exception telling that this user or this chat can't use particular command
     """
     def __init__(self, command):
-        super().__init__("You can't use **{}** command".format(command))
+        super().__init__("you can't use **{}** command".format(command))
 
 
 class NonExistantCommandError(ExecutionError):
@@ -87,12 +87,17 @@ class Query:
     def from_str(cls, qstr):
         qstr = cls.LEFT_DELIMITER.original + qstr + cls.RIGHT_DELIMITER.original
         try:
+            logging.info(f'raw query:{qstr}')
             qstr = cls.add_pars(qstr)     
+            logging.info(f'parenthesized query:{qstr}')
             tree = Tokenizer.from_str(qstr, cls.LEFT_DELIMITER, cls.RIGHT_DELIMITER)
+            logging.info(f'query tree:{tree}')
         except ParseError as e:
             raise CommandSyntaxError(str(e))
-        print(tree) 
-        return cls.__to_q(tree)
+
+        self = cls.__to_q(tree)
+        logging.info(f'query obj:{self}')
+        return self
 
     @classmethod
     def __process_args(cls, rawargs):
@@ -120,6 +125,11 @@ class Query:
         else:
             return (*re.split(cls.KWARGS_RE, command, 1), ) 
 
+    def __repr__(self):
+        res = self.COMMAND_DELIMITER.full_command(self.command) + ' ['
+        res += ', '.join(f'{arg}' for arg in self.args) + '] {'
+        res += ', '.join(f'{key}:{val}' for key, val in self.kwargs.items()) + ' }'
+        return f'Query({res})'
 
 class Routine:
     """
@@ -164,6 +174,8 @@ class Routine:
 
         return self.handler
 
+    def __repr__(self):
+        return f'Routine(usraccess={self.usraccess}, chataccess={self.chataccess})'
 
 class Executer:
     """ 
@@ -187,7 +199,6 @@ class Executer:
     
     async def __process_args(rawargs, rawkwargs, subprocess: Callable):
         if not rawargs and not rawkwargs: return [], {}
-        print(rawargs, rawkwargs)
         args, kwargs = [], {}
         for arg in rawargs:
             if type(arg) == Query:
@@ -209,20 +220,27 @@ class Executer:
     async def __run(cls, query, dct, action):
         async def proc(subquery):
             return await cls.__run(subquery, dct, action)
-        
+        qname = query.COMMAND_DELIMITER.full_command(query.command)
+        id_msg = f'name={qname}:uid={action.uid}:cid={action.chatid}' 
+ 
         try:
-            handler = \
-                dct[query.COMMAND_DELIMITER.full_command(query.command)]\
-                    .get_handler(action.uid, action.chatid)        
+            logging.info(f'executer:getting handler:{id_msg}')
+            handler = dct[qname].get_handler(action.uid, action.chatid)        
         except KeyError:
+            logging.error(f'executer:getting handler:no such command registered:{id_msg}')
             raise NonExistantCommandError(query.command)
         if handler is None: 
+            logging.warning(f'executer:getting handler:not permitted:{id_msg}')
             raise PermissionsError(query.command)
         
         try:
             args, kwargs = await cls.__process_args(query.args, query.kwargs, proc) 
+            logging.info(f'executer:arg={args}:kwargs={kwargs}:{id_msg}')
             return await handler(action.event, *args, **kwargs)
         except (AttributeError, ValueError, TypeError) as e:
+            logging.error(f'executer:userspace error:err={e}:{id_msg}')
             raise ExecutionError(*e.args)
 
+    def __repr__(self):
+        return f'Executer(query={self.query}, dict={self.dict}, action={self.action})'
 

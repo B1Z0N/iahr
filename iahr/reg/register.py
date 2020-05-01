@@ -5,23 +5,16 @@ from .. import run
 
 from dataclasses import dataclass
 from typing import Callable
-import traceback
-import re
+import re, logging
 
 
 class CommandRegisterError(Exception):
     pass
 
 
-class WrongEventTypeError(CommandRegisterError):
-    def __init__(self):
-        msg = 'Wrong event type of a command, look at Register.EventType enum'
-        super().__init__(self, msg) 
-
-
 class UninitializedRegisterError(CommandRegisterError):
     def __init__(self):
-        super().__init__(self, "Call `init_client` first")
+        super().__init__(self, "Call `init` first")
 
 
 class Register(metaclass=SingletonMeta):
@@ -84,6 +77,8 @@ class Register(metaclass=SingletonMeta):
         """
             Generic command handler
         """
+        logging.info(f'registering:name={name}:about={about}')
+
         if etype == None or type(etype) == events.NewMessage:
             self.reg_new_msg(name, handler, about)
         else:
@@ -125,6 +120,7 @@ class Register(metaclass=SingletonMeta):
         self.client = None
         self.delayed = []
 
+        logging.basicConfig(level=logging.INFO)
 
     async def init(self, client):
         """
@@ -141,27 +137,31 @@ class Register(metaclass=SingletonMeta):
         )
 
             
-    @classmethod
-    async def run(cls, event):
+    async def run(self, event):
         """
             Process incoming message with our handlers and manager
         """
+        if self.client is None:
+            raise UninitializedRegisterError
+
         txt = event.message.raw_text
+        logging.info(f'run:msg={txt}:usr={event.message.from_id}')
         try:
-            if cls.NEW_MSG_COMMAND_DELIMITER.is_command(txt):
+            if self.NEW_MSG_COMMAND_DELIMITER.is_command(txt):
                 try:
                     sender = await run.app.exec(txt, event)
                 except (run.CommandSyntaxError, run.PermissionsError, run.NonExistantCommandError) as e:
+                    logging.error(f'regster:run:{e}')
                     await event.reply(str(e))
                 except run.ExecutionError as e:
-                    print(str(e))
+                    logging.error(str(e))
                     await event.reply(
                         'Incompatible commands, wrong arguments or just a buggy function'
                     )
                 else:
                    await sender.send()
         except Exception as e:
-            traceback.print_exc()
+            logging.error('exception', exc_info=True)
 
 
 reg = Register()

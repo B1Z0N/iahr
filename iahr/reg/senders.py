@@ -4,7 +4,7 @@ from .register import reg
 from functools import wraps
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-
+import logging
 
 @dataclass
 class MultiArgs:
@@ -36,6 +36,8 @@ class ABCSender(ABC):
         self.fun = fun
         self.pass_event = pass_event
         self.multiret = multiret
+        self.event = None
+        self.res = None
 
     def __str__(self):
         return '{{ fun: {}, passevent: {}, multiret: {}, res: {} }}'.format(
@@ -73,6 +75,10 @@ class ABCSender(ABC):
             )
 
         return self
+    
+    def __repr__(self):
+        clsname = self.__class__.__name__
+        return f'{clsname}(pass_event:{self.pass_event}, multiret:{self.multiret}, res:{self.res})'
 
 
 def create_sender(name, sendf):
@@ -124,6 +130,7 @@ async def any_send(event, *args, **kwargs):
 
 async def __text_send(self):    
     res = run.Query.unescape(str(self.res))
+    logging.info(f'sending text:{res}')
     return await any_send(self.event, res)
 TextSender = create_sender('TextSender', __text_send)
 

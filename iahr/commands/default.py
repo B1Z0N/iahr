@@ -3,11 +3,13 @@ from telethon import events
 from ..reg import TextSender, VoidSender, MultiArgs, reg
 from ..run import app, Query
 from ..utils import AccessList
+import logging
 
 
 delimiter = Query.COMMAND_DELIMITER
 ndelimiter = reg.NON_NEW_MSG_COMMAND_DELIMITER
 admin_commands = {'.allowusr', '.allowchat', '.banusr', '.banchat'}
+
 
 def __process_list(single, is_cmds=False):
     if type(single) != str: return [single]
@@ -60,7 +62,6 @@ async def __access_action(event, action: str, entity: str, cmd, admintoo=False):
             entity = await event.client.get_entity(entity)
             entity = entity.id
             entities[i] = entity
-    print(entities) 
     all_cmds = cmd is None
     if not all_cmds:
         cmds = __process_list(cmd, is_cmds=True)
@@ -96,7 +97,6 @@ async def allow_chat(event, chat=None, cmd=None):
 async def ban_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
-    print(usr)
     await __access_action(event, 'ban_usr', usr, cmd=cmd)
 
 @VoidSender('banchat', 'Ban [CHATNAME] or "$others" from running a command or all commands')
