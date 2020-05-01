@@ -30,6 +30,9 @@ class Delimiter:
     def unescaped_replace(self, string, to):
         return re.sub(self.unescaped_re(), to, string)
 
+    def __repr__(self):
+        return f'Delimtier({self.original})'
+
 
 class CommandDelimiter(Delimiter):
     def full_command(self, cmd):
@@ -253,6 +256,9 @@ class Delayed:
         self.operation = operation
         self.undelay()
 
+    def __repr__(self):
+        return f'Delayed(delayed={self.delayed})'
+
 # import here, due to the cicular import 
 from .config import IahrConfig
 
@@ -295,7 +301,7 @@ class AccessList:
                 or (not self.allow_others and entity in self.whitelist)
 
     def __repr__(self):
-        return 'whitelist: {}, blacklist: {}, allow_others: {},'\
+        return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {})'\
                 .format(self.whitelist, self.blacklist, self.allow_others)
 
     @classmethod

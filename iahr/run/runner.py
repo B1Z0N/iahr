@@ -68,7 +68,7 @@ class Query:
         self.command = command
         self.args = list(args) # Could be: List[str | Query]
         self.kwargs = dict(kwargs) # Could be: Dict[str: [str | Query]]
-    
+         
     @classmethod
     def from_str(cls, qstr):
         qstr = f'{IahrConfig.LEFT.original}{qstr}{IahrConfig.RIGHT.original}'

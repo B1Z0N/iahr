@@ -36,14 +36,17 @@ class IahrConfig:
         events.Album : 'onalbum',     
     }
     
-    COMMAND_RE = re.compile(r'{}[^\W]+.*'.format(NEW_MSG.in_re()))
-    
     ME = 'me'
     OTHERS ='*'
-
-    ADD_PARS = parenthesify(LEFT, RIGHT, NEW_MSG, RAW)
-
+    
     LOG_FORMAT = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
     LOG_DATETIME_FORMAT = '%m/%d/%Y %I:%M:%S %p'
+    
+    ##################################################
+    # Config based on config data above
+    ##################################################
+
+    COMMAND_RE = re.compile(r'{}[^\W]+.*'.format(NEW_MSG.in_re()))
+    ADD_PARS = parenthesify(LEFT, RIGHT, NEW_MSG, RAW)
     LOGGER = create_logger(LOG_FORMAT, LOG_DATETIME_FORMAT)
 
