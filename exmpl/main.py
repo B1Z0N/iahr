@@ -2,15 +2,17 @@ import os
 from dotenv import load_dotenv
 
 from telethon import TelegramClient
-from iahr.reg import init
+from iahr.reg import init, Register
+from iahr.config import IahrConfig
+from iahr.utils import CommandDelimiter
 
 import commands 
-
 
 # constants
 API_ID = 'TG_API_ID'
 API_HASH = 'TG_API_HASH'
 TG_SESSION_PATH = 'TG_SESSION_PATH'
+
 
 
 def make_client():

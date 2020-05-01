@@ -31,6 +31,14 @@ class Delimiter:
         return re.sub(self.unescaped_re(), to, string)
 
 
+class CommandDelimiter(Delimiter):
+    def full_command(self, cmd):
+        return self.original + cmd
+        
+    def is_command(self, s):
+        return s.startswith(self.original)
+
+
 class SingletonMeta(type):
     """
     The Singleton class can be implemented in different ways in Python. Some
@@ -44,86 +52,6 @@ class SingletonMeta(type):
         if self._instance is None:
             self._instance = super().__call__()
         return self._instance
-
-
-class AccessList:
-    """
-        Users and groups access manager
-    """
-    # Current user is enabled by default and can't be disabled
-
-    OTHERS = '*'    
-    ME = 'me'
-
-    
-    @classmethod    
-    def is_special(cls, ent):
-        return ent in (cls.OTHERS, cls.ME)
-    
-    def __init__(self, allow_others=False):
-        self.whitelist = set()
-        self.blacklist = set()
-        self.allow_others = allow_others
-
-    def __access_modifier(self, entity: str, lst: set, desirable: bool):
-        if entity == self.ME:
-            return
-
-        if entity == self.OTHERS:
-            self.whitelist = set()
-            self.blacklist = set()
-            self.allow_others = not desirable
-        elif self.allow_others is desirable:
-            lst.add(entity)
-
-    def allow(self, entity: str):
-        self.__access_modifier(entity, self.whitelist, desirable=False)
-               
-    def ban(self, entity: str):
-        self.__access_modifier(entity, self.blacklist, desirable=True)
-
-    def is_allowed(self, entity: str):
-        me = entity == self.ME
-        return me or (self.allow_others and entity not in self.blacklist)\
-                or (not self.allow_others and entity in self.whitelist)
-
-    def __repr__(self):
-        return 'whitelist: {}, blacklist: {}, allow_others: {},'\
-                .format(self.whitelist, self.blacklist, self.allow_others)
-
-    @classmethod
-    async def check_me(cls, client):
-        me = await client.get_me()
-        myid = me.id
-        def check(eid):
-            return cls.ME if eid == myid else eid
-        return check
-
-
-@dataclass
-class ActionData:
-    """
-        Contains event and shortcut info about it's author
-    """
-    event: events.common.EventCommon
-    uid: int
-    chatid: int
-
-    @classmethod
-    async def from_event(cls, event: events.NewMessage):
-        me = await AccessList.check_me(event.client)
-        uid = event.message.from_id
-        c = await event.message.get_chat()
-        return cls(
-            event,
-            me(uid),
-            me(c.id)
-        )
-
-
-##################################################
-# All about parsing
-##################################################
 
 
 class ParseError(Exception):
@@ -302,4 +230,101 @@ class Tokenizer:
         for child in children:
             cls.show_children(child)
     
+
+class Delayed:
+    def __init__(self):
+        self.operation = None
+        self.delayed = []
+
+    def do(self, *args, **kwargs):
+        if self.operation is None:
+            self.delayed.append((args, kwargs))
+        else:
+            self.operation(*args, **kwargs)
+    
+    def undelay(self):
+        if self.operation is None:
+            return
+        for el in self.delayed:
+            args, kwargs = el
+            self.operation(*args, **kwargs)
+
+    def init(self, operation):
+        self.operation = operation
+        self.undelay()
+
+# import here, due to the cicular import 
+from .config import IahrConfig
+
+class AccessList:
+    """
+        Users and groups access manager
+    """
+    # Current user is enabled by default and can't be disabled
+
+    @classmethod    
+    def is_special(cls, ent):
+        return ent in (IahrConfig.OTHERS, IahrConfig.ME)
+    
+    def __init__(self, allow_others=False):
+        
+        self.whitelist = set()
+        self.blacklist = set()
+        self.allow_others = allow_others
+
+    def __access_modifier(self, entity: str, lst: set, desirable: bool):
+        if entity == IahrConfig.ME:
+            return
+
+        if entity == IahrConfig.OTHERS:
+            self.whitelist = set()
+            self.blacklist = set()
+            self.allow_others = not desirable
+        elif self.allow_others is desirable:
+            lst.add(entity)
+
+    def allow(self, entity: str):
+        self.__access_modifier(entity, self.whitelist, desirable=False)
+               
+    def ban(self, entity: str):
+        self.__access_modifier(entity, self.blacklist, desirable=True)
+
+    def is_allowed(self, entity: str):
+        me = entity == IahrConfig.ME
+        return me or (self.allow_others and entity not in self.blacklist)\
+                or (not self.allow_others and entity in self.whitelist)
+
+    def __repr__(self):
+        return 'whitelist: {}, blacklist: {}, allow_others: {},'\
+                .format(self.whitelist, self.blacklist, self.allow_others)
+
+    @classmethod
+    async def check_me(cls, client):
+        me = await client.get_me()
+        myid = me.id
+        def check(eid):
+            return IahrConfig.ME if eid == myid else eid
+        return check
+
+
+@dataclass
+class ActionData:
+    """
+        Contains event and shortcut info about it's author
+    """
+    event: events.common.EventCommon
+    uid: int
+    chatid: int
+
+    @classmethod
+    async def from_event(cls, event: events.NewMessage):
+        me = await AccessList.check_me(event.client)
+        uid = event.message.from_id
+        c = await event.message.get_chat()
+        return cls(
+            event,
+            me(uid),
+            me(c.id)
+        )
+
 

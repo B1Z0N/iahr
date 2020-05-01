@@ -1,9 +1,10 @@
-from ..utils import AccessList, ActionData, Delimiter
+from ..utils import AccessList, ActionData, Delimiter, CommandDelimiter
 from ..utils import Tokenizer, parenthesify, ParseError
+from ..config import IahrConfig
 
 from telethon import events
 
-import re, logging
+import re
 from dataclasses import dataclass
 from typing import Callable
 
@@ -41,13 +42,6 @@ class NonExistantCommandError(ExecutionError):
         super().__init__("**{}** command does not exist".format(command))
 
 
-class CommandDelimiter(Delimiter):
-    def full_command(self, cmd):
-        return self.original + cmd
-        
-    def is_command(self, s):
-        return s.startswith(self.original)
-
 class Query:
     """ 
         Class-representation of our command string in python code
@@ -57,21 +51,13 @@ class Query:
     # All about delimiters
     ##################################################
     
-    # argument delimiters
-    LEFT_DELIMITER = Delimiter(r'[')
-    RIGHT_DELIMITER = Delimiter(r']')
-    COMMAND_DELIMITER = CommandDelimiter(r'.')
-    RAW_DELIMITER = Delimiter(r'r')    
-
-    add_pars = parenthesify(LEFT_DELIMITER, RIGHT_DELIMITER, COMMAND_DELIMITER, RAW_DELIMITER)
-
     KWARGS_RE = re.compile(r'(?<!\\)=')
 
     @classmethod
     def unescape(cls, s):
-        s = cls.LEFT_DELIMITER.unescape(s)
-        s = cls.RIGHT_DELIMITER.unescape(s)
-        s = cls.COMMAND_DELIMITER.unescape(s)
+        s = IahrConfig.LEFT.unescape(s)
+        s = IahrConfig.RIGHT.unescape(s)
+        s = IahrConfig.NEW_MSG.unescape(s)
         return s
 
     ##################################################
@@ -85,18 +71,19 @@ class Query:
     
     @classmethod
     def from_str(cls, qstr):
-        qstr = cls.LEFT_DELIMITER.original + qstr + cls.RIGHT_DELIMITER.original
+        qstr = f'{IahrConfig.LEFT.original}{qstr}{IahrConfig.RIGHT.original}'
+
         try:
-            logging.info(f'raw query:{qstr}')
-            qstr = cls.add_pars(qstr)     
-            logging.info(f'parenthesized query:{qstr}')
-            tree = Tokenizer.from_str(qstr, cls.LEFT_DELIMITER, cls.RIGHT_DELIMITER)
-            logging.info(f'query tree:{tree}')
+            IahrConfig.LOGGER.info(f'raw query:{qstr}')
+            qstr = IahrConfig.ADD_PARS(qstr)     
+            IahrConfig.LOGGER.info(f'parenthesized query:{qstr}')
+            tree = Tokenizer.from_str(qstr, IahrConfig.LEFT, IahrConfig.RIGHT)
+            IahrConfig.LOGGER.info(f'query tree:{tree}')
         except ParseError as e:
             raise CommandSyntaxError(str(e))
 
         self = cls.__to_q(tree)
-        logging.info(f'query obj:{self}')
+        IahrConfig.LOGGER.info(f'query obj:{self}')
         return self
 
     @classmethod
@@ -120,13 +107,13 @@ class Query:
         command, args = tree
         args, kwargs = cls.__process_args(args) 
 
-        if cls.COMMAND_DELIMITER.is_command(command):
+        if IahrConfig.NEW_MSG.is_command(command):
             return cls(command[1:], args, kwargs)
         else:
             return (*re.split(cls.KWARGS_RE, command, 1), ) 
 
     def __repr__(self):
-        res = self.COMMAND_DELIMITER.full_command(self.command) + ' ['
+        res = IahrConfig.NEW_MSG.full_command(self.command) + ' ['
         res += ', '.join(f'{arg}' for arg in self.args) + '] {'
         res += ', '.join(f'{key}:{val}' for key, val in self.kwargs.items()) + ' }'
         return f'Query({res})'
@@ -220,25 +207,25 @@ class Executer:
     async def __run(cls, query, dct, action):
         async def proc(subquery):
             return await cls.__run(subquery, dct, action)
-        qname = query.COMMAND_DELIMITER.full_command(query.command)
+        qname = IahrConfig.NEW_MSG.full_command(query.command)
         id_msg = f'name={qname}:uid={action.uid}:cid={action.chatid}' 
  
         try:
-            logging.info(f'executer:getting handler:{id_msg}')
+            IahrConfig.LOGGER.info(f'getting handler:{id_msg}')
             handler = dct[qname].get_handler(action.uid, action.chatid)        
         except KeyError:
-            logging.error(f'executer:getting handler:no such command registered:{id_msg}')
+            IahrConfig.LOGGER.error(f'getting handler:no such command registered:{id_msg}')
             raise NonExistantCommandError(query.command)
         if handler is None: 
-            logging.warning(f'executer:getting handler:not permitted:{id_msg}')
+            IahrConfig.LOGGER.warning(f'executer:getting handler:not permitted:{id_msg}')
             raise PermissionsError(query.command)
         
         try:
             args, kwargs = await cls.__process_args(query.args, query.kwargs, proc) 
-            logging.info(f'executer:arg={args}:kwargs={kwargs}:{id_msg}')
+            IahrConfig.LOGGER.info(f'arg={args}:kwargs={kwargs}:{id_msg}')
             return await handler(action.event, *args, **kwargs)
         except (AttributeError, ValueError, TypeError) as e:
-            logging.error(f'executer:userspace error:err={e}:{id_msg}')
+            IahrConfig.LOGGER.error(f'userspace error:err={e}:{id_msg}')
             raise ExecutionError(*e.args)
 
     def __repr__(self):

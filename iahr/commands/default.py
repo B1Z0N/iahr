@@ -1,22 +1,20 @@
 from telethon import events
 
-from ..reg import TextSender, VoidSender, MultiArgs, reg
+from ..reg import TextSender, VoidSender, MultiArgs, Register
 from ..run import app, Query
 from ..utils import AccessList
+from ..config import IahrConfig
+
 import logging
 
-
-delimiter = Query.COMMAND_DELIMITER
-ndelimiter = reg.NON_NEW_MSG_COMMAND_DELIMITER
 admin_commands = {'.allowusr', '.allowchat', '.banusr', '.banchat'}
-
 
 def __process_list(single, is_cmds=False):
     if type(single) != str: return [single]
     lst = single.split()
     for i, cmd in enumerate(lst):
-        if is_cmds and not ndelimiter.is_command(cmd):
-            lst[i] = delimiter.full_command(cmd)
+        if is_cmds and not IahrConfig.NEW_MSG.is_command(cmd):
+            lst[i] = IahrConfig.NEW_MSG.full_command(cmd)
     return lst
 
 

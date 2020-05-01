@@ -1,10 +1,14 @@
 from .. import run
-from .register import reg
+from ..utils import Delayed
 
 from functools import wraps
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import logging
+
+
+reg = Delayed()
+
 
 @dataclass
 class MultiArgs:
@@ -110,7 +114,7 @@ def create_sender(name, sendf):
             about = name if about is None else about
             wrapped = wraps(handler)(Sender(handler, take_event, multiret))
 
-            reg.reg(name, wrapped, about, on_event)
+            reg.do(name, wrapped, about, on_event)
             return handler
 
         return decorator
