@@ -1,13 +1,10 @@
 from .. import run
 from ..utils import Delayed
+from ..config import IahrConfig
 
 from functools import wraps
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import logging
-
-
-reg = Delayed()
 
 
 @dataclass
@@ -114,7 +111,7 @@ def create_sender(name, sendf):
             about = name if about is None else about
             wrapped = wraps(handler)(Sender(handler, take_event, multiret))
 
-            reg.do(name, wrapped, about, on_event)
+            IahrConfig.REG.do(name, wrapped, about, on_event)
             return handler
 
         return decorator
@@ -134,7 +131,7 @@ async def any_send(event, *args, **kwargs):
 
 async def __text_send(self):    
     res = run.Query.unescape(str(self.res))
-    logging.info(f'sending text:{res}')
+    IahrConfig.LOGGER.info(f'sending text:{res}')
     return await any_send(self.event, res)
 TextSender = create_sender('TextSender', __text_send)
 

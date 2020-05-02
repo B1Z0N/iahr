@@ -2,10 +2,7 @@ from ..utils import AccessList, ActionData, Delimiter, CommandDelimiter
 from ..utils import Tokenizer, parenthesify, ParseError
 from ..config import IahrConfig
 
-from telethon import events
-
 import re
-from dataclasses import dataclass
 from typing import Callable
 
 
@@ -46,10 +43,11 @@ class Query:
     """ 
         Class-representation of our command string in python code
     """
-
-    ##################################################
-    # All about delimiters
-    ##################################################
+     
+    def __init__(self, command: str, args, kwargs):
+        self.command = command
+        self.args = list(args) # Could be: List[str | Query]
+        self.kwargs = dict(kwargs) # Could be: Dict[str: [str | Query]]
     
     KWARGS_RE = re.compile(r'(?<!\\)=')
 
@@ -63,12 +61,7 @@ class Query:
     ##################################################
     # All about parsing
     ##################################################
-    
-    def __init__(self, command: str, args, kwargs):
-        self.command = command
-        self.args = list(args) # Could be: List[str | Query]
-        self.kwargs = dict(kwargs) # Could be: Dict[str: [str | Query]]
-         
+       
     @classmethod
     def from_str(cls, qstr):
         qstr = f'{IahrConfig.LEFT.original}{qstr}{IahrConfig.RIGHT.original}'
@@ -118,6 +111,7 @@ class Query:
         res += ', '.join(f'{key}:{val}' for key, val in self.kwargs.items()) + ' }'
         return f'Query({res})'
 
+
 class Routine:
     """
         Class that contains raw command handler and manages permissions to use it
@@ -128,7 +122,7 @@ class Routine:
         self.handler = handler
         self.usraccess = AccessList(allow_others=False)
         self.chataccess = AccessList(allow_others=True)       
- 
+         
     def help(self):
         return self.about
  
@@ -161,8 +155,26 @@ class Routine:
 
         return self.handler
 
+    ##################################################
+    # Session managing
+    ##################################################
+
+    def get_state(self):
+        return {
+            'usraccess' : self.usraccess,
+            'chataccess' : self.chataccess,
+        }
+
+    def set_state(self, state):
+        self.usraccess = state['usraccess']
+        self.chataccess = state['chataccess']
+
+    JSON_ENCODER = AccessList.ALEncoder
+    JSON_DECODER = AccessList.ALDecoder
+
     def __repr__(self):
         return f'Routine(usraccess={self.usraccess}, chataccess={self.chataccess})'
+
 
 class Executer:
     """ 
@@ -182,7 +194,6 @@ class Executer:
         return await Executer.__run(
             self.query, self.dict, self.action
         )
-
     
     async def __process_args(rawargs, rawkwargs, subprocess: Callable):
         if not rawargs and not rawkwargs: return [], {}

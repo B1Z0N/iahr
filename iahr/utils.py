@@ -1,7 +1,7 @@
 from telethon import events
 
 from dataclasses import dataclass
-import re
+import re, json
 
 
 class Delimiter:
@@ -40,6 +40,32 @@ class CommandDelimiter(Delimiter):
         
     def is_command(self, s):
         return s.startswith(self.original)
+
+
+class Delayed:
+    def __init__(self):
+        self.operation = None
+        self.delayed = []
+
+    def do(self, *args, **kwargs):
+        if self.operation is None:
+            self.delayed.append((args, kwargs))
+        else:
+            self.operation(*args, **kwargs)
+    
+    def undelay(self):
+        if self.operation is None:
+            return
+        for el in self.delayed:
+            args, kwargs = el
+            self.operation(*args, **kwargs)
+
+    def init(self, operation):
+        self.operation = operation
+        self.undelay()
+
+    def __repr__(self):
+        return f'Delayed(delayed={self.delayed})'
 
 
 class SingletonMeta(type):
@@ -234,32 +260,7 @@ class Tokenizer:
             cls.show_children(child)
     
 
-class Delayed:
-    def __init__(self):
-        self.operation = None
-        self.delayed = []
-
-    def do(self, *args, **kwargs):
-        if self.operation is None:
-            self.delayed.append((args, kwargs))
-        else:
-            self.operation(*args, **kwargs)
-    
-    def undelay(self):
-        if self.operation is None:
-            return
-        for el in self.delayed:
-            args, kwargs = el
-            self.operation(*args, **kwargs)
-
-    def init(self, operation):
-        self.operation = operation
-        self.undelay()
-
-    def __repr__(self):
-        return f'Delayed(delayed={self.delayed})'
-
-# import here, due to the cicular import 
+# import here, due to the circular import 
 from .config import IahrConfig
 
 class AccessList:
@@ -312,6 +313,31 @@ class AccessList:
             return IahrConfig.ME if eid == myid else eid
         return check
 
+    class ALEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, AccessList):
+                return {
+                    'AccessList' : {
+                        'others' : obj.allow_others,
+                        'whitelist' : list(obj.whitelist),
+                        'blacklist' : list(obj.blacklist),
+                    }
+                }
+        
+            return json.JSONEncoder.default(self, obj)  
+
+    class ALDecoder(json.JSONDecoder):
+        def __init__(self, *args, **kwargs):
+            json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+        def object_hook(self, dct):
+            if 'AccessList' in dct:
+                print(dct)
+                alst, dct  = AccessList(), dct['AccessList']
+                alst.allow_others = dct['others']
+                alst.whitelist = set(dct['whitelist'])
+                alst.blacklist = set(dct['blacklist'])
+                return alst
+            return dct
 
 @dataclass
 class ActionData:
@@ -332,5 +358,4 @@ class ActionData:
             me(uid),
             me(c.id)
         )
-
 

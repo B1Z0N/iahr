@@ -1,13 +1,12 @@
 from telethon import events
 
-from ..reg import TextSender, VoidSender, MultiArgs, Register
-from ..run import app, Query
+from ..reg import TextSender, VoidSender, MultiArgs
 from ..utils import AccessList
 from ..config import IahrConfig
 
-import logging
 
 admin_commands = {'.allowusr', '.allowchat', '.banusr', '.banchat'}
+
 
 def __process_list(single, is_cmds=False):
     if type(single) != str: return [single]
@@ -20,6 +19,8 @@ def __process_list(single, is_cmds=False):
 
 @TextSender(about='Get help about a command or list of all commands')
 async def help(event, cmd=None):
+    app = IahrConfig.APP
+
     if cmd is not None:
         cmds = __process_list(cmd, is_cmds=True)
     else:
@@ -37,8 +38,8 @@ async def help(event, cmd=None):
     return res
 
 
-
 is_integer = lambda x: str(x).lstrip('-').isdigit()
+
 
 async def __usr_from_event(event):
     reply = await event.message.get_reply_message()
@@ -54,12 +55,16 @@ async def __chat_from_event(event):
     return chat.id
 
 async def __access_action(event, action: str, entity: str, cmd, admintoo=False):
+    app = IahrConfig.APP
+
     entities = __process_list(entity)
+
     for i, entity in enumerate(entities):
         if not AccessList.is_special(entity) and not is_integer(entity):
             entity = await event.client.get_entity(entity)
             entity = entity.id
             entities[i] = entity
+
     all_cmds = cmd is None
     if not all_cmds:
         cmds = __process_list(cmd, is_cmds=True)
@@ -71,10 +76,14 @@ async def __access_action(event, action: str, entity: str, cmd, admintoo=False):
     for entity in entities:
         cmdres = {}
         for cmd in cmds:
-            if cmd not in admin_commands or (not AccessList.is_special(entity) and not all_cmds) or admintoo:
+            applies = cmd not in admin_commands or \
+                (not AccessList.is_special(entity) and not all_cmds) or admintoo
+
+            if applies:
                 routine = app.commands.get(cmd)
                 if routine is not None:
                     cmdres[cmd] = getattr(routine, action)(entity)
+
         entres.append((entity, cmdres))
             
     return entres
@@ -107,7 +116,7 @@ async def __perm_format(event, lst):
     res = ''
     for ent, perms in lst:
         perms = '\n  '.join(cmd + (' - enabled' if flag else ' - disabled') for cmd, flag in perms.items())
-        if ent != AccessList.ME:
+        if ent != IahrConfig.ME:
             ent = await event.client.get_entity(ent)
             ent = ent.username 
         res += '**{}**:\n  {}\n'.format(ent, perms)

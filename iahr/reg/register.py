@@ -1,13 +1,11 @@
 from telethon import events
 
-from . import senders
-from ..utils import SingletonMeta, Delimiter, CommandDelimiter
 from .. import run
+from ..utils import Delimiter, CommandDelimiter
 from ..config import IahrConfig
 
-from dataclasses import dataclass
-from typing import Callable
 import re
+
 
 class CommandRegisterError(Exception):
     pass
@@ -110,8 +108,4 @@ class Register:
         except Exception as e:
             IahrConfig.LOGGER.error('exception', exc_info=True)
 
-
-async def init(client):
-    reg = Register(client, run.app)
-    senders.reg.init(reg.reg)
 

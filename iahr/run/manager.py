@@ -4,26 +4,38 @@ from .runner import ExecutionError, CommandSyntaxError, PermissionsError, NonExi
 from ..config import IahrConfig
 
 from typing import Iterable, Union, Callable
+import json, os, atexit
 
 
-class Manager(metaclass=SingletonMeta):
+class Manager:
     """
         Contains { command_name : routine } key-value pair
         manages addition of new commands and starting it's
         execution by Executer. Only for text-based commands!
+
+        Manages session state(basically just access rights)
     """
     def __init__(self):
         self.commands = {}
-    
+        self.state = self.load()
+        atexit.register(self.dump)
+
+    ##################################################
+    # Routine management
+    ##################################################
+
     def add(self, command: str, handler: Callable, about: str, delimiter=None):
         """
             Add a handler and it's name to the list
         """
+        IahrConfig.LOGGER.info(f'adding handler:name={command}:about={about}')
+
         delimiter = IahrConfig.NEW_MSG if delimiter is None else delimiter
         command = delimiter.full_command(command)
-        IahrConfig.LOGGER.info(f'adding handler:name={command}:about={about}')
-        self.commands[command] = Routine(handler, about)
+        routine = self.init_routine(command, handler, about)
 
+        self.commands[command] = routine
+ 
     async def exec(self, qstr, event):
         """
             Execute query where qstr is raw command text
@@ -33,10 +45,29 @@ class Manager(metaclass=SingletonMeta):
         runner = Executer(qstr, self.commands, action)
         return await runner.run()
 
+    ##################################################
+    # State management
+    ##################################################
+
+    def dump(self):
+        dct = {name : cmd.get_state() for name, cmd in self.commands.items()}
+        with open(IahrConfig.SESSION_FNAME, 'w+') as f:
+            json.dump(dct, f, indent=4, cls=Routine.JSON_ENCODER)
+
+    def load(self):
+        fname = IahrConfig.SESSION_FNAME
+        if os.path.exists(fname) and os.path.getsize(fname) > 0:
+            with open(fname, 'r') as f:
+                return json.load(f, cls=Routine.JSON_DECODER)
+        else:
+            return {}
+
+    def init_routine(self, command, handler, about):
+        routine = Routine(handler, about)
+        if state := self.state.get(command):
+            routine.set_state(state)
+        return routine
+
     def __repr__(self):
         return f'Manager({self.commands})'
-
-
-app = Manager()
-
 
