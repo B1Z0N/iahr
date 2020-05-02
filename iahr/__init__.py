@@ -7,5 +7,5 @@ from . import config
 async def init(client):
     app = run.Manager()
     register = reg.Register(client, app)
-    config.init_config(app, register)
+    config.IahrConfig.init_config(app, register)
 

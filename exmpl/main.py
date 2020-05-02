@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 from telethon import TelegramClient
 from iahr import init
-from iahr.config import IahrConfig
+from iahr.config import config, IahrConfig
 from iahr.utils import Delimiter, CommandDelimiter
 
 import commands 
@@ -24,9 +24,10 @@ def make_client():
 
 
 async def main(client):
-    if sessf := os.getenv(IAHR_SESSION_PATH):
-        IahrConfig.SESSION_FNAME = sessf
-    
+    config(
+        session_fname=os.getenv(IAHR_SESSION_PATH)
+    )
+
     await init(client)
     await client.start()
     await client.run_until_disconnected()
