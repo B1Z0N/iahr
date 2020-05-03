@@ -2,23 +2,39 @@ from iahr.reg import TextSender, VoidSender
 from telethon import events
 
 
-@VoidSender(name='isaw', about='Notifies when someone edits the message', on_event=events.MessageEdited)
+@VoidSender(name='isaw', on_event=events.MessageEdited, about="""
+    Notifies when someone edits the message
+""")
 async def isaw(event):
     await event.message.reply("I saw what you did here, you bastard!")
 
-@TextSender()
+@TextSender(about="""
+    Concatenate unlimited number of args
+""")
 async def concat(_, *args):
-    return ''.join(args)
+    return ''.join(str(arg) for arg in args)
 
-@TextSender()
-async def idx(_, s):
+@TextSender(about="""
+    Return single argument passed
+""", take_event=False)
+async def idx(s):
     return s
 
-@TextSender(multiret=True)
+@TextSender(multiret=True, about="""
+    Split string with spaces, return list
+""")
 async def split(_, s):
     return s.split()
 
 
-@TextSender()
+@TextSender(multiret=True, about="""
+    Return list of two args
+        
+        `.kwtest 1 2`
+
+        `.kwtest arg1=1 arg2=2`
+
+        `.kwtest r[arg2=arg.[[]]r 1
+""")
 async def kwtest(_, arg1, arg2):
     return arg1, arg2
