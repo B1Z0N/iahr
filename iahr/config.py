@@ -1,16 +1,33 @@
 from telethon import events
 
-from .utils import Delimiter, CommandDelimiter, parenthesify, Delayed, SingletonMeta
+from .utils import Delimiter, CommandDelimiter
+from .utils import parenthesify, Delayed, SingletonMeta
 
-import re, logging, sys
+import re, sys, logging
 
 
-def create_logger(fmt, datefmt, out):
+##################################################
+# Functions for updating dependent config data 
+##################################################
+
+
+def update_command_re(new_msg: Delimiter):
+    return re.compile(r'{}[^\W]+.*'.format(new_msg.in_re()))
+
+
+def update_add_pars(left, right, new_msg, raw):
+    return parenthesify(left, right, new_msg, raw)
+
+
+def update_logger(fmt, datefmt, out):
     if out in (sys.stdout, sys.stderr):
         handler_cls = logging.StreamHandler
-    else:
+    elif type(out) == str:
         handler_cls = logging.FileHandler
-
+    else:
+        raise RuntimeError(
+            "out should be one of this: sys.stdout, sys.stdin, `filename`"
+        )
     logger = logging.getLogger('iahr')
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter(fmt, datefmt)
@@ -22,9 +39,26 @@ def create_logger(fmt, datefmt, out):
 
 
 class IahrConfig(metaclass=SingletonMeta):
+    """
+        Single source of truth about configuration.
+        This way all modules can access fresh info 
+        at import time. 
+        
+        Needs to be initialized with `init` call.
+        It is only for internal use, to update values
+        from userspace use `config` function below. 
+    """
+
+
+    ##################################################
+    # Main configuration data
+    ##################################################
+
+    # delimiters
     LEFT, RIGHT, RAW = Delimiter('['), Delimiter(']'), Delimiter('r')
     NEW_MSG, NON_NEW_MSG = CommandDelimiter('.'), CommandDelimiter('!')
     
+    # prefixes for non-new-msg events
     PREFIX = Delimiter('_')
     PREFIXES = {
         events.MessageEdited : 'onedit',
@@ -35,68 +69,73 @@ class IahrConfig(metaclass=SingletonMeta):
         events.Album : 'onalbum',     
     }
     
+    # special keywords in AccessList
     ME, OTHERS = 'me', '*'
     
+    # logging details
     LOG_FORMAT = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
-    LOG_DATETIME_FORMAT, LOG_OUT = '%m/%d/%Y %I:%M:%S %p', sys.stdout
+    LOG_DATETIME_FORMAT = '%m/%d/%Y %I:%M:%S %p'
+    LOG_OUT = sys.stdout # could be file or
 
     SESSION_FNAME = 'iahr.session'
-  
-    # to be settled, but needed here
-    # for use in command execution time
-    APP = None
-    # to be settled, but needed
-    # for use in import time
-    REG = Delayed()
+
+    APP = None # to be settled, but needed here for use in command execution time
+    REG = Delayed() # to be settled, but needed for use in import time
 
     ##################################################
     # Config based on config data above
     ##################################################
 
-    COMMAND_RE = re.compile(r'{}[^\W]+.*'.format(NEW_MSG.in_re()))
-    ADD_PARS = parenthesify(LEFT, RIGHT, NEW_MSG, RAW)
-    LOGGER = create_logger(LOG_FORMAT, LOG_DATETIME_FORMAT, LOG_OUT)
+    COMMAND_RE = update_command_re(NEW_MSG)
+    ADD_PARS = update_add_pars(LEFT, RIGHT, NEW_MSG, RAW)
+    LOGGER = update_logger(LOG_FORMAT, LOG_DATETIME_FORMAT, LOG_OUT)
 
     ##################################################
     # Config methods
     ##################################################
 
     @classmethod
-    def init_config(cls, app, reg):
+    def init(cls, app, reg):
+        """ 
+            Should be called with initial setup args.
+            The core call to start a framework.
+        """
         IahrConfig.APP = app
         IahrConfig.REG.init(reg.reg)
     
+    @classmethod
+    def _update(cls, preprocess, **kwargs):
+        """
+            Helper function to update the member if it's
+            lowercase kwarg conterpart is not None.
+        """
+        for name, val in kwargs.items():
+            if val is not None:
+                setattr(cls, name.upper(), preprocess(val))
 
-def __update(preprocess, **kwargs):
-    for name, val in kwargs.items():
-        if val is not None:
-            setattr(IahrConfig, name.upper(), preprocess(val))
-            
 
 def config(left=None, right=None, raw=None, new_msg=None, 
             non_new_msg=None, prefix=None, prefixes=None, 
             me=None, others=None, log_format=None, 
             log_datetime_format=None, log_out=None,
             session_fname=None):
-    __update(Delimiter, left=left, right=right, raw=raw, prefix=prefix)
-    __update(CommandDelimiter, new_msg=new_msg, non_new_msg=non_new_msg)
-    __update(
+    """
+        Single entry to framework configuration, 
+        just run this with some of updated values and 
+        it will update IahrConfig accordingly.
+    """
+
+    cfg = IahrConfig
+
+    cfg._update(Delimiter, left=left, right=right, raw=raw, prefix=prefix)
+    cfg._update(CommandDelimiter, new_msg=new_msg, non_new_msg=non_new_msg)
+    cfg._update(
         lambda x: x, prefixes=prefixes, me=me,
         others=others, log_format=log_format,
         log_datetime_format=log_datetime_format,
         log_out=log_out, session_fname=session_fname
     )
-     
-    if new_msg:
-        IahrConfig.COMMAND_RE = re.compile(
-            r'{}[^\W]+.*'.format(IahrConfig.NEW_MSG.in_re())
-        )
-    if left or right or new_msg or raw:
-        IahrConfig.ADD_PARS = parenthesify(
-            IahrConfig.LEFT, IahrConfig.RIGHT, IahrConfig.NEW_MSG, IahrConfig.RAW
-        )
-    if log_format or log_datetime_format or log_out:
-        IahrConfig.LOGGER = create_logger(
-            IahrConfig.LOG_FORMAT, IahrConfig.LOG_DATETIME_FORMAT, IahrConfig.LOG_OUT
-        )
- 
+
+    cfg.COMMAND_RE = update_command_re(cfg.NEW_MSG)
+    cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.NEW_MSG, cfg.RAW)
+    cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT, cfg.LOG_OUT)
