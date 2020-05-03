@@ -1,4 +1,18 @@
-1. Think about getting uid and chatid automatically from `event` in `Executer`, not supplying them by user
-1. Add support for correct subproperties handling(ability to create class commands)
-1. Cover with tests
+- Now
+
+    1. Comments
+    1. Codestyle
+    1. Setup repo and related files
+    1. Write documentation
+    1. Write tests
+
+- Ideas
+
+    1. Add command aliasing
+    1. Add modules
+    1. Deal with spam
+
+- Always
+    
+    1. Make errors more detailed
 
