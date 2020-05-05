@@ -29,7 +29,7 @@ Now you could add new commands and change configuration of the framework by alte
 
 
 
-# Commands
+# HOW TO commands
 
 > They created a program to tell them one thing, the most important one. After a few months
 >
@@ -97,6 +97,8 @@ async def macro():
 
 **Note**: don't forget`multiret=True` when you want to return list of values instead of one value: list. 
 
+-------------------------
+
 Well that's now a lot more, it's just an overview of an API and you don't need to use it whole. Personally I would stop on something like this:
 
 ```python
@@ -123,9 +125,159 @@ Currently there are three senders:
 
 You can import it from `iahr.reg`. And easily create new senders(more on it later, below).
 
-# Built-in commands
+### Syntax
+
+Syntax details could be easily changed(see **Configuration** below). So we would use default configuration to show syntax example. Also, you can call `.synhelp` for the same purpose.
+
+------------------------------------
+
+All commands start with ".", arguments can be passed too: 
+
+    .help help or .help [help]
+
+------------------------------------
+
+Pros of using brackets is that you can pass args with spaces, but don't forget to escape special symbols in brackets:
+
+    .help [very weird command \.\[\]]
+
+------------------------------------
+
+Also there are raw args:
+
+    .help r[very weird command .[]]r
+
+------------------------------------
+
+You could use keyword args:
+
+* allow me to run help command:
+
+  ```
+  .allowusr usr=me cmd=help
+  ```
+
+* allow ... to run all commands
+
+  ```
+  .allowusr [usr=wery weird user with = sign]
+  ```
+
+------------------------------------
+
+And the most important thing, you can chain commands, as long as they support each others return types:
+
+    .do1 [.do2 [arg1]] [.do3]
+
+The brackets will add up automatically:
+
+```
+.do1 .do2 arg1 .do3
+```
+
+means
+
+```
+[.do1 [.do2 [arg1] [.do3]]]
+```
+
+### Built-in commands
+
+To run a command both user and chat need to be allowed to run this command(except if it's you(admin) who is running the command).
+
+* `help`
+
+  1. get list of commands: `.help`
+  2. get info about a command: `.help help` 
+
+* `allowusr`
+
+  1. allow user to run a command: `.allowusr B1ZON help` or `.allowusr usr=B1ZON cmd=help`
+
+  2. allow user to run all non-admin commands: `.allowusr B1ZON`
+
+  3. allow user that you are replying to (or you if you are replying to nobody): `.allowusr cmd=help`
+
+     **NB**: the user could be gotten by replying to his message(the easiest way)
+
+  4. like previous one, but all non-admin commands: `.allowusr`
+
+* `allowchat`
+
+  1. allow chat to run a command: `.allowchat strawberry_fields_forever help` or `.allowchat chat=starwbery_fields_forever cmd=help`
+
+  2. allow chat to run all non-admin commands: `.allowchat strawberry_fields_forever`
+
+  3. allow chat that you are writing this in `.allowchat cmd=help`
+
+     **NB**: the chat could be detected automatically if you write in it(the easiest way)
+
+  4. like previous one, but all non-admin commands: `.allowchat`
+
+* `banusr` - just a mirrored function to `allowusr`
+
+* `banchat` - twin function of `allowchat`
+
+* `allowedusr`
+
+  1. list all allowed commands to particular user: `.allowedusr B1ZON`
+
+  2. see permissions of multiple users to run this command: `.allowedusr [B1ZON huligan2007] help`
+
+  3. check permissions on multiple commands of user you are replying(or your permissions, if you are replying to nobody) : `.allowedusr [cmd=help synhelp]`
+
+     **NB**: the user could be gotten by replying to his message(the easiest way)
+
+  4. like previous one, but all commands: `.allowedusr`
+
+* `allowedchat`
+
+  1. list all allowed commands to particular chat: `.allowedchat loose_couple`
+
+  2. check permissions of multiple chats to run this command: `.allowedchat [loose couple] help`
+
+  3. check permissions on multiple commands of chat you are writing it in : `.allowedchat [cmd=help synhelp]`
+
+     **NB**: the chat could be detected automatically if you write in it(the easiest way)
+
+  4. like previous one, but all commands: `.allowedchat`
+
+* `synhelp` - help about syntax
+
+## HOW TO extend
+
+ ### Configuration
 
 
 
-# Framework configuration
+ ###  Creating senders
 
+
+
+  ### Creating managers
+
+
+
+ ### Creating registers
+
+
+
+# HOW TO contribute
+
+### Guidelines
+
+
+
+### Syntax error refactoring
+
+
+
+### New commands
+
+
+
+### Ideas
+
+* Modules support
+* Dynamic command creation
+* Spam level reduce
