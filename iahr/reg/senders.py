@@ -122,15 +122,13 @@ async def any_send(event, *args, **kwargs):
         Shortcut for sending response to the same chat
         the event occured on
     """
-    chat = await event.get_input_chat()
-    client = event.client
-    return await client.send_message(chat, *args, **kwargs)
+    await event.message.reply(*args, **kwargs)
 
 
 async def __text_send(self):
     res = run.Query.unescape(str(self.res))
     IahrConfig.LOGGER.info(f'sending text:{res}')
-    return await any_send(self.event, res)
+    await any_send(self.event, res)
 
 
 TextSender = create_sender('TextSender', __text_send)
