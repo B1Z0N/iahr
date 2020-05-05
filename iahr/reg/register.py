@@ -16,7 +16,6 @@ class Register:
         Like Manager, but unified to enable adding non-textbased commands
         e.g. EditMessage, ChatAction...
     """
-   
     @staticmethod
     def to_type(event):
         """
@@ -37,11 +36,10 @@ class Register:
         if pr is None:
             return IahrConfig.NEW_MSG.original
         return pr + IahrConfig.PREFIX.original
-   
+
     ##################################################
-    # Register handlers 
+    # Register handlers
     ##################################################
- 
 
     def reg(self, name, handler, about, etype=None):
         """
@@ -52,14 +50,14 @@ class Register:
         if etype == None or type(etype) == events.NewMessage:
             self.reg_new_msg(name, handler, about)
         else:
-            self.reg_others(name, handler, about, etype) 
+            self.reg_others(name, handler, about, etype)
 
     def reg_new_msg(self, name, handler, about):
         """
             Register new message handler to our manager
         """
         self.app.add(name, handler, about, delimiter=IahrConfig.NEW_MSG)
-        
+
     def reg_others(self, name, handler, about, event):
         """
             Register non-new-message events directly as the client event handler.
@@ -72,19 +70,18 @@ class Register:
             delimiter and don't forget to pass correct event type to the `app.exec`.
         """
         self.app.add(self.prefix(event) + name,
-                handler, about, delimiter=IahrConfig.NON_NEW_MSG)
+                     handler,
+                     about,
+                     delimiter=IahrConfig.NON_NEW_MSG)
         self.client.add_event_handler(handler, event)
 
     def __init__(self, client, app):
         self.client = client
         self.app = app
- 
 
         self.client.add_event_handler(
-            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE)
-        )
-           
- 
+            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE))
+
     async def run(self, event):
         """
             Process incoming message with our handlers and manager
@@ -95,7 +92,8 @@ class Register:
             if IahrConfig.NEW_MSG.is_command(txt):
                 try:
                     sender = await self.app.exec(txt, event)
-                except (run.CommandSyntaxError, run.PermissionsError, run.NonExistantCommandError) as e:
+                except (run.CommandSyntaxError, run.PermissionsError,
+                        run.NonExistantCommandError) as e:
                     IahrConfig.LOGGER.error(f'{e}')
                     await event.reply(str(e))
                 except run.ExecutionError as e:
@@ -104,8 +102,6 @@ class Register:
                         'Incompatible commands, wrong arguments or just a buggy function'
                     )
                 else:
-                   await sender.send()
+                    await sender.send()
         except Exception as e:
             IahrConfig.LOGGER.error('exception', exc_info=True)
-
-

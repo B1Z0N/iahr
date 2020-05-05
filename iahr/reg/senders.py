@@ -14,7 +14,7 @@ class MultiArgs:
         not just a list of arguments
     """
     args: list
-    
+
     def __str__(self):
         if len(self.args) == 1:
             return str(self.args[0])
@@ -42,8 +42,7 @@ class ABCSender(ABC):
 
     def __str__(self):
         return '{{ fun: {}, passevent: {}, multiret: {}, res: {} }}'.format(
-            self.fun, self.pass_event, self.multiret, self.res
-        )
+            self.fun, self.pass_event, self.multiret, self.res)
 
     @abstractmethod
     async def send(self):
@@ -52,8 +51,7 @@ class ABCSender(ABC):
             (to chat or some other type of communication)
             based on input event and command result
         """
-        pass    
-
+        pass
 
     async def __call__(self, event, *args, **kwargs):
         """
@@ -62,21 +60,19 @@ class ABCSender(ABC):
             2. Event object - to use it in sending an output(final step)
         """
         self.event = event
-        
+
         if self.pass_event:
             self.res = await self.fun(event, *args, **kwargs)
         else:
             self.res = await self.fun(*args, **kwargs)
-        
+
         if self.multiret is True:
-            self.res = MultiArgs(self.res)  
+            self.res = MultiArgs(self.res)
         elif type(self.res) != MultiArgs:
-            self.res = MultiArgs(
-                [self.res] if self.res is not None else []
-            )
+            self.res = MultiArgs([self.res] if self.res is not None else [])
 
         return self
-    
+
     def __repr__(self):
         clsname = self.__class__.__name__
         return f'{clsname}(pass_event:{self.pass_event}, multiret:{self.multiret}, res:{self.res})'
@@ -86,11 +82,13 @@ def create_sender(name, sendf):
     """
         ABCSender concrete subtypes factory
     """
-    Sender = type(name, (ABCSender,), { 'send' : sendf })
+    Sender = type(name, (ABCSender, ), {'send': sendf})
 
-    def create_decorator(name=None, about=None, 
-            take_event=True, multiret=False, on_event=None
-        ):
+    def create_decorator(name=None,
+                         about=None,
+                         take_event=True,
+                         multiret=False,
+                         on_event=None):
         """
             Parameterized decorator based on command name and it's description
             event - true if function takes event as the first argument,
@@ -116,7 +114,7 @@ def create_sender(name, sendf):
 
         return decorator
 
-    return create_decorator 
+    return create_decorator
 
 
 async def any_send(event, *args, **kwargs):
@@ -129,17 +127,24 @@ async def any_send(event, *args, **kwargs):
     return await client.send_message(chat, *args, **kwargs)
 
 
-async def __text_send(self):    
+async def __text_send(self):
     res = run.Query.unescape(str(self.res))
     IahrConfig.LOGGER.info(f'sending text:{res}')
     return await any_send(self.event, res)
+
+
 TextSender = create_sender('TextSender', __text_send)
+
 
 async def __media_send(self):
     return await any_send(self.event, file=self.res.args[0])
+
+
 MediaSender = create_sender('MediaSender', __media_send)
+
 
 async def __void_send(self):
     pass
-VoidSender = create_sender('VoidSender', __void_send)
 
+
+VoidSender = create_sender('VoidSender', __void_send)

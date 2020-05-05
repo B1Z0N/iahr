@@ -6,8 +6,7 @@ from telethon import TelegramClient
 from iahr import init
 from iahr.config import config
 
-import commands 
-
+import commands
 
 # constants
 API_ID = 'TG_API_ID'
@@ -26,17 +25,15 @@ def make_client():
 
 
 async def main(client):
-    config(
-        session_fname=os.getenv(IAHR_SESSION_PATH),
-    )
-  
+    config(session_fname=os.getenv(IAHR_SESSION_PATH), )
+
     await init(client)
     await client.start()
     await client.run_until_disconnected()
 
-if __name__ == '__main__': 
+
+if __name__ == '__main__':
     load_dotenv()
     client = make_client()
     client.loop.run_until_complete(main(client))
     client.loop.close()
-

@@ -15,6 +15,7 @@ class Manager:
 
         Manages session state(basically just access rights)
     """
+
     def __init__(self):
         self.commands = {}
         self.state = self.load()
@@ -35,7 +36,7 @@ class Manager:
         routine = self.init_routine(command, handler, about)
 
         self.commands[command] = routine
- 
+
     async def exec(self, qstr, event):
         """
             Execute query where qstr is raw command text
@@ -50,7 +51,7 @@ class Manager:
     ##################################################
 
     def dump(self):
-        dct = {name : cmd.get_state() for name, cmd in self.commands.items()}
+        dct = {name: cmd.get_state() for name, cmd in self.commands.items()}
         with open(IahrConfig.SESSION_FNAME, 'w+') as f:
             json.dump(dct, f, indent=4, cls=Routine.JSON_ENCODER)
 
@@ -70,4 +71,3 @@ class Manager:
 
     def __repr__(self):
         return f'Manager({self.commands})'
-

@@ -5,9 +5,8 @@ from .utils import parenthesify, Delayed, SingletonMeta
 
 import re, sys, logging
 
-
 ##################################################
-# Functions for updating dependent config data 
+# Functions for updating dependent config data
 ##################################################
 
 
@@ -26,15 +25,14 @@ def update_logger(fmt, datefmt, out):
         handler_cls = logging.FileHandler
     else:
         raise RuntimeError(
-            "out should be one of this: sys.stdout, sys.stdin, `filename`"
-        )
+            "out should be one of this: sys.stdout, sys.stdin, `filename`")
     logger = logging.getLogger('iahr')
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter(fmt, datefmt)
     handler = handler_cls(out)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    
+
     return logger
 
 
@@ -49,7 +47,6 @@ class IahrConfig(metaclass=SingletonMeta):
         from userspace use `config` function below. 
     """
 
-
     ##################################################
     # Main configuration data
     ##################################################
@@ -57,30 +54,30 @@ class IahrConfig(metaclass=SingletonMeta):
     # delimiters
     LEFT, RIGHT, RAW = Delimiter('['), Delimiter(']'), Delimiter('r')
     NEW_MSG, NON_NEW_MSG = CommandDelimiter('.'), CommandDelimiter('!')
-    
+
     # prefixes for non-new-msg events
     PREFIX = Delimiter('_')
     PREFIXES = {
-        events.MessageEdited : 'onedit',
-        events.MessageDeleted : 'ondel',
-        events.MessageRead : 'onread',
-        events.ChatAction : 'onchataction' ,
-        events.UserUpdate : 'onusrupdate',
-        events.Album : 'onalbum',     
+        events.MessageEdited: 'onedit',
+        events.MessageDeleted: 'ondel',
+        events.MessageRead: 'onread',
+        events.ChatAction: 'onchataction',
+        events.UserUpdate: 'onusrupdate',
+        events.Album: 'onalbum',
     }
-    
+
     # special keywords in AccessList
     ME, OTHERS = 'me', '*'
-    
+
     # logging details
     LOG_FORMAT = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
     LOG_DATETIME_FORMAT = '%m/%d/%Y %I:%M:%S %p'
-    LOG_OUT = sys.stdout # could be file or
+    LOG_OUT = sys.stdout  # could be file or
 
     SESSION_FNAME = 'iahr.session'
 
-    APP = None # to be settled, but needed here for use in command execution time
-    REG = Delayed() # to be settled, but needed for use in import time
+    APP = None  # to be settled, but needed here for use in command execution time
+    REG = Delayed()  # to be settled, but needed for use in import time
 
     ##################################################
     # Config based on config data above
@@ -102,7 +99,7 @@ class IahrConfig(metaclass=SingletonMeta):
         """
         IahrConfig.APP = app
         IahrConfig.REG.init(reg.reg)
-    
+
     @classmethod
     def _update(cls, preprocess, **kwargs):
         """
@@ -114,11 +111,19 @@ class IahrConfig(metaclass=SingletonMeta):
                 setattr(cls, name.upper(), preprocess(val))
 
 
-def config(left=None, right=None, raw=None, new_msg=None, 
-            non_new_msg=None, prefix=None, prefixes=None, 
-            me=None, others=None, log_format=None, 
-            log_datetime_format=None, log_out=None,
-            session_fname=None):
+def config(left=None,
+           right=None,
+           raw=None,
+           new_msg=None,
+           non_new_msg=None,
+           prefix=None,
+           prefixes=None,
+           me=None,
+           others=None,
+           log_format=None,
+           log_datetime_format=None,
+           log_out=None,
+           session_fname=None):
     """
         Single entry to framework configuration, 
         just run this with some of updated values and 
@@ -129,13 +134,16 @@ def config(left=None, right=None, raw=None, new_msg=None,
 
     cfg._update(Delimiter, left=left, right=right, raw=raw, prefix=prefix)
     cfg._update(CommandDelimiter, new_msg=new_msg, non_new_msg=non_new_msg)
-    cfg._update(
-        lambda x: x, prefixes=prefixes, me=me,
-        others=others, log_format=log_format,
-        log_datetime_format=log_datetime_format,
-        log_out=log_out, session_fname=session_fname
-    )
+    cfg._update(lambda x: x,
+                prefixes=prefixes,
+                me=me,
+                others=others,
+                log_format=log_format,
+                log_datetime_format=log_datetime_format,
+                log_out=log_out,
+                session_fname=session_fname)
 
     cfg.COMMAND_RE = update_command_re(cfg.NEW_MSG)
     cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.NEW_MSG, cfg.RAW)
-    cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT, cfg.LOG_OUT)
+    cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT,
+                               cfg.LOG_OUT)

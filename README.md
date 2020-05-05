@@ -1,4 +1,5 @@
 # Iahr
 
-Telegram command execution and event handling framework
+Telegram command execution framework based on telethon library
+
 

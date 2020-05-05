@@ -4,7 +4,6 @@ from ..reg import TextSender, VoidSender, MultiArgs
 from ..utils import AccessList
 from ..config import IahrConfig
 
-
 admin_commands = {'.allowusr', '.allowchat', '.banusr', '.banchat'}
 
 
@@ -26,14 +25,12 @@ async def help(event, cmd=None):
     if cmd is None:
         return '\n'.join(f'**{cmd}**' for cmd in app.commands.keys())
 
-
     cmds = __process_list(cmd, is_cmds=True)
-    helplst, nosuch = [], "No such command(try checking full help)" 
+    helplst, nosuch = [], "No such command(try checking full help)"
     for cmd in cmds:
         val = app.commands.get(cmd)
         res = '**{}**:\n{}\n'.format(
-            cmd, nosuch if val is None else app.commands[cmd].help()
-        )
+            cmd, nosuch if val is None else app.commands[cmd].help())
         helplst.append(res)
 
     res = '\n'.join(helplst)
@@ -52,11 +49,17 @@ async def __usr_from_event(event):
         res = reply.from_id
     return me(res)
 
+
 async def __chat_from_event(event):
     chat = await event.message.get_chat()
     return chat.id
 
-async def __access_action(event, action: str, entity: str, cmd, admintoo=False):
+
+async def __access_action(event,
+                          action: str,
+                          entity: str,
+                          cmd,
+                          admintoo=False):
     app = IahrConfig.APP
 
     entities = __process_list(entity)
@@ -72,8 +75,7 @@ async def __access_action(event, action: str, entity: str, cmd, admintoo=False):
         cmds = __process_list(cmd, is_cmds=True)
     else:
         cmds = app.commands.keys()
-            
-    
+
     entres = []
     for entity in entities:
         cmdres = {}
@@ -87,8 +89,9 @@ async def __access_action(event, action: str, entity: str, cmd, admintoo=False):
                     cmdres[cmd] = getattr(routine, action)(entity)
 
         entres.append((entity, cmdres))
-            
+
     return entres
+
 
 @VoidSender('allowusr', """
     Allow usr to run a command
@@ -105,10 +108,11 @@ async def __access_action(event, action: str, entity: str, cmd, admintoo=False):
         
         `.allowusr cmd=command`
 """)
-async def allow_usr(event, usr=None, cmd=None):        
+async def allow_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
     await __access_action(event, 'allow_usr', usr, cmd=cmd)
+
 
 @VoidSender('allowchat', """
     Allow a command to be runned in this chat
@@ -130,6 +134,7 @@ async def allow_chat(event, chat=None, cmd=None):
         chat = await __chat_from_event(event)
     await __access_action(event, 'allow_chat', chat, cmd=cmd)
 
+
 @VoidSender('banusr', """
     Ban usr from running a command
 
@@ -150,7 +155,8 @@ async def ban_usr(event, usr=None, cmd=None):
         usr = await __usr_from_event(event)
     await __access_action(event, 'ban_usr', usr, cmd=cmd)
 
-@VoidSender('banchat',  """
+
+@VoidSender('banchat', """
     Ban command from running in this chat
 
         by chatname or id all commands:
@@ -168,17 +174,20 @@ async def ban_usr(event, usr=None, cmd=None):
 async def ban_chat(event, chat=None, cmd=None):
     if chat is None:
         chat = await __chat_from_event(event)
-    await  __access_action(event, 'ban_chat', chat, cmd=cmd)
+    await __access_action(event, 'ban_chat', chat, cmd=cmd)
+
 
 async def __perm_format(event, lst):
     res = ''
     for ent, perms in lst:
-        perms = '\n  '.join(cmd + (' - enabled' if flag else ' - disabled') for cmd, flag in perms.items())
+        perms = '\n  '.join(cmd + (' - enabled' if flag else ' - disabled')
+                            for cmd, flag in perms.items())
         if ent != IahrConfig.ME:
             ent = await event.client.get_entity(ent)
-            ent = ent.username 
+            ent = ent.username
         res += '**{}**:\n  {}\n'.format(ent, perms)
     return res
+
 
 @TextSender('allowedchat', """
     Get the commands allowed in a chat:
@@ -198,11 +207,15 @@ async def __perm_format(event, lst):
 async def is_allowed_chat(event, chat=None, cmd=None):
     if chat is None:
         chat = await __chat_from_event(event)
-    res = await __access_action(event, 'is_allowed_chat', chat, cmd, admintoo=True)
+    res = await __access_action(event,
+                                'is_allowed_chat',
+                                chat,
+                                cmd,
+                                admintoo=True)
     return await __perm_format(event, res)
-    
 
-@TextSender('allowedusr',  """
+
+@TextSender('allowedusr', """
     Get the commands allowed to a usr:
 
         by usernaem, id or phone number:
@@ -221,7 +234,11 @@ async def is_allowed_chat(event, chat=None, cmd=None):
 async def is_allowed_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
-    res = await __access_action(event, 'is_allowed_usr', usr, cmd, admintoo=True)
+    res = await __access_action(event,
+                                'is_allowed_usr',
+                                usr,
+                                cmd,
+                                admintoo=True)
     return await __perm_format(event, res)
 
 
@@ -289,7 +306,6 @@ Hey, **buddy**, use me tenderly and
 don't forget about your **IMAGINATION**!
 
 """.format(
-    new_msg=cfg.NEW_MSG.original, left=cfg.LEFT.original, 
+    new_msg=cfg.NEW_MSG.original, left=cfg.LEFT.original,
     right=cfg.RIGHT.original, raw=cfg.RAW.original
-)
-
+    )

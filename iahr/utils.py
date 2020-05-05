@@ -14,7 +14,7 @@ class Delimiter:
 
     def in_re(self):
         return self.escaped if self.re_sensitive else self.original
-    
+
     def unescape(self, s):
         return self.escaped_replace(s, self.original)
 
@@ -37,7 +37,7 @@ class Delimiter:
 class CommandDelimiter(Delimiter):
     def full_command(self, cmd):
         return self.original + cmd
-        
+
     def is_command(self, s):
         return s.startswith(self.original)
 
@@ -52,7 +52,7 @@ class Delayed:
             self.delayed.append((args, kwargs))
         else:
             self.operation(*args, **kwargs)
-    
+
     def undelay(self):
         if self.operation is None:
             return
@@ -77,7 +77,7 @@ class SingletonMeta(type):
 
     _instance = None
 
-    def __call__(self): 
+    def __call__(self):
         if self._instance is None:
             self._instance = super().__call__()
         return self._instance
@@ -88,7 +88,7 @@ class ParseError(Exception):
         super().__init__('parsing the query: {}'.format(s))
 
 
-def parenthesify(ldel, rdel, cmd_del, raw_del): 
+def parenthesify(ldel, rdel, cmd_del, raw_del):
     left, right = ldel.original, rdel.original
     cmdd, raw = cmd_del.original, raw_del.original
 
@@ -109,28 +109,31 @@ def parenthesify(ldel, rdel, cmd_del, raw_del):
 
     def is_left_raw(s, i):
         return s[i] == raw and i + 1 < len(s) and s[i + 1] == left
+
     def is_right_raw(s, i):
         return s[i] == right and i + 1 < len(s) and s[i + 1] == raw
-   
+
     def is_unescaped(c):
         def _(s, i):
             return i < len(s) and s[i] == c and i > 0 and s[i - 1] != '\\'
+
         return _
-    
+
     is_command, is_left, is_right = is_unescaped(cmdd), \
         is_unescaped(left), is_unescaped(right)
 
     def full_escape(s):
         return cmd_del.escape(rdel.escape(ldel.escape(s)))
-    
+
     def do_raw(s, i):
         start = i + 2
         while i < len(s) and not is_right_raw(s, i):
             i += 1
         if i == len(s):
-            raise ParseError(f"unbalanced raw scopes '{raw}{left} {right}{raw}'")
+            raise ParseError(
+                f"unbalanced raw scopes '{raw}{left} {right}{raw}'")
         return surround(full_escape(s[start:i])), i + 2
-   
+
     def do(s, i):
         open_cnt, res = 0, ''
         cmd_arg = False
@@ -156,7 +159,7 @@ def parenthesify(ldel, rdel, cmd_del, raw_del):
             else:
                 start, i = i, next_delim(s, i)
                 res += left + s[start:i] + right
-            
+
         return res + right * open_cnt, i
 
     return lambda s: do(surround(s), 1)[0]
@@ -167,8 +170,8 @@ class Tokenizer:
         Class to tokenize to command text
     """
 
-    # match 
-    # 1) spaces 
+    # match
+    # 1) spaces
     # 2) any characters (including `\)` and `\(`) without `(` and `)`
     # 3) `(` and `)`
     TOKS = re.compile(r' +|((\\\()|(\\\))|([^\(\)]))+|[()]')
@@ -189,9 +192,9 @@ class Tokenizer:
                 continue
             if s[0] in '()':
                 yield s, s
-            else: 
+            else:
                 yield 'WORD', self.unescape(s[1:-1])
-    
+
     @classmethod
     def parse_inner(cls, toks):
         """
@@ -199,16 +202,16 @@ class Tokenizer:
         """
         ty, name = next(toks)
         children = []
-        if ty != 'WORD': 
+        if ty != 'WORD':
             raise ParseError('Bracket should be starting with word')
-        
+
         while True:
             ty, s = next(toks)
             if ty == '(':
                 children.append(cls.parse_inner(toks))
             elif ty == ')':
                 return name, children
-    
+
     @classmethod
     def parse_root(cls, toks):
         """
@@ -227,7 +230,7 @@ class Tokenizer:
         """
         toks = self.tokenize()
         return self.parse_root(toks)
-    
+
     @classmethod
     def from_str(cls, s, leftdel: Delimiter, rightdel: Delimiter):
         """
@@ -239,7 +242,7 @@ class Tokenizer:
         s = rightdel.unescaped_replace(s, "')")
         obj = cls(s)
         return obj.perform()
-   
+
     @staticmethod
     def escape(s):
         return s.replace('(', r'\(').replace(')', r'\)')
@@ -255,13 +258,15 @@ class Tokenizer:
         """
         name, children = tree
         if not children: return
-        print('{} -> {}'.format(name, ' '.join(child[0] for child in children)))
+        print('{} -> {}'.format(name,
+                                ' '.join(child[0] for child in children)))
         for child in children:
             cls.show_children(child)
-    
 
-# import here, due to the circular import 
+
+# import here, due to the circular import
 from .config import IahrConfig
+
 
 class AccessList:
     """
@@ -269,12 +274,12 @@ class AccessList:
     """
     # Current user is enabled by default and can't be disabled
 
-    @classmethod    
+    @classmethod
     def is_special(cls, ent):
         return ent in (IahrConfig.OTHERS, IahrConfig.ME)
-    
+
     def __init__(self, allow_others=False):
-        
+
         self.whitelist = set()
         self.blacklist = set()
         self.allow_others = allow_others
@@ -292,7 +297,7 @@ class AccessList:
 
     def allow(self, entity: str):
         self.__access_modifier(entity, self.whitelist, desirable=False)
-               
+
     def ban(self, entity: str):
         self.__access_modifier(entity, self.blacklist, desirable=True)
 
@@ -309,35 +314,42 @@ class AccessList:
     async def check_me(cls, client):
         me = await client.get_me()
         myid = me.id
+
         def check(eid):
             return IahrConfig.ME if eid == myid else eid
+
         return check
 
     class ALEncoder(json.JSONEncoder):
         def default(self, obj):
             if isinstance(obj, AccessList):
                 return {
-                    'AccessList' : {
-                        'others' : obj.allow_others,
-                        'whitelist' : list(obj.whitelist),
-                        'blacklist' : list(obj.blacklist),
+                    'AccessList': {
+                        'others': obj.allow_others,
+                        'whitelist': list(obj.whitelist),
+                        'blacklist': list(obj.blacklist),
                     }
                 }
-        
-            return json.JSONEncoder.default(self, obj)  
+
+            return json.JSONEncoder.default(self, obj)
 
     class ALDecoder(json.JSONDecoder):
         def __init__(self, *args, **kwargs):
-            json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+            json.JSONDecoder.__init__(self,
+                                      object_hook=self.object_hook,
+                                      *args,
+                                      **kwargs)
+
         def object_hook(self, dct):
             if 'AccessList' in dct:
                 print(dct)
-                alst, dct  = AccessList(), dct['AccessList']
+                alst, dct = AccessList(), dct['AccessList']
                 alst.allow_others = dct['others']
                 alst.whitelist = set(dct['whitelist'])
                 alst.blacklist = set(dct['blacklist'])
                 return alst
             return dct
+
 
 @dataclass
 class ActionData:
@@ -353,9 +365,4 @@ class ActionData:
         me = await AccessList.check_me(event.client)
         uid = event.message.from_id
         c = await event.message.get_chat()
-        return cls(
-            event,
-            me(uid),
-            me(c.id)
-        )
-
+        return cls(event, me(uid), me(c.id))
