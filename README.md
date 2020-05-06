@@ -1,6 +1,34 @@
 # Iahr
 
-Telegram command execution framework based on telethon library
+Telegram chats command execution framework based on telethon library
+
+# Contents
+
+- [Iahr](#iahr)
+- [Contents](#contents)
+- [Setup](#setup)
+- [Example](#example)
+- [HOW TO commands](#how-to-commands)
+    - [How it works](#how-it-works)
+    - [Adding new commands](#adding-new-commands)
+    - [Non new message event command](#non-new-message-event-command)
+    - [Senders](#senders)
+    - [Syntax](#syntax)
+    - [Built-in commands](#built-in-commands)
+  - [HOW TO extend](#how-to-extend)
+    - [Configuration](#configuration)
+    - [Session filename and permissions](#session-filename-and-permissions)
+    - [Creating senders](#creating-senders)
+    - [Other ways](#other-ways)
+- [HOW TO contribute](#how-to-contribute)
+    - [Guidelines](#guidelines)
+      - [Coding style](#coding-style)
+      - [Templates](#templates)
+    - [Syntax error refactoring](#syntax-error-refactoring)
+    - [New commands](#new-commands)
+    - [Tests](#tests)
+    - [Ideas](#ideas)
+- [Naming](#naming)
 
 # Setup
 
@@ -91,7 +119,7 @@ from telethon.events import NewMessage as newmsg
     take_event=False, # whether it takes event, default - True
     multiret=False, # whether it returns one value, or multiple, default - False
     on_event=newmsg) # what event it should be called on, default - events.NewMessage
-async def macro():
+async def marco():
     return 'polo'
 ```
 
@@ -114,6 +142,21 @@ async def marco():
 async def marco(_):
     return 'polo'
 ```
+
+### Non new message event command
+
+There [are](https://docs.telethon.dev/en/latest/quick-references/events-reference.html) other types of events. So here is an example of how you could use it:
+
+```python
+from telthon import events
+@TextSender(take_event=False, about="""
+	Reply, when someone edits the message
+""", on_event=events.MessageEdited)
+async def isaw():
+    return 'I saw what you did here! You bastard!'
+```
+
+It was added for sake of uniform interface. So that you could add different types of commands and get help about them by means of ordinary senders. 
 
 ### Senders
 
@@ -202,6 +245,8 @@ To run a command both user and chat need to be allowed to run this command(excep
 
   4. like previous one, but all non-admin commands: `.allowusr`
 
+  5. allow all users to run a command: `.allowusr * help`
+
 * `allowchat`
 
   1. allow chat to run a command: `.allowchat strawberry_fields_forever help` or `.allowchat chat=starwbery_fields_forever cmd=help`
@@ -213,6 +258,8 @@ To run a command both user and chat need to be allowed to run this command(excep
      **NB**: the chat could be detected automatically if you write in it(the easiest way)
 
   4. like previous one, but all non-admin commands: `.allowchat`
+
+  5. allow all chats to run a command `.allowchat * help`
 
 * `banusr` - just a mirrored function to `allowusr`
 
@@ -248,36 +295,157 @@ To run a command both user and chat need to be allowed to run this command(excep
 
  ### Configuration
 
+To configure use function with this signature:
 
+```python
+from iahr.config import config
 
- ###  Creating senders
+config(
+	left=None, # left delimtier, default - '['
+    right=None, # right delimiter, default - ']'
+    raw=None, # raw arg delimiter, default - 'r'
+    new_msg=None, # delimiter for ordinary command, default - '.'
+    non_new_msg=None, # delimiter for non-newmsg command, default - '!'
+    prefix=None, # prefix for non-newmsg command, default - '_'
+    prefixes=None, # dict of prefixes depending on event type
+    me=None, # user identifier meaning you, default - 'me'
+    others=None, # user identifier meaning others, default - '*'
+    log_format=None, # see 
+    log_datetime_format=None,
+    log_out=None, # log output may be sys.stdout, sys.stderr or filename
+    session_fname=None # session file name, default - 'iahr.session'
+)
+```
 
+### Session filename and permissions
 
+By default your newly registered command would be allowed to use only you and in all chats.
 
-  ### Creating managers
+Most probably you want all your bans for noisy users and chats to be saved when you exit the program. And, thank God, there are state. State stored in a JSON file. Here is an example content for few commands:
 
+```json
+{
+    ".help": {
+        "usraccess": {
+            "AccessList": {
+                "others": false,
+                "whitelist": [],
+                "blacklist": []
+            }
+        },
+        "chataccess": {
+            "AccessList": {
+                "others": true,
+                "whitelist": [],
+                "blacklist": []
+            }
+        }
+    },
+    ".synhelp": {
+        "usraccess": {
+            "AccessList": {
+                "others": false,
+                "whitelist": [182912828],
+                "blacklist": []
+            }
+        },
+        "chataccess": {
+            "AccessList": {
+                "others": true,
+                "whitelist": [],
+                "blacklist": []
+            }
+        }
+    }
+}
+```
 
+And most of it you could easily change, for example `others`. To change `whitelist` or `blacklist` you need to get user id of user, because it is much more reliable, it won't change over time. 
 
- ### Creating registers
+### Creating senders
 
+No words, just action. For example, here are how `MediaSender` defined.
 
+```python
+from iahr.reg import create_sender, any_send, MultiArgs
+
+# self.res - result of function: MultiArgs object
+# self.event - original event object
+async def __media_send(self):
+    # MultiArgs contains only `args` - list of args 
+    res = self.res.args[0]
+    await any_send(self.event, file=res)
+    
+MediaSender = create_sender('MediaSender', __media_send)
+```
+
+And that's it. You could register new functions with `@MediaSender`.
+
+**Note**: args and kwargs you pass to `any_send` after event are all that you pass to [event.message.reply](https://docs.telethon.dev/en/latest/modules/events.html?highlight=reply#telethon.events.chataction.ChatAction.Event.reply). 
+
+ ### Other ways
+
+If you have more demanding wishes. We are glad to satisfy them. Here is how to initialize it all manually:
+
+```python
+from iahr import init
+from iahr.run import Manager
+from iahr.reg import Register
+from iahr.config import IahrConfig
+
+# ...
+# init telethons `client` variable
+# ...
+
+app = Manager()
+register = Register(client, app)
+IahrConfig.init(app, register)
+```
+
+That's how `iahr.init` works. But what if you want to create custom Manager and custom Register? We have something for you just overload `ABCManager` and `ABCRegister`. But i'll leave you on your own here. Go check how it works by example in [Manager](iahr/run/manager.py) and [Register](iahr/reg/register.py). 
 
 # HOW TO contribute
 
 ### Guidelines
 
+#### Coding style
 
+Use [yapf](https://github.com/google/yapf) with default settings([pep8](https://www.python.org/dev/peps/pep-0008/)). Be sure to run `yapf -ri *` before pushing. Or use an [online demo](https://yapf.now.sh/).
+
+**Note**: there are errors regarding new [walrus operator](https://medium.com/better-programming/what-is-the-walrus-operator-in-python-5846eaeb9d95) and [f-strings](https://realpython.com/python-f-strings/), just remove them manually and then add it back after formatting.
+
+#### Templates
+
+There are templates for issues and pull requests in here. Use them.
 
 ### Syntax error refactoring
 
-
+There are much more to learn in the wisdom of python's success. It is much easier to write code(commands in chat) when you have a lot of useful errors appearing when you do something wrong. So it's a major issue to work on.
 
 ### New commands
 
+There are such small directory as [commands](iahr/commands). And you can fulfill it with whole bunch of other files containing commands for different topics, like text, photos audiofiles, jokes and pranks, videos and many others, just use your imagination. That's the point!
 
+### Tests
+
+Endpoint is a full test coverage
 
 ### Ideas
 
 * Modules support
+
+  ​	enable modularity, like `.audio.crop` or `.text2speech.english`
+
 * Dynamic command creation
-* Spam level reduce
+
+  ​	something like `.alias [oneword x: .concat .split $1]`
+
+*  Spam level reduce
+
+  ​	too much text from us, let's stop it to save us from ban in all chats
+
+# Naming
+
+`Iah` is [egyptian god](https://en.wikipedia.org/wiki/Iah) of the new moon. And in russian language "echo" and "moon" are homophones. The words that pronounce the same, but have different meaning. So "echo" is a prefect synonym to functionality of this framework. It replies to you with your request results. 
+
+But I thought it'll sound more epic with "r" at the end. So here is why ^^
