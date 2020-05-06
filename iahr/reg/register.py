@@ -5,13 +5,33 @@ from ..utils import Delimiter, CommandDelimiter
 from ..config import IahrConfig
 
 import re
+from abc import ABC, abstractmethod
 
 
 class CommandRegisterError(Exception):
     pass
 
 
-class Register:
+class ABCRegister:
+
+    def __init__(self, client, app):
+        self.client = client
+        self.app = app
+
+        self.client.add_event_handler(
+            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE)
+        )
+
+    @abstractmethod
+    def reg(self, name, handler, about, event_type):
+        pass
+
+    @abstractmethod
+    def run(self, event):
+        pass
+
+
+class Register(ABCRegister):
     """
         Like Manager, but unified to enable adding non-textbased commands
         e.g. EditMessage, ChatAction...
@@ -41,7 +61,7 @@ class Register:
     # Register handlers
     ##################################################
 
-    def reg(self, name, handler, about, etype=None):
+    def reg(self, name, handler, about, etype):
         """
             Generic command handler
         """
@@ -74,13 +94,6 @@ class Register:
                      about,
                      delimiter=IahrConfig.NON_NEW_MSG)
         self.client.add_event_handler(handler, event)
-
-    def __init__(self, client, app):
-        self.client = client
-        self.app = app
-
-        self.client.add_event_handler(
-            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE))
 
     async def run(self, event):
         """

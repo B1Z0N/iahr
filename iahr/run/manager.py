@@ -4,47 +4,24 @@ from .runner import ExecutionError, CommandSyntaxError, PermissionsError, NonExi
 from ..config import IahrConfig
 
 from typing import Iterable, Union, Callable
+from abc import ABC, abstractmethod
 import json, os, atexit
 
 
-class Manager:
-    """
-        Contains { command_name : routine } key-value pair
-        manages addition of new commands and starting it's
-        execution by Executer. Only for text-based commands!
-
-        Manages session state(basically just access rights)
-    """
+class ABCManager(ABC):
 
     def __init__(self):
         self.commands = {}
         self.state = self.load()
         atexit.register(self.dump)
 
-    ##################################################
-    # Routine management
-    ##################################################
+    @abstractmethod
+    def add(self, command: str, handler: Callable, about: str, delimiter):
+        pass
 
-    def add(self, command: str, handler: Callable, about: str, delimiter=None):
-        """
-            Add a handler and it's name to the list
-        """
-        IahrConfig.LOGGER.info(f'adding handler:name={command}:about={about}')
-
-        delimiter = IahrConfig.NEW_MSG if delimiter is None else delimiter
-        command = delimiter.full_command(command)
-        routine = self.init_routine(command, handler, about)
-
-        self.commands[command] = routine
-
+    @abstractmethod
     async def exec(self, qstr, event):
-        """
-            Execute query where qstr is raw command text
-        """
-        IahrConfig.LOGGER.info(f'executing query:qstr={qstr}')
-        action = await ActionData.from_event(event)
-        runner = Executer(qstr, self.commands, action)
-        return await runner.run()
+        pass
 
     ##################################################
     # State management
@@ -71,3 +48,39 @@ class Manager:
 
     def __repr__(self):
         return f'Manager({self.commands})'
+
+
+class Manager(ABCManager):
+    """
+        Contains { command_name : routine } key-value pair
+        manages addition of new commands and starting it's
+        execution by Executer. Only for text-based commands!
+
+        Manages session state(basically just access rights)
+    """
+
+    ##################################################
+    # Routine management
+    ##################################################
+
+    def add(self, command: str, handler: Callable, about: str, delimiter=None):
+        """
+            Add a handler and it's name to the list
+        """
+        IahrConfig.LOGGER.info(f'adding handler:name={command}:about={about}')
+
+        delimiter = IahrConfig.NEW_MSG if delimiter is None else delimiter
+        command = delimiter.full_command(command)
+        routine = self.init_routine(command, handler, about)
+
+        self.commands[command] = routine
+
+    async def exec(self, qstr, event):
+        """
+            Execute query where qstr is raw command text
+        """
+        IahrConfig.LOGGER.info(f'executing query:qstr={qstr}')
+        action = await ActionData.from_event(event)
+        runner = Executer(qstr, self.commands, action)
+        return await runner.run()
+

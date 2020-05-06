@@ -1,4 +1,4 @@
-from .manager import Manager
+from .manager import Manager, ABCManager
 
 from .runner import ExecutionError, CommandSyntaxError,\
      PermissionsError, NonExistantCommandError

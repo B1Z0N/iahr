@@ -135,7 +135,7 @@ TextSender = create_sender('TextSender', __text_send)
 
 
 async def __media_send(self):
-    return await any_send(self.event, file=self.res.args[0])
+    await any_send(self.event, file=self.res.args[0])
 
 
 MediaSender = create_sender('MediaSender', __media_send)
