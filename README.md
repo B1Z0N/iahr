@@ -29,6 +29,7 @@ Telegram chats command execution framework based on telethon library
     - [Tests](#tests)
     - [Ideas](#ideas)
 - [Naming](#naming)
+- [Thanks](#thanks)
 
 # Setup
 
@@ -449,3 +450,8 @@ Endpoint is a full test coverage
 `Iah` is [egyptian god](https://en.wikipedia.org/wiki/Iah) of the new moon. And in russian language "echo" and "moon" are homophones. The words that pronounce the same, but have different meaning. So "echo" is a prefect synonym to functionality of this framework. It replies to you with your request results. 
 
 But I thought it'll sound more epic with "r" at the end. So here is why ^^
+
+# Thanks
+
+To [Vsevolod Ambros](https://github.com/kraftwerk28), the man the idea of `iahr` was [stolen](https://github.com/kraftwerk28/tgai28) from.
+
