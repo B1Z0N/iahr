@@ -27,6 +27,7 @@ Telegram chats command execution framework based on telethon library
     - [Syntax error refactoring](#syntax-error-refactoring)
     - [New commands](#new-commands)
     - [Tests](#tests)
+    - [Docker](#docker)
     - [Ideas](#ideas)
 - [Naming](#naming)
 - [Thanks](#thanks)
@@ -434,8 +435,6 @@ Endpoint is a full test coverage
 ### Docker
 
 Create docker container within `exmpl` folder.
-
-
 
 ### Ideas
 
