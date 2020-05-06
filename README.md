@@ -15,7 +15,7 @@ Telegram chats command execution framework based on telethon library
     - [Senders](#senders)
     - [Syntax](#syntax)
     - [Built-in commands](#built-in-commands)
-  - [HOW TO extend](#how-to-extend)
+- [HOW TO extend](#how-to-extend)
     - [Configuration](#configuration)
     - [Session filename and permissions](#session-filename-and-permissions)
     - [Creating senders](#creating-senders)
