@@ -20,7 +20,7 @@ Telegram chats command execution framework based on telethon library
     - [Session filename and permissions](#session-filename-and-permissions)
     - [Creating senders](#creating-senders)
     - [Other ways](#other-ways)
-- [HOW TO contribute](#how-to-contribute)
+- [HOW TO contribute(and TODOs)](#how-to-contributeand-todos)
     - [Guidelines](#guidelines)
       - [Coding style](#coding-style)
       - [Templates](#templates)
@@ -405,7 +405,7 @@ IahrConfig.init(app, register)
 
 That's how `iahr.init` works. But what if you want to create custom Manager and custom Register? We have something for you just overload `ABCManager` and `ABCRegister`. But i'll leave you on your own here. Go check how it works by example in [Manager](iahr/run/manager.py) and [Register](iahr/reg/register.py). 
 
-# HOW TO contribute
+# HOW TO contribute(and TODOs)
 
 ### Guidelines
 
@@ -430,6 +430,12 @@ There are such small directory as [commands](iahr/commands). And you can fulfill
 ### Tests
 
 Endpoint is a full test coverage
+
+### Docker
+
+Create docker container within `exmpl` folder.
+
+
 
 ### Ideas
 
