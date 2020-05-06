@@ -292,7 +292,7 @@ To run a command both user and chat need to be allowed to run this command(excep
 
 * `synhelp` - help about syntax
 
-## HOW TO extend
+# HOW TO extend
 
  ### Configuration
 
