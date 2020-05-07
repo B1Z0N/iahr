@@ -366,3 +366,4 @@ class ActionData:
         uid = event.message.from_id
         c = await event.message.get_chat()
         return cls(event, me(uid), me(c.id))
+
