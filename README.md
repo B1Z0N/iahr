@@ -6,6 +6,7 @@ Telegram chats command execution framework based on telethon library
 
 - [Iahr](#iahr)
 - [Contents](#contents)
+- [Warning](#warning)
 - [Setup](#setup)
 - [Example](#example)
 - [HOW TO commands](#how-to-commands)
@@ -31,6 +32,12 @@ Telegram chats command execution framework based on telethon library
     - [Ideas](#ideas)
 - [Naming](#naming)
 - [Thanks](#thanks)
+
+# Warning
+
+Be careful to not violate Telegram's [Terms of service](https://core.telegram.org/api/terms).
+> If you use the Telegram API for flooding, spamming, faking subscriber and view counters of channels, you will be banned forever.
+> Due to excessive abuse of the Telegram API, all accounts that sign up or log in using unofficial Telegram API clients are automatically put under observation to avoid violations of the Terms of Service.
 
 # Setup
 
@@ -447,8 +454,8 @@ Create docker container within `exmpl` folder.
   ​	something like `.alias [oneword x: .concat .split $1]`
 
 *  Spam level reduce
-
-  ​	too much text from us, let's stop it to save us from ban in all chats
+	
+	too much text from us, let's stop it to save us from ban in all chats
 
 # Naming
 
