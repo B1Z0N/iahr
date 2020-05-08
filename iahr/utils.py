@@ -59,6 +59,7 @@ class Delayed:
         for el in self.delayed:
             args, kwargs = el
             self.operation(*args, **kwargs)
+        self.delayed = []
 
     def init(self, operation):
         self.operation = operation

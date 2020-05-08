@@ -2,6 +2,8 @@ from iahr.utils import Delimiter, CommandDelimiter, \
 Delayed, SingletonMeta, parenthesify, Tokenizer, AccessList,\
 ActionData
 
+from iahr.config import IahrConfig
+
 import pytest
 
 ##################################################
@@ -40,7 +42,7 @@ class TestDelimiter:
         assert delimiter.unescaped_replace(unescaped, delimiter.escaped)
 
     
-class CommandDelimiter:
+class TestCommandDelimiter:
     @pytest.mark.parametrize('delimiter, cmd', [
         ('.', 'help'),
         ('.', '.help'),
@@ -54,3 +56,96 @@ class CommandDelimiter:
         assert d.is_command(fcmd)
         assert d.is_command(cmd) == cmd.startswith(delimiter)
        
+
+class TestDelayed:
+    def operation(self, *args, **kwargs):
+        self.cnt += 1
+
+
+    @pytest.mark.parametrize('cnt', [ 1, 5, 20, 50 ])
+    def test_calls_cnt(self, cnt):
+        d = Delayed()        
+        args, kwargs = [1, 2, 3], {'a' : 4, 'b' : 5 }
+        for i in range(cnt):
+            d.do(*args, **kwargs)
+        for el in d.delayed:
+            assert list(el[0]) == args
+            assert dict(el[1]) == kwargs        
+
+        self.cnt = 0
+        assert len(d.delayed) == cnt
+        d.init(self.operation)
+        assert self.cnt == cnt
+        assert len(d.delayed) == 0
+
+
+class TestSingletonMeta:
+    def test_singleness(self):
+        class Singleton(metaclass=SingletonMeta):
+            INSTANCE_COUNT = 0
+            def __init__(self):
+                self.id = self.INSTANCE_COUNT 
+                self.INSTANCE_COUNT += 1
+        
+        s = Singleton()
+        assert s.INSTANCE_COUNT == 1
+        assert s.id == 0
+        
+        ss = [Singleton() for i in range(50)]
+        for el in ss:
+            assert el.id == s.id == 0
+            assert id(el) == id(s)
+
+
+class TestAccessList:
+    ENT = 'some id'
+
+    @pytest.mark.parametrize('operation, should_be', [
+        ('allow', True),
+        ('ban', False)
+    ])
+    def test_simple_operation(self, operation, should_be):
+        for allow_others in (True, False):
+            al = AccessList(allow_others)
+            getattr(al, operation)(self.ENT)
+            assert al.is_allowed(self.ENT) == should_be
+
+    @pytest.mark.parametrize('allow_others', [True, False])
+    def test_operation_when_already_done_for_all(self, allow_others):
+        operation = 'allow' if allow_others else 'ban'
+        al = AccessList(allow_others)
+        lst = al.whitelist if allow_others else al.blacklist
+
+        getattr(al, operation)(self.ENT)
+        assert (len(lst) == 0)
+        
+    def test_me(self):
+        al = AccessList()
+        me = IahrConfig.ME
+        assert al.is_allowed(me)
+        al.ban(me)
+        assert al.is_allowed(me)
+        al = AccessList(allow_others=True)
+        assert al.is_allowed(me)
+
+    @pytest.mark.parametrize('operation', ['allow', 'ban'])
+    def test_others(self, operation):
+        should_be = operation == 'allow'
+        opposite = 'allow' if operation == 'ban' else 'ban'
+        al = AccessList()
+        others = IahrConfig.OTHERS
+
+        assert not al.is_allowed(self.ENT)
+        getattr(al, operation)(others)
+        assert al.is_allowed(self.ENT) == should_be
+
+        getattr(al, opposite)(self.ENT)
+        assert not (al.is_allowed(self.ENT) == should_be)
+        getattr(al, operation)(others)
+        assert al.is_allowed(self.ENT) == should_be
+
+
+class TestActionData:
+    def test_from_event(self):
+        # how do we handle client?
+        pass
