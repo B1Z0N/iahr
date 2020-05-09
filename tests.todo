@@ -1,0 +1,22 @@
+Unit tests:
+    **ActionData**
+        from_event - create fixture of NEW_MESSAGE
+        and check if it's chatid and uid are ok
+    reg:
+        register:
+            Register
+                **reg**
+                **run**
+        senders:
+            **senders itself**
+    run:
+        runner:
+            Query - check if it creates correct structure
+            Routine - check just access
+            Executer - test running a Query
+        manager:
+            Manager
+
+
+Test errors
+Integration tests

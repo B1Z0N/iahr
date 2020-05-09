@@ -89,7 +89,7 @@ class ParseError(Exception):
         super().__init__('parsing the query: {}'.format(s))
 
 
-def parenthesify(ldel, rdel, cmd_del, raw_del):
+def parenthesize(ldel, rdel, cmd_del, raw_del):
     left, right = ldel.original, rdel.original
     cmdd, raw = cmd_del.original, raw_del.original
 
@@ -222,7 +222,7 @@ class Tokenizer:
             WORD ::= [A-Za-z]+
         """
         ty, _ = next(toks)
-        if ty != '(': raise cls.ParseError
+        if ty != '(': raise ParseError
         return cls.parse_inner(toks)
 
     def perform(self):

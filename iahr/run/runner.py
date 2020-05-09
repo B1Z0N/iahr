@@ -1,5 +1,5 @@
 from ..utils import AccessList, ActionData, Delimiter, CommandDelimiter
-from ..utils import Tokenizer, parenthesify, ParseError
+from ..utils import Tokenizer, parenthesize, ParseError
 from ..config import IahrConfig
 
 import re

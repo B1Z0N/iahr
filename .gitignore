@@ -107,3 +107,4 @@ venv.bak/
 *.session
 sessions/
 .idea/
+*.session

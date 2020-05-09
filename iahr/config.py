@@ -1,7 +1,7 @@
 from telethon import events
 
 from .utils import Delimiter, CommandDelimiter
-from .utils import parenthesify, Delayed, SingletonMeta
+from .utils import parenthesize, Delayed, SingletonMeta
 
 import re, sys, logging
 
@@ -15,7 +15,7 @@ def update_command_re(new_msg: Delimiter):
 
 
 def update_add_pars(left, right, new_msg, raw):
-    return parenthesify(left, right, new_msg, raw)
+    return parenthesize(left, right, new_msg, raw)
 
 
 def update_logger(fmt, datefmt, out):
@@ -47,45 +47,8 @@ class IahrConfig(metaclass=SingletonMeta):
         from userspace use `config` function below. 
     """
 
-    ##################################################
-    # Main configuration data
-    ##################################################
-
-    # delimiters
-    LEFT, RIGHT, RAW = Delimiter('['), Delimiter(']'), Delimiter('r')
-    NEW_MSG, NON_NEW_MSG = CommandDelimiter('.'), CommandDelimiter('!')
-
-    # prefixes for non-new-msg events
-    PREFIX = Delimiter('_')
-    PREFIXES = {
-        events.MessageEdited: 'onedit',
-        events.MessageDeleted: 'ondel',
-        events.MessageRead: 'onread',
-        events.ChatAction: 'onchataction',
-        events.UserUpdate: 'onusrupdate',
-        events.Album: 'onalbum',
-    }
-
-    # special keywords in AccessList
-    ME, OTHERS = 'me', '*'
-
-    # logging details
-    LOG_FORMAT = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
-    LOG_DATETIME_FORMAT = '%m/%d/%Y %I:%M:%S %p'
-    LOG_OUT = sys.stdout  # could be file or
-
-    SESSION_FNAME = 'iahr.session'
-
     APP = None  # to be settled, but needed here for use in command execution time
     REG = Delayed()  # to be settled, but needed for use in import time
-
-    ##################################################
-    # Config based on config data above
-    ##################################################
-
-    COMMAND_RE = update_command_re(NEW_MSG)
-    ADD_PARS = update_add_pars(LEFT, RIGHT, NEW_MSG, RAW)
-    LOGGER = update_logger(LOG_FORMAT, LOG_DATETIME_FORMAT, LOG_OUT)
 
     ##################################################
     # Config methods
@@ -147,3 +110,35 @@ def config(left=None,
     cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.NEW_MSG, cfg.RAW)
     cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT,
                                cfg.LOG_OUT)
+
+
+def reset():
+    PREFIXES = {
+        events.MessageEdited: 'onedit',
+        events.MessageDeleted: 'ondel',
+        events.MessageRead: 'onread',
+        events.ChatAction: 'onchataction',
+        events.UserUpdate: 'onusrupdate',
+        events.Album: 'onalbum',
+    }
+    LOG_FORMAT = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
+    LOG_DATETIME_FORMAT = '%m/%d/%Y %I:%M:%S %p'
+    LOG_OUT = sys.stdout
+
+    config(left='[',
+           right=']',
+           raw='r',
+           new_msg='.',
+           non_new_msg='!',
+           prefix='_',
+           prefixes=PREFIXES,
+           me='me',
+           others='*',
+           log_format=LOG_FORMAT,
+           log_datetime_format=LOG_DATETIME_FORMAT,
+           log_out=sys.stdout,
+           session_fname='iahr.session')
+
+
+reset()
+

@@ -8,11 +8,16 @@ admin_commands = {'.allowusr', '.allowchat', '.banusr', '.banchat'}
 
 
 def __process_list(single, is_cmds=False):
+    """
+        'first second', True -> ['.first', '.second']
+        'first second', False -> ['first', 'second']
+    """
     if type(single) != str: return [single]
     lst = single.split()
-    for i, cmd in enumerate(lst):
-        if is_cmds and not IahrConfig.NEW_MSG.is_command(cmd):
-            lst[i] = IahrConfig.NEW_MSG.full_command(cmd)
+    if is_cmds:
+        for i, cmd in enumerate(lst):
+            if not IahrConfig.NEW_MSG.is_command(cmd):
+                lst[i] = IahrConfig.NEW_MSG.full_command(cmd)
     return lst
 
 

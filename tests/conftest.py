@@ -27,22 +27,14 @@ def make_client(API_ID, API_HASH, TG_SESSION_PATH):
 
     return client
 
+
 @pytest.fixture(scope='session')
 async def client1():
     load_dotenv()
     return await make_client(API_ID1, API_HASH1, TG_SESSION_PATH1).start()
 
+
 @pytest.fixture(scope='session')
 async def client2():
     load_dotenv()
     return await make_client(API_ID2, API_HASH2, TG_SESSION_PATH2).start()
-
-@pytest.fixture(scope='session')
-    async def message(self, client1, client2):
-        @client2.on(events.NewMessage)
-        async def get_event(event):
-            return event
-
-        
-
-
