@@ -144,8 +144,17 @@ class TestAccessList:
         getattr(al, operation)(others)
         assert al.is_allowed(self.ENT) == should_be
 
+    @pytest.mark.asyncio
+    async def test_check_me(self, client1, client2):
+        check_me1 = await AccessList.check_me(client1)
+        check_me2 = await AccessList.check_me(client2)
+        me1 = await client1.get_me()
+        me2 = await client2.get_me()
+        
+        assert check_me1(me1.id) == IahrConfig.ME
+        assert check_me1(me2.id) == me2.id
+        
+        assert check_me2(me2.id) == IahrConfig.ME
+        assert check_me2(me1.id) == me1.id
 
-class TestActionData:
-    def test_from_event(self):
-        # how do we handle client?
-        pass
+
