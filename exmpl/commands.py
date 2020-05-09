@@ -41,7 +41,7 @@ async def split(_, s):
 
         `.kwtest arg1=1 arg2=2`
 
-        `.kwtest r[arg2=arg.[[]]r 1
+        `.kwtest r[arg2=arg.[[]]r 1`
 """)
 async def kwtest(_, arg1, arg2):
     return arg1, arg2

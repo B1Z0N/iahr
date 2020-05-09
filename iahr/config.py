@@ -5,36 +5,6 @@ from .utils import parenthesize, Delayed, SingletonMeta
 
 import re, sys, logging
 
-##################################################
-# Functions for updating dependent config data
-##################################################
-
-
-def update_command_re(new_msg: Delimiter):
-    return re.compile(r'{}[^\W]+.*'.format(new_msg.in_re()))
-
-
-def update_add_pars(left, right, new_msg, raw):
-    return parenthesize(left, right, new_msg, raw)
-
-
-def update_logger(fmt, datefmt, out):
-    if out in (sys.stdout, sys.stderr):
-        handler_cls = logging.StreamHandler
-    elif type(out) == str:
-        handler_cls = logging.FileHandler
-    else:
-        raise RuntimeError(
-            "out should be one of this: sys.stdout, sys.stdin, `filename`")
-    logger = logging.getLogger('iahr')
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter(fmt, datefmt)
-    handler = handler_cls(out)
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-    return logger
-
 
 class IahrConfig(metaclass=SingletonMeta):
     """
@@ -72,6 +42,42 @@ class IahrConfig(metaclass=SingletonMeta):
         for name, val in kwargs.items():
             if val is not None:
                 setattr(cls, name.upper(), preprocess(val))
+
+
+##################################################
+# Functions for updating dependent config data
+##################################################
+
+
+def update_command_re(new_msg: Delimiter):
+    return re.compile(r'{}[^\W]+.*'.format(new_msg.in_re()))
+
+
+def update_add_pars(left, right, new_msg, raw):
+    return parenthesize(left, right, new_msg, raw)
+
+
+def update_logger(fmt, datefmt, out):
+    if out in (sys.stdout, sys.stderr):
+        handler_cls = logging.StreamHandler
+    elif type(out) == str:
+        handler_cls = logging.FileHandler
+    else:
+        raise RuntimeError(
+            "out should be one of this: sys.stdout, sys.stdin, `filename`")
+    logger = logging.getLogger('iahr')
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(fmt, datefmt)
+    handler = handler_cls(out)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    return logger
+
+
+##################################################
+# Interface(not literally) for changing IahrConfig
+##################################################
 
 
 def config(left=None,
@@ -113,32 +119,32 @@ def config(left=None,
 
 
 def reset():
-    PREFIXES = {
-        events.MessageEdited: 'onedit',
-        events.MessageDeleted: 'ondel',
-        events.MessageRead: 'onread',
-        events.ChatAction: 'onchataction',
-        events.UserUpdate: 'onusrupdate',
-        events.Album: 'onalbum',
-    }
-    LOG_FORMAT = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
-    LOG_DATETIME_FORMAT = '%m/%d/%Y %I:%M:%S %p'
-    LOG_OUT = sys.stdout
-
-    config(left='[',
-           right=']',
-           raw='r',
-           new_msg='.',
-           non_new_msg='!',
-           prefix='_',
-           prefixes=PREFIXES,
-           me='me',
-           others='*',
-           log_format=LOG_FORMAT,
-           log_datetime_format=LOG_DATETIME_FORMAT,
-           log_out=sys.stdout,
-           session_fname='iahr.session')
+    """ 
+        Reset(set) IahrConfig to default value
+        Single source of truth about default
+    """
+    config(
+        left='[',
+        right=']',
+        raw='r',
+        new_msg='.',
+        non_new_msg='!',
+        prefix='_',
+        prefixes={
+            events.MessageEdited: 'onedit',
+            events.MessageDeleted: 'ondel',
+            events.MessageRead: 'onread',
+            events.ChatAction: 'onchataction',
+            events.UserUpdate: 'onusrupdate',
+            events.Album: 'onalbum',
+        },
+        me='me',
+        others='*',
+        log_format=
+        '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:',
+        log_datetime_format='%m/%d/%Y %I:%M:%S %p',
+        log_out=sys.stdout,
+        session_fname='iahr.session')
 
 
 reset()
-

@@ -1,5 +1,5 @@
 from .. import run
-from ..utils import Delayed
+from ..utils import Delayed, argstr
 from ..config import IahrConfig
 
 from functools import wraps
@@ -107,6 +107,7 @@ def create_sender(name, sendf):
             nonlocal about
             name = handler.__name__ if name is None else name
             about = name if about is None else about
+            about = '`{}`\n{}'.format('\n  args: ' + argstr(handler, take_event), about)
             wrapped = wraps(handler)(Sender(handler, take_event, multiret))
 
             IahrConfig.REG.do(name, wrapped, about, on_event)

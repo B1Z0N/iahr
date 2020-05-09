@@ -1,7 +1,7 @@
 from telethon import events
 
 from dataclasses import dataclass
-import re, json
+import re, json, inspect
 
 
 class Delimiter:
@@ -368,3 +368,33 @@ class ActionData:
         c = await event.message.get_chat()
         return cls(event, me(uid), me(c.id))
 
+
+def argstr(fun, remove_event=True):
+    spec = inspect.getfullargspec(fun)
+    print(fun.__name__, spec)
+    args = spec.args
+    if remove_event:
+        args = spec.args[1:]
+
+    if spec.defaults is not None:
+        division = len(spec.defaults)
+        args, kwargs = args[:-division], args[-division:]
+        kwargs = zip(kwargs, spec.defaults)
+    else:
+        kwargs = []
+
+    res = ' '.join(args)
+    res += ' '.join(
+        '{}={}'.format(arg, val) for arg, val in kwargs
+    )
+
+    if spec.varargs is not None:
+        res += ' *' + spec.varargs + ' '
+    if spec.kwonlydefaults is not None:
+        res += ' '.join(
+            arg + '=' + val for arg, val in spec.kwonlydefaults.items()
+        )
+    if spec.varkw is not None:
+        res += ' **' + spec.varkw
+
+    return res

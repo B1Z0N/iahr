@@ -247,7 +247,9 @@ async def is_allowed_usr(event, usr=None, cmd=None):
     return await __perm_format(event, res)
 
 
-@TextSender(take_event=False, about='Get help about syntax rules')
+@TextSender(take_event=False, about="""
+    Get help about syntax rules
+""")
 async def synhelp():
     cfg = IahrConfig
 
