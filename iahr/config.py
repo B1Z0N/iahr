@@ -49,12 +49,12 @@ class IahrConfig(metaclass=SingletonMeta):
 ##################################################
 
 
-def update_command_re(new_msg: Delimiter):
-    return re.compile(r'{}[^\W]+.*'.format(new_msg.in_re()))
+def update_command_re(cmd: Delimiter):
+    return re.compile(r'{}[^\W]+.*'.format(cmd.in_re()))
 
 
-def update_add_pars(left, right, new_msg, raw):
-    return parenthesize(left, right, new_msg, raw)
+def update_add_pars(left, right, cmd, raw):
+    return parenthesize(left, right, cmd, raw)
 
 
 def update_logger(fmt, datefmt, out):
@@ -83,9 +83,7 @@ def update_logger(fmt, datefmt, out):
 def config(left=None,
            right=None,
            raw=None,
-           new_msg=None,
-           non_new_msg=None,
-           prefix=None,
+           cmd=None,
            prefixes=None,
            me=None,
            others=None,
@@ -101,8 +99,8 @@ def config(left=None,
 
     cfg = IahrConfig
 
-    cfg._update(Delimiter, left=left, right=right, raw=raw, prefix=prefix)
-    cfg._update(CommandDelimiter, new_msg=new_msg, non_new_msg=non_new_msg)
+    cfg._update(Delimiter, left=left, right=right, raw=raw)
+    cfg._update(CommandDelimiter, cmd=cmd)
     cfg._update(lambda x: x,
                 prefixes=prefixes,
                 me=me,
@@ -112,8 +110,8 @@ def config(left=None,
                 log_out=log_out,
                 session_fname=session_fname)
 
-    cfg.COMMAND_RE = update_command_re(cfg.NEW_MSG)
-    cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.NEW_MSG, cfg.RAW)
+    cfg.COMMAND_RE = update_command_re(cfg.CMD)
+    cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.CMD, cfg.RAW)
     cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT,
                                cfg.LOG_OUT)
 
@@ -127,16 +125,15 @@ def reset():
         left='[',
         right=']',
         raw='r',
-        new_msg='.',
-        non_new_msg='!',
-        prefix='_',
+        cmd='.',
         prefixes={
-            events.MessageEdited: 'onedit',
-            events.MessageDeleted: 'ondel',
-            events.MessageRead: 'onread',
-            events.ChatAction: 'onchataction',
-            events.UserUpdate: 'onusrupdate',
-            events.Album: 'onalbum',
+            events.NewMessage: 'onnewmsg_', # additional handlers(not commands)
+            events.MessageEdited: 'onedit_',
+            events.MessageDeleted: 'ondel_',
+            events.MessageRead: 'onread_',
+            events.ChatAction: 'onchataction_',
+            events.UserUpdate: 'onusrupdate_',
+            events.Album: 'onalbum_',
         },
         me='me',
         others='*',

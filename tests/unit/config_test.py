@@ -23,8 +23,7 @@ def test_config():
     prev_add_pars = icfg.ADD_PARS
 
     cfg(
-        left='{', right='}', raw='e', new_msg='!', 
-        non_new_msg='.', prefix='k', prefixes=PREFIXES, me='my',
+        left='{', right='}', raw='e', cmd='!', prefixes=PREFIXES, me='my',
         others='/', log_format='%(name)s', log_datetime_format='%m', 
         session_fname='ses'
     )
@@ -32,16 +31,14 @@ def test_config():
     assert icfg.LEFT.original == '{'
     assert icfg.RIGHT.original == '}'
     assert icfg.RAW.original == 'e'
-    assert icfg.NEW_MSG.original == '!'
-    assert icfg.NON_NEW_MSG.original == '.'
-    assert icfg.PREFIX.original == 'k'
+    assert icfg.CMD.original == '!'
     assert icfg.PREFIXES == PREFIXES
     assert icfg.ME == 'my'
     assert icfg.OTHERS == '/'
     assert icfg.LOG_FORMAT == '%(name)s'
     assert icfg.LOG_DATETIME_FORMAT == '%m'
     assert icfg.SESSION_FNAME == 'ses'
-    assert icfg.COMMAND_RE == config.update_command_re(icfg.NEW_MSG)
+    assert icfg.COMMAND_RE == config.update_command_re(icfg.CMD)
 
     assert icfg.LOGGER == config.update_logger(
         icfg.LOG_FORMAT, icfg.LOG_DATETIME_FORMAT, icfg.LOG_OUT

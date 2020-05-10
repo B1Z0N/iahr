@@ -69,8 +69,8 @@ class Manager(ABCManager):
         """
         IahrConfig.LOGGER.info(f'adding handler:name={command}:about={about}')
 
-        delimiter = IahrConfig.NEW_MSG if delimiter is None else delimiter
-        command = delimiter.full_command(command)
+        if delimiter is not None:
+            command = delimiter.full_command(command)
         routine = self.init_routine(command, handler, about)
 
         self.commands[command] = routine

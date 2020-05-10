@@ -54,7 +54,7 @@ class Query:
     def unescape(cls, s):
         s = IahrConfig.LEFT.unescape(s)
         s = IahrConfig.RIGHT.unescape(s)
-        s = IahrConfig.NEW_MSG.unescape(s)
+        s = IahrConfig.CMD.unescape(s)
         return s
 
     ##################################################
@@ -100,13 +100,13 @@ class Query:
         command, args = tree
         args, kwargs = cls.__process_args(args)
 
-        if IahrConfig.NEW_MSG.is_command(command):
+        if IahrConfig.CMD.is_command(command):
             return cls(command[1:], args, kwargs)
         else:
             return (*re.split(cls.KWARGS_RE, command, 1), )
 
     def __repr__(self):
-        res = IahrConfig.NEW_MSG.full_command(self.command) + ' ['
+        res = IahrConfig.CMD.full_command(self.command) + ' ['
         res += ', '.join(f'{arg}' for arg in self.args) + '] {'
         res += ', '.join(f'{key}:{val}'
                          for key, val in self.kwargs.items()) + ' }'
@@ -222,7 +222,7 @@ class Executer:
         async def proc(subquery):
             return await cls.__run(subquery, dct, action)
 
-        qname = IahrConfig.NEW_MSG.full_command(query.command)
+        qname = IahrConfig.CMD.full_command(query.command)
         id_msg = f'name={qname}:uid={action.uid}:cid={action.chatid}'
 
         try:

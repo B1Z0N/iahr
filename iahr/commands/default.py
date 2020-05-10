@@ -16,8 +16,8 @@ def __process_list(single, is_cmds=False):
     lst = single.split()
     if is_cmds:
         for i, cmd in enumerate(lst):
-            if not IahrConfig.NEW_MSG.is_command(cmd):
-                lst[i] = IahrConfig.NEW_MSG.full_command(cmd)
+            if not IahrConfig.CMD.is_command(cmd) and not cmd.startswith('on'):
+                lst[i] = IahrConfig.CMD.full_command(cmd)
     return lst
 
 
@@ -35,7 +35,8 @@ async def help(event, cmd=None):
     for cmd in cmds:
         val = app.commands.get(cmd)
         res = '**{}**:\n{}\n'.format(
-            cmd, nosuch if val is None else app.commands[cmd].help())
+            cmd, nosuch if val is None else val.help()
+        )
         helplst.append(res)
 
     res = '\n'.join(helplst)
@@ -255,7 +256,7 @@ async def synhelp():
 
     return \
 r"""
-Hy, my name is `iahr`. 
+Hy, my name is [iahr](https://github.com/B1Z0N/iahr/). 
 
 You could use some userdefined functions,
 write `.help` to see the list and info.
@@ -313,6 +314,6 @@ Hey, **buddy**, use me tenderly and
 don't forget about your **IMAGINATION**!
 
 """.format(
-    new_msg=cfg.NEW_MSG.original, left=cfg.LEFT.original,
+    new_msg=cfg.CMD.original, left=cfg.LEFT.original,
     right=cfg.RIGHT.original, raw=cfg.RAW.original
     )

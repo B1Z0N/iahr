@@ -53,9 +53,7 @@ class Register(ABCRegister):
         """
         etype = cls.to_type(etype)
         pr = IahrConfig.PREFIXES.get(etype)
-        if pr is None:
-            return IahrConfig.NEW_MSG.original
-        return pr + IahrConfig.PREFIX.original
+        return IahrConfig.CMD.original if pr is None else pr
 
     ##################################################
     # Register handlers
@@ -67,7 +65,7 @@ class Register(ABCRegister):
         """
         IahrConfig.LOGGER.info(f'registering:name={name}:about={about}')
 
-        if etype == None or type(etype) == events.NewMessage:
+        if etype == None:
             self.reg_new_msg(name, handler, about)
         else:
             self.reg_others(name, handler, about, etype)
@@ -76,7 +74,7 @@ class Register(ABCRegister):
         """
             Register new message handler to our manager
         """
-        self.app.add(name, handler, about, delimiter=IahrConfig.NEW_MSG)
+        self.app.add(name, handler, about, delimiter=IahrConfig.CMD)
 
     def reg_others(self, name, handler, about, event):
         """
@@ -89,10 +87,7 @@ class Register(ABCRegister):
             you to create new `run` function like the one here, but with this command
             delimiter and don't forget to pass correct event type to the `app.exec`.
         """
-        self.app.add(self.prefix(event) + name,
-                     handler,
-                     about,
-                     delimiter=IahrConfig.NON_NEW_MSG)
+        self.app.add(self.prefix(event) + name, handler, about)
         self.client.add_event_handler(handler, event)
 
     async def run(self, event):
@@ -102,7 +97,7 @@ class Register(ABCRegister):
         txt = event.message.raw_text
         IahrConfig.LOGGER.info(f'msg={txt}:usr={event.message.from_id}')
         try:
-            if IahrConfig.NEW_MSG.is_command(txt):
+            if IahrConfig.CMD.is_command(txt):
                 try:
                     sender = await self.app.exec(txt, event)
                 except (run.CommandSyntaxError, run.PermissionsError,

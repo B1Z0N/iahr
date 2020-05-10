@@ -45,3 +45,11 @@ async def split(_, s):
 """)
 async def kwtest(_, arg1, arg2):
     return arg1, arg2
+
+
+@TextSender(about="""
+
+""", on_event=events.NewMessage)
+async def directly_on_new_message(event):
+    return 'directly_on_new_message'
+    
