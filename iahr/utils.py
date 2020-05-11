@@ -89,6 +89,18 @@ class ParseError(Exception):
         super().__init__('parsing the query: {}'.format(s))
 
 
+def errstr(s, ebegin, eend):
+    """
+        errstr('.do r[err]', 4, 6)
+
+        .do **r[**err]
+              ^^
+    """
+    before, err, after = s[:ebegin] , s[ebegin:eend], s[eend:]
+    res = f'{before}`{err}`{after}'
+    return res
+
+
 def parenthesize(ldel, rdel, cmd_del, raw_del):
     left, right = ldel.original, rdel.original
     cmdd, raw = cmd_del.original, raw_del.original
@@ -127,20 +139,23 @@ def parenthesize(ldel, rdel, cmd_del, raw_del):
         return cmd_del.escape(rdel.escape(ldel.escape(s)))
 
     def do_raw(s, i):
+        errstart = i
         start = i + 2
         while i < len(s) and not is_right_raw(s, i):
             i += 1
         if i == len(s):
-            raise ParseError(
-                f"unbalanced raw scopes '{raw}{left} {right}{raw}'")
+            msg = errstr(s, errstart, errstart + 2)
+            raise ParseError(f'unbalanced "{raw}{left} {right}{raw}":\n\n{msg}')
         return surround(full_escape(s[start:i])), i + 2
 
     def do(s, i):
+        errstart = i
         open_cnt, res = 0, ''
         cmd_arg = False
         while not is_right(s, i):
             if len(s) == i:
-                raise ParseError(f"unbalanced scopes '{left} {right}'")
+                msg = errstr(s, errstart - 1, errstart)
+                raise ParseError(f'unbalanced "{left} {right}"\n\n{msg}')
 
             if is_left_raw(s, i):
                 subres, i = do_raw(s, i)
