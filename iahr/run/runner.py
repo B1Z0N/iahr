@@ -20,7 +20,7 @@ class CommandSyntaxError(ExecutionError):
         Plug exception to tell that some input is faulty 
     """
     def __init__(self, e):
-        super().__init__("wrong syntax, see **.synhelp**, {}".format(str(e)))
+        super().__init__("wrong syntax, {}".format(str(e)))
 
 
 class PermissionsError(ExecutionError):

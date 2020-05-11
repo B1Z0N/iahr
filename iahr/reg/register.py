@@ -100,10 +100,16 @@ class Register(ABCRegister):
             if IahrConfig.CMD.is_command(txt):
                 try:
                     sender = await self.app.exec(txt, event)
-                except (run.CommandSyntaxError, run.PermissionsError,
-                        run.NonExistantCommandError) as e:
+                except run.NonExistantCommandError as e:
                     IahrConfig.LOGGER.error(f'{e}')
-                    await event.reply(str(e))
+                    await event.reply(str(e) + '\n\nsee **.help**') 
+                except run.CommandSyntaxError as e:
+                    IahrConfig.LOGGER.error(f'{e}')
+                    await event.reply(str(e) + '\n\nsee **.synhelp**')
+                except run.PermissionsError as e:
+                    IahrConfig.LOGGER.error(f'{e}')
+                    msg = str(e) + '\n\nsee **.allowedusr**, if you are allowed to ◔ ⌣ ◔'
+                    await event.reply(msg)
                 except run.ExecutionError as e:
                     IahrConfig.LOGGER.error(str(e))
                     await event.reply(
