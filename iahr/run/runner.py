@@ -43,10 +43,12 @@ class Query:
     """ 
         Class-representation of our command string in python code
     """
-    def __init__(self, command: str, args, kwargs):
+    def __init__(self, command: str, args=None, kwargs=None):
         self.command = command
-        self.args = list(args)  # Could be: List[str | Query]
-        self.kwargs = dict(kwargs)  # Could be: Dict[str: [str | Query]]
+        # Could be: List[str | Query]
+        self.args = list(args) if args is not None else [] 
+        # Could be: Dict[str: [str | Query]]
+        self.kwargs = dict(kwargs) if kwargs is not None else {}
 
     KWARGS_RE = re.compile(r'(?<!\\)=')
 
@@ -112,11 +114,16 @@ class Query:
                          for key, val in self.kwargs.items()) + ' }'
         return f'Query({res})'
 
+    def __eq__(self, other):
+        return self.command == other.command and \
+               self.args == other.args and \
+               self.kwargs == other.kwargs
+
 
 class Routine:
     """
-        Class that contains raw command handler and manages permissions to use it
-        in chats and by users
+        Class that contains raw command handler and 
+        manages permissions to use it in chats and by users
     """
     def __init__(self, handler: Callable, about: str):
         self.about = about

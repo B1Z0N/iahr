@@ -181,6 +181,13 @@ def add_pars():
     # escaped symbols
     '.do [\.do \[that\]]' : '[.do [\.do \[that\]]]',
     '.do .do [\.do \[that\]]' : '[.do [.do [\.do \[that\]]]]',
+    # kwargs
+    '.do usr=None' : '[.do [usr=None]]',
+    '.do [usr=not none]' : '[.do [usr=not none]]',
+    '.do [usr=.do]' : '[.do [usr=[.do]]]',
+    '.do [usr=[.do]]' : '[.do [usr=[.do]]]',
+    '.do [usr=[.do this and that]]' : '[.do [usr=[.do [this] [and] [that]]]]',
+    '.do [usr=[.do .do]]' : '[.do [usr=[.do [.do]]]]',
 }.items()))
 def test_parenthesize(add_pars, input, result):
     assert add_pars(input) == result
@@ -213,7 +220,13 @@ def tokenize():
     # escaped
     '[.do [\.do \[that\]]]' : ('.do', [('\\.do \\[that\\]', [])]),
     '[.do [.do [\.do \[that\]]]]' : ('.do', [('.do', [('\\.do \\[that\\]', [])])]),
-    '[.do [\.do \[that\]]]' : ('.do', [('\\.do \\[that\\]', [])])
+    '[.do [\.do \[that\]]]' : ('.do', [('\\.do \\[that\\]', [])]),
+    # kwargs
+    '[.do [usr=None]]' : ('.do', [('usr=None', [])]),
+    '[.do [usr=not none]]' : ('.do', [('usr=not none', [])]),
+    '[.do [usr=[.do]]]' : ('.do', [('usr', [('.do', [])])]),
+    '[.do [usr=[.do [this]]]]' : ('.do', [('usr', [('.do', [('this', [])])])]),
+    '[.do [usr=[.do [.do]]]]' : ('.do', [('usr', [('.do', [('.do', [])])])]),
 }.items()))
 def test_tokenizer(tokenize, input, result):
     assert tokenize(input) == result
