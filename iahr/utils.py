@@ -300,22 +300,30 @@ class AccessList:
         self.blacklist = set()
         self.allow_others = allow_others
 
-    def __access_modifier(self, entity: str, lst: set, desirable: bool):
+    def allow(self, entity: str):
         if entity == IahrConfig.ME:
             return
 
         if entity == IahrConfig.OTHERS:
             self.whitelist = set()
             self.blacklist = set()
-            self.allow_others = not desirable
-        elif self.allow_others is desirable:
-            lst.add(entity)
-
-    def allow(self, entity: str):
-        self.__access_modifier(entity, self.whitelist, desirable=False)
+            self.allow_others = True
+        elif self.allow_others is False:
+            self.whitelist.add(entity)
+        elif entity in self.blacklist:
+            self.blacklist.remove(entity)
 
     def ban(self, entity: str):
-        self.__access_modifier(entity, self.blacklist, desirable=True)
+        if entity == IahrConfig.ME:
+            return
+
+        if entity == IahrConfig.OTHERS:
+            self.whitelist = self.blacklist = set()
+            self.allow_others = False
+        elif self.allow_others is True:
+            self.blacklist.add(entity)
+        elif entity in self.whitelist:
+            self.whitelist.remove(entity)
 
     def is_allowed(self, entity: str):
         me = entity == IahrConfig.ME
