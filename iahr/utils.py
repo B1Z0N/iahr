@@ -237,7 +237,7 @@ class Tokenizer:
             WORD ::= [A-Za-z]+
         """
         ty, _ = next(toks)
-        if ty != '(': raise ParseError
+        if ty != '(': raise ParseError('token should be surrounded with scopes')
         return cls.parse_inner(toks)
 
     def perform(self):

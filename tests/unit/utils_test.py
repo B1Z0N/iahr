@@ -1,6 +1,6 @@
 from iahr.utils import Delimiter, CommandDelimiter, \
 Delayed, SingletonMeta, parenthesize, Tokenizer, AccessList,\
-ActionData
+ActionData, ParseError
 
 from iahr.config import IahrConfig
 
@@ -186,6 +186,14 @@ def test_parenthesize(add_pars, input, result):
     assert add_pars(input) == result
 
 
+@pytest.mark.parametrize('input', [
+    '.do [arg', '.do [arg1 [arg2]',
+    '.do r[arg', '.do r[arg1 r[arg2]',
+])
+def test_parenthesize_parse_error(add_pars, input):
+    with pytest.raises(ParseError):
+        add_pars(input)
+
 @pytest.fixture
 def tokenize():
     def do(s):
@@ -210,4 +218,11 @@ def tokenize():
 def test_tokenizer(tokenize, input, result):
     assert tokenize(input) == result
     
+
+@pytest.mark.parametrize('input', [
+    '.do', ' .first ( '
+])
+def test_tokenizer_parse_error(tokenize, input):
+    with pytest.raises(ParseError):
+        tokenize(input)
     
