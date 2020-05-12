@@ -9,18 +9,31 @@ import json, os, atexit
 
 
 class ABCManager(ABC):
+    """
+        ABC for defining custom Managers
+    """
 
     def __init__(self):
+        """
+            Load state from file and register dumping to file
+            atexit
+        """
         self.commands = {}
         self.state = self.load()
         atexit.register(self.dump)
 
     @abstractmethod
     def add(self, command: str, handler: Callable, about: str, delimiter):
+        """ 
+            Abstract method to add command to the manager dict
+        """
         pass
 
     @abstractmethod
     async def exec(self, qstr, event):
+        """ 
+            Execute query string
+        """
         pass
 
     ##################################################
@@ -28,11 +41,17 @@ class ABCManager(ABC):
     ##################################################
 
     def dump(self):
+        """
+            Save state(commands and routines) to the file(IahrConfig.SESSION_FNAME)
+        """
         dct = {name: cmd.get_state() for name, cmd in self.commands.items()}
         with open(IahrConfig.SESSION_FNAME, 'w+') as f:
             json.dump(dct, f, indent=4, cls=Routine.JSON_ENCODER)
 
     def load(self):
+        """
+            Load state(commands and routines) from file(IahrConfig.SESSION_FNAME)
+        """
         fname = IahrConfig.SESSION_FNAME
         if os.path.exists(fname) and os.path.getsize(fname) > 0:
             with open(fname, 'r') as f:
@@ -41,6 +60,10 @@ class ABCManager(ABC):
             return {}
 
     def init_routine(self, command, handler, about):
+        """
+            Check if routine that is being added is not in state,
+            if it is, set her state appropriately
+        """
         routine = Routine(handler, about)
         if state := self.state.get(command):
             routine.set_state(state)

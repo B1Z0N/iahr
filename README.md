@@ -30,6 +30,7 @@ Telegram chats command execution framework based on telethon library
     - [Tests](#tests)
     - [Docker](#docker)
     - [Ideas](#ideas)
+    - [Problems](#problems)
 - [Naming](#naming)
 - [Thanks](#thanks)
 
@@ -213,6 +214,13 @@ You could use keyword args:
 
   ```
   .allowusr [usr=wery weird user with = sign]
+  ```
+
+* Or even like this:
+
+  ```
+  .do [what=.do1 other .do2]
+  .do [what=[.do1 [other] [.do2]]]
   ```
 
 ------------------------------------
@@ -429,7 +437,11 @@ There are templates for issues and pull requests in here. Use them.
 
 ### Syntax error refactoring
 
-There are much more to learn in the wisdom of python's success. It is much easier to write code(commands in chat) when you have a lot of useful errors appearing when you do something wrong. So it's a major issue to work on.
+There are much more to learn in the wisdom of python's success. It is much easier to write code(commands in chat) when you have a lot of useful errors appearing when you do something wrong. So it's a major issue to work on. Some ideas on what errors we'd like to provide:
+
+* Incompatible commands error
+
+  When there are more or less args than command can take, we'll print `{command} takes more/less args, please check your query`
 
 ### New commands
 
@@ -437,7 +449,10 @@ There are such small directory as [commands](iahr/commands). And you can fulfill
 
 ### Tests
 
-Endpoint is a full test coverage
+Now there lots of unit tests. Endpoint is a full test coverage. We need to add tests to check if all is working as expected at telegram level. So here how integration testing could be done:
+
+1. [Mock](https://docs.python.org/3/library/unittest.mock.html)
+2. Create two clients and/or use [test servers](https://docs.telethon.dev/en/latest/developing/test-servers.html)
 
 ### Docker
 
@@ -457,6 +472,20 @@ Create docker container within `exmpl` folder.
 	
 	too much text from us, let's stop it to save us from ban in all chats
 
+### Problems
+
+*  Solve issues with configuring output files
+	
+	when setting custom `IahrConfig.SESSION_FNAME` or `IahrConfig.LOG_OUT`. Half of it is loaded from
+	
+	initial file and then from ours custom file. They should be settled at import time. 
+	
+*  Fix `pip` deps and `start.sh` scripts
+	
+	1. Sort out `requirements.txt` to easier install necessary files.
+	2. Make `start.sh` use only `python3.8` or higher
+	3. Maybe create script to install all needed deps(docker will fit perfectly)
+
 # Naming
 
 `Iah` is [egyptian god](https://en.wikipedia.org/wiki/Iah) of the new moon. And in russian language "echo" and "moon" are homophones. The words that pronounce the same, but have different meaning. So "echo" is a prefect synonym to functionality of this framework. It replies to you with your request results. 
@@ -465,5 +494,6 @@ But I thought it'll sound more epic with "r" at the end. So here is why ^^
 
 # Thanks
 
-To [Vsevolod Ambros](https://github.com/kraftwerk28), the man the idea of `iahr` was [stolen](https://github.com/kraftwerk28/tgai28) from.
+* To [Vsevolod Ambros](https://github.com/kraftwerk28), the man the idea of `iahr` was [stolen](https://github.com/kraftwerk28/tgai28) from.
 
+* To my university, that will drop me out for doing this and not studying

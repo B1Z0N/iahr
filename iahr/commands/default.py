@@ -294,6 +294,10 @@ You could use keyword args:
 
     `{new_msg}allowusr [usr=wery weird user with = sign]`
 
+Or even like this:
+
+    `{new_msg}do [what={new_msg}do1 other {new_msg}do2]`
+
 ------------------------------------
 
 And the most important thing, 
