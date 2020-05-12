@@ -49,6 +49,8 @@ class Query:
         self.args = list(args) if args is not None else [] 
         # Could be: Dict[str: [str | Query]]
         self.kwargs = dict(kwargs) if kwargs is not None else {}
+        # original qstr
+        self.original = None
 
     KWARGS_RE = re.compile(r'(?<!\\)=')
 
@@ -77,6 +79,7 @@ class Query:
             raise CommandSyntaxError(str(e))
 
         self = cls.__to_q(tree)
+        self.original = qstr
         IahrConfig.LOGGER.info(f'query obj:{self}')
         return self
 
@@ -104,6 +107,8 @@ class Query:
 
         if IahrConfig.CMD.is_command(command):
             return cls(command[1:], args, kwargs)
+        elif args and '=' not in command:
+            return command, *args
         else:
             return (*re.split(cls.KWARGS_RE, command, 1), )
 
@@ -203,8 +208,9 @@ class Executer:
         self.action = action
 
     async def run(self):
-        return await Executer.__run(self.query, self.dict, self.action)
+        return await self.__run(self.query, self.dict, self.action)
 
+    @staticmethod
     async def __process_args(rawargs, rawkwargs, subprocess: Callable):
         if not rawargs and not rawkwargs: return [], {}
         args, kwargs = [], {}
@@ -224,10 +230,9 @@ class Executer:
 
         return args, kwargs
 
-    @classmethod
-    async def __run(cls, query, dct, action):
+    async def __run(self, query, dct, action):
         async def proc(subquery):
-            return await cls.__run(subquery, dct, action)
+            return await self.__run(subquery, dct, action)
 
         qname = IahrConfig.CMD.full_command(query.command)
         id_msg = f'name={qname}:uid={action.uid}:cid={action.chatid}'
@@ -239,19 +244,19 @@ class Executer:
             IahrConfig.LOGGER.error(
                 f'getting handler:no such command registered:{id_msg}')
             raise NonExistantCommandError(query.command)
+
         if handler is None:
             IahrConfig.LOGGER.warning(
                 f'executer:getting handler:not permitted:{id_msg}')
             raise PermissionsError(query.command)
 
         try:
-            args, kwargs = await cls.__process_args(query.args, query.kwargs,
-                                                    proc)
+            args, kwargs = await self.__process_args(query.args, query.kwargs, proc)
             IahrConfig.LOGGER.info(f'arg={args}:kwargs={kwargs}:{id_msg}')
             return await handler(action.event, *args, **kwargs)
         except (AttributeError, ValueError, TypeError) as e:
             IahrConfig.LOGGER.error(f'userspace error:err={e}:{id_msg}')
-            raise ExecutionError(*e.args)
+            raise ExecutionError(self.query.original)
 
     def __repr__(self):
         return f'Executer(query={self.query}, dict={self.dict}, action={self.action})'

@@ -5,7 +5,9 @@ from ..utils import AccessList
 from ..config import IahrConfig
 
 admin_commands = {'.allowusr', '.allowchat', '.banusr', '.banchat'}
-
+nosuch =  """
+    No such command(try checking full help)
+"""
 
 def __process_list(single, is_cmds=False):
     """
@@ -30,8 +32,7 @@ async def help(event, cmd=None):
     if cmd is None:
         return '\n'.join(f'**{cmd}**' for cmd in app.commands.keys())
 
-    cmds = __process_list(cmd, is_cmds=True)
-    helplst, nosuch = [], "No such command(try checking full help)"
+    cmds, helplst = __process_list(cmd, is_cmds=True), []
     for cmd in cmds:
         val = app.commands.get(cmd)
         res = '**{}**:\n{}\n'.format(

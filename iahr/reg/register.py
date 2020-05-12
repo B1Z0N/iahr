@@ -112,9 +112,11 @@ class Register(ABCRegister):
                     await event.reply(msg)
                 except run.ExecutionError as e:
                     IahrConfig.LOGGER.error(str(e))
-                    await event.reply(
-                        'Incompatible commands, wrong arguments or just a buggy function'
-                    )
+                    await event.reply('{}:\n\n`{}`\n\n{}'.format(
+                        'Incompatible commands, wrong arguments or just a buggy function', 
+                        e.args[0],
+                        'Is that what you truly meant?'
+                    ))
                 else:
                     await sender.send()
         except Exception as e:
