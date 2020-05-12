@@ -408,8 +408,8 @@ def argstr(fun, remove_event=True):
     else:
         kwargs = []
 
-    res = ' '.join(args)
-    res += ' '.join('{}={}'.format(arg, val) for arg, val in kwargs)
+    res = ' '.join(args) + ' '
+    res += ' '.join('{}={}'.format(arg, val) for arg, val in kwargs) + ' '
 
     if spec.varargs is not None:
         res += ' *' + spec.varargs + ' '
