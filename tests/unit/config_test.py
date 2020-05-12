@@ -8,7 +8,6 @@ from telethon import events
 from iahr.config import IahrConfig as icfg, config as cfg
 from iahr import config
 
-
 PREFIXES = {
     events.MessageEdited: 'edit',
     events.MessageDeleted: 'del',
@@ -22,11 +21,16 @@ PREFIXES = {
 def test_config():
     prev_add_pars = icfg.ADD_PARS
 
-    cfg(
-        left='{', right='}', raw='e', cmd='!', prefixes=PREFIXES, me='my',
-        others='/', log_format='%(name)s', log_datetime_format='%m', 
-        session_fname='ses'
-    )
+    cfg(left='{',
+        right='}',
+        raw='e',
+        cmd='!',
+        prefixes=PREFIXES,
+        me='my',
+        others='/',
+        log_format='%(name)s',
+        log_datetime_format='%m',
+        session_fname='ses')
 
     assert icfg.LEFT.original == '{'
     assert icfg.RIGHT.original == '}'
@@ -40,10 +44,9 @@ def test_config():
     assert icfg.SESSION_FNAME == 'ses'
     assert icfg.COMMAND_RE == config.update_command_re(icfg.CMD)
 
-    assert icfg.LOGGER == config.update_logger(
-        icfg.LOG_FORMAT, icfg.LOG_DATETIME_FORMAT, icfg.LOG_OUT
-    )
+    assert icfg.LOGGER == config.update_logger(icfg.LOG_FORMAT,
+                                               icfg.LOG_DATETIME_FORMAT,
+                                               icfg.LOG_OUT)
     assert prev_add_pars != icfg.ADD_PARS
 
     config.reset()
-

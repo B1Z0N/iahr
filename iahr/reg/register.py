@@ -13,14 +13,12 @@ class CommandRegisterError(Exception):
 
 
 class ABCRegister:
-
     def __init__(self, client, app):
         self.client = client
         self.app = app
 
         self.client.add_event_handler(
-            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE)
-        )
+            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE))
 
     @abstractmethod
     def reg(self, name, handler, about, event_type):
@@ -102,21 +100,21 @@ class Register(ABCRegister):
                     sender = await self.app.exec(txt, event)
                 except run.NonExistantCommandError as e:
                     IahrConfig.LOGGER.error(f'{e}')
-                    await event.reply(str(e) + '\n\nsee **.help**') 
+                    await event.reply(str(e) + '\n\nsee **.help**')
                 except run.CommandSyntaxError as e:
                     IahrConfig.LOGGER.error(f'{e}')
                     await event.reply(str(e) + '\n\nsee **.synhelp**')
                 except run.PermissionsError as e:
                     IahrConfig.LOGGER.error(f'{e}')
-                    msg = str(e) + '\n\nsee **.allowedusr**, if you are allowed to ◔ ⌣ ◔'
+                    msg = str(
+                        e
+                    ) + '\n\nsee **.allowedusr**, if you are allowed to ◔ ⌣ ◔'
                     await event.reply(msg)
                 except run.ExecutionError as e:
                     IahrConfig.LOGGER.error(str(e))
                     await event.reply('{}:\n\n`{}`\n\n{}'.format(
-                        'Incompatible commands, wrong arguments or just a buggy function', 
-                        e.args[0],
-                        'Is that what you truly meant?'
-                    ))
+                        'Incompatible commands, wrong arguments or just a buggy function',
+                        e.args[0], 'Is that what you truly meant?'))
                 else:
                     await sender.send()
         except Exception as e:

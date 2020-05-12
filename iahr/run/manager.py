@@ -12,7 +12,6 @@ class ABCManager(ABC):
     """
         ABC for defining custom Managers
     """
-
     def __init__(self):
         """
             Load state from file and register dumping to file
@@ -106,4 +105,3 @@ class Manager(ABCManager):
         action = await ActionData.from_event(event)
         runner = Executer(qstr, self.commands, action)
         return await runner.run()
-

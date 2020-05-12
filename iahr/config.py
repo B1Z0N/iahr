@@ -127,7 +127,8 @@ def reset():
         raw='r',
         cmd='.',
         prefixes={
-            events.NewMessage: 'onnewmsg_', # additional handlers(not commands)
+            events.NewMessage:
+            'onnewmsg_',  # additional handlers(not commands)
             events.MessageEdited: 'onedit_',
             events.MessageDeleted: 'ondel_',
             events.MessageRead: 'onread_',

@@ -155,88 +155,107 @@ class TestAccessList:
 
 @pytest.fixture
 def add_pars():
-    return parenthesize(
-        Delimiter('['), Delimiter(']'), 
-        CommandDelimiter('.'), Delimiter('r')
-    )
+    return parenthesize(Delimiter('['), Delimiter(']'), CommandDelimiter('.'),
+                        Delimiter('r'))
 
 
-@pytest.mark.parametrize('input, result', list({
-    # simple args
-    '.do' : '[.do]', 
-    '.do arg1' : '[.do [arg1]]', 
-    '.do [arg1] [arg2]' : '[.do [arg1] [arg2]]', 
-    '.do [arg1 arg2]' : '[.do [arg1 arg2]]',
-    # nested commands
-    '.do .do .do' : '[.do [.do [.do]]]',
-    '.do arg1 .do arg2 .do arg3 .do' : '[.do [arg1] [.do [arg2] [.do [arg3] [.do]]]]',
-    '.do [arg1] .do [arg2] .do [arg3] .do' : '[.do [arg1] [.do [arg2] [.do [arg3] [.do]]]]',
-    '.do arg1 [.do [arg2]] .do [arg3] .do' : '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]',
-    '.do arg1 [.do [arg2]] .do [arg3] .do' : '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]',
-    '.do arg1 [.do [arg2]] .do [arg3] .do' : '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]',
-    '.do arg1 [.do [arg2]] .do [arg3] .do' : '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]',
-    # raw args
-    '.do r[.do [that]]r' : '[.do [\.do \[that\]]]',
-    '.do .do r[.do [that]]r' : '[.do [.do [\.do \[that\]]]]',
-    # escaped symbols
-    '.do [\.do \[that\]]' : '[.do [\.do \[that\]]]',
-    '.do .do [\.do \[that\]]' : '[.do [.do [\.do \[that\]]]]',
-    # kwargs
-    '.do usr=None' : '[.do [usr=None]]',
-    '.do [usr=not none]' : '[.do [usr=not none]]',
-    '.do [usr=.do]' : '[.do [usr=[.do]]]',
-    '.do [usr=.do this and that]' : '[.do [usr=[.do [this] [and] [that]]]]',
-    '.do [usr=[.do]]' : '[.do [usr=[.do]]]',
-    '.do [usr=[.do this and that]]' : '[.do [usr=[.do [this] [and] [that]]]]',
-    '.do [usr=[.do .do]]' : '[.do [usr=[.do [.do]]]]',
-}.items()))
+@pytest.mark.parametrize(
+    'input, result',
+    list({
+        # simple args
+        '.do': '[.do]',
+        '.do arg1': '[.do [arg1]]',
+        '.do [arg1] [arg2]': '[.do [arg1] [arg2]]',
+        '.do [arg1 arg2]': '[.do [arg1 arg2]]',
+        # nested commands
+        '.do .do .do': '[.do [.do [.do]]]',
+        '.do arg1 .do arg2 .do arg3 .do':
+        '[.do [arg1] [.do [arg2] [.do [arg3] [.do]]]]',
+        '.do [arg1] .do [arg2] .do [arg3] .do':
+        '[.do [arg1] [.do [arg2] [.do [arg3] [.do]]]]',
+        '.do arg1 [.do [arg2]] .do [arg3] .do':
+        '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]',
+        '.do arg1 [.do [arg2]] .do [arg3] .do':
+        '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]',
+        '.do arg1 [.do [arg2]] .do [arg3] .do':
+        '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]',
+        '.do arg1 [.do [arg2]] .do [arg3] .do':
+        '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]',
+        # raw args
+        '.do r[.do [that]]r': '[.do [\.do \[that\]]]',
+        '.do .do r[.do [that]]r': '[.do [.do [\.do \[that\]]]]',
+        # escaped symbols
+        '.do [\.do \[that\]]': '[.do [\.do \[that\]]]',
+        '.do .do [\.do \[that\]]': '[.do [.do [\.do \[that\]]]]',
+        # kwargs
+        '.do usr=None': '[.do [usr=None]]',
+        '.do [usr=not none]': '[.do [usr=not none]]',
+        '.do [usr=.do]': '[.do [usr=[.do]]]',
+        '.do [usr=.do this and that]': '[.do [usr=[.do [this] [and] [that]]]]',
+        '.do [usr=[.do]]': '[.do [usr=[.do]]]',
+        '.do [usr=[.do this and that]]':
+        '[.do [usr=[.do [this] [and] [that]]]]',
+        '.do [usr=[.do .do]]': '[.do [usr=[.do [.do]]]]',
+    }.items()))
 def test_parenthesize(add_pars, input, result):
     assert add_pars(input) == result
 
 
 @pytest.mark.parametrize('input', [
-    '.do [arg', '.do [arg1 [arg2]',
-    '.do r[arg', '.do r[arg1 r[arg2]',
+    '.do [arg',
+    '.do [arg1 [arg2]',
+    '.do r[arg',
+    '.do r[arg1 r[arg2]',
 ])
 def test_parenthesize_parse_error(add_pars, input):
     with pytest.raises(ParseError):
         add_pars(input)
 
+
 @pytest.fixture
 def tokenize():
     def do(s):
         return Tokenizer.from_str(s, Delimiter('['), Delimiter(']'))
+
     return do
 
-@pytest.mark.parametrize('input, result', list({
-    # simple 
-    '[.do]' : ('.do', []),
-    '[.do [arg1]]' : ('.do', [('arg1', [])]),
-    '[.do [arg1] [arg2]]' : ('.do', [('arg1', []), ('arg2', [])]),
-    '[.do [arg1 arg2]]' : ('.do', [('arg1 arg2', [])]),
-    # nested commands
-    '[.do [.do [.do]]]' : ('.do', [('.do', [('.do', [])])]),
-    '[.do [arg1] [.do [arg2] [.do [arg3] [.do]]]]' : ('.do', [('arg1', []), ('.do', [('arg2', []), ('.do', [('arg3', []), ('.do', [])])])]),
-    '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]' : ('.do', [('arg1', []), ('.do', [('arg2', [])]), ('.do', [('arg3', []), ('.do', [])])]),
-    # escaped
-    '[.do [\.do \[that\]]]' : ('.do', [('\\.do \\[that\\]', [])]),
-    '[.do [.do [\.do \[that\]]]]' : ('.do', [('.do', [('\\.do \\[that\\]', [])])]),
-    '[.do [\.do \[that\]]]' : ('.do', [('\\.do \\[that\\]', [])]),
-    # kwargs
-    '[.do [usr=None]]' : ('.do', [('usr=None', [])]),
-    '[.do [usr=not none]]' : ('.do', [('usr=not none', [])]),
-    '[.do [usr=[.do]]]' : ('.do', [('usr', [('.do', [])])]),
-    '[.do [usr=[.do [this]]]]' : ('.do', [('usr', [('.do', [('this', [])])])]),
-    '[.do [usr=[.do [.do]]]]' : ('.do', [('usr', [('.do', [('.do', [])])])]),
-}.items()))
+
+@pytest.mark.parametrize(
+    'input, result',
+    list({
+        # simple
+        '[.do]': ('.do', []),
+        '[.do [arg1]]': ('.do', [('arg1', [])]),
+        '[.do [arg1] [arg2]]': ('.do', [('arg1', []), ('arg2', [])]),
+        '[.do [arg1 arg2]]': ('.do', [('arg1 arg2', [])]),
+        # nested commands
+        '[.do [.do [.do]]]': ('.do', [('.do', [('.do', [])])]),
+        '[.do [arg1] [.do [arg2] [.do [arg3] [.do]]]]':
+        ('.do', [('arg1', []),
+                 ('.do', [('arg2', []), ('.do', [('arg3', []),
+                                                 ('.do', [])])])]),
+        '[.do [arg1] [.do [arg2]] [.do [arg3] [.do]]]':
+        ('.do', [('arg1', []), ('.do', [('arg2', [])]),
+                 ('.do', [('arg3', []), ('.do', [])])]),
+        # escaped
+        '[.do [\.do \[that\]]]': ('.do', [('\\.do \\[that\\]', [])]),
+        '[.do [.do [\.do \[that\]]]]':
+        ('.do', [('.do', [('\\.do \\[that\\]', [])])]),
+        '[.do [\.do \[that\]]]': ('.do', [('\\.do \\[that\\]', [])]),
+        # kwargs
+        '[.do [usr=None]]': ('.do', [('usr=None', [])]),
+        '[.do [usr=not none]]': ('.do', [('usr=not none', [])]),
+        '[.do [usr=[.do]]]': ('.do', [('usr', [('.do', [])])]),
+        '[.do [usr=[.do [this]]]]':
+        ('.do', [('usr', [('.do', [('this', [])])])]),
+        '[.do [usr=[.do [.do]]]]': ('.do', [('usr', [('.do', [('.do', [])])])
+                                            ]),
+    }.items()))
 def test_tokenizer(tokenize, input, result):
     assert tokenize(input) == result
-    
 
-@pytest.mark.parametrize('input', [
-    '.do', ' .first ( '
-])
+
+@pytest.mark.parametrize('input', ['.do', ' .first ( '])
 def test_tokenizer_parse_error(tokenize, input):
     with pytest.raises(ParseError):
         tokenize(input)
-    

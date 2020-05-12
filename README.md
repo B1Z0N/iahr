@@ -441,15 +441,18 @@ There are much more to learn in the wisdom of python's success. It is much easie
 
 * Incompatible commands error
 
-  When there are more or less args than command can take, we'll print `{command} takes more/less args, please check your query`
+  When there are more or less args than command can take, we'll print 
+  ```
+  {command} takes more/less args, please check your query
+  ```
 
 ### New commands
 
-There are such small directory as [commands](iahr/commands). And you can fulfill it with whole bunch of other files containing commands for different topics, like text, photos audiofiles, jokes and pranks, videos and many others, just use your imagination. That's the point!
+There is such a small directory as [commands](iahr/commands). And you can fulfill it with whole bunch of other files containing commands for different topics, like text, photos audiofiles, jokes and pranks, videos and many others, just use your imagination. That's the point!
 
 ### Tests
 
-Now there lots of unit tests. Endpoint is a full test coverage. We need to add tests to check if all is working as expected at telegram level. So here how integration testing could be done:
+Now there are lots of unit tests. Endpoint is a full test coverage. We need to add tests to check if all is working as expected at telegram level. So here how integration testing could be done:
 
 1. [Mock](https://docs.python.org/3/library/unittest.mock.html)
 2. Create two clients and/or use [test servers](https://docs.telethon.dev/en/latest/developing/test-servers.html)
@@ -470,15 +473,13 @@ Create docker container within `exmpl` folder.
 
 *  Spam level reduce
 	
-	too much text from us, let's stop it to save us from ban in all chats
+	too much text from us, let's stop it to save you from ban in all chats
 
 ### Problems
 
 *  Solve issues with configuring output files
 	
-	when setting custom `IahrConfig.SESSION_FNAME` or `IahrConfig.LOG_OUT`. Half of it is loaded from
-	
-	initial file and then from ours custom file. They should be settled at import time. 
+	When setting custom `IahrConfig.SESSION_FNAME` or `IahrConfig.LOG_OUT`. Half of it is loaded from initial file and then from ours custom file. They should be settled at import time. 
 	
 *  Fix `pip` deps and `start.sh` scripts
 	

@@ -96,7 +96,7 @@ def errstr(s, ebegin, eend):
         .do **r[**err]
               ^^
     """
-    before, err, after = s[:ebegin] , s[ebegin:eend], s[eend:]
+    before, err, after = s[:ebegin], s[ebegin:eend], s[eend:]
     res = f'{before}`{err}`{after}'
     return res
 
@@ -145,7 +145,8 @@ def parenthesize(ldel, rdel, cmd_del, raw_del):
             i += 1
         if i == len(s):
             msg = errstr(s, errstart, errstart + 2)
-            raise ParseError(f'unbalanced "{raw}{left} {right}{raw}":\n\n{msg}')
+            raise ParseError(
+                f'unbalanced "{raw}{left} {right}{raw}":\n\n{msg}')
         return surround(full_escape(s[start:i])), i + 2
 
     def do(s, i):
@@ -237,7 +238,8 @@ class Tokenizer:
             WORD ::= [A-Za-z]+
         """
         ty, _ = next(toks)
-        if ty != '(': raise ParseError('token should be surrounded with scopes')
+        if ty != '(':
+            raise ParseError('token should be surrounded with scopes')
         return cls.parse_inner(toks)
 
     def perform(self):
@@ -407,16 +409,13 @@ def argstr(fun, remove_event=True):
         kwargs = []
 
     res = ' '.join(args)
-    res += ' '.join(
-        '{}={}'.format(arg, val) for arg, val in kwargs
-    )
+    res += ' '.join('{}={}'.format(arg, val) for arg, val in kwargs)
 
     if spec.varargs is not None:
         res += ' *' + spec.varargs + ' '
     if spec.kwonlydefaults is not None:
-        res += ' '.join(
-            arg + '=' + val for arg, val in spec.kwonlydefaults.items()
-        )
+        res += ' '.join(arg + '=' + val
+                        for arg, val in spec.kwonlydefaults.items())
     if spec.varkw is not None:
         res += ' **' + spec.varkw
 

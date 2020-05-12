@@ -107,7 +107,8 @@ def create_sender(name, sendf):
             nonlocal about
             name = handler.__name__ if name is None else name
             about = name if about is None else about
-            about = '`{}`\n{}'.format('\n  args: ' + argstr(handler, take_event), about)
+            about = '`{}`\n{}'.format(
+                '\n  args: ' + argstr(handler, take_event), about)
             wrapped = wraps(handler)(Sender(handler, take_event, multiret))
 
             IahrConfig.REG.do(name, wrapped, about, on_event)

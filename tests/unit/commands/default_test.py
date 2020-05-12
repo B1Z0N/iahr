@@ -14,5 +14,3 @@ from iahr.commands import default
 ])
 def test___process_list(input, is_cmds, result):
     assert default.__process_list(input, is_cmds) == result
-
-    

@@ -19,6 +19,7 @@ class CommandSyntaxError(ExecutionError):
     """ 
         Plug exception to tell that some input is faulty 
     """
+
     def __init__(self, e):
         super().__init__("wrong syntax, {}".format(str(e)))
 
@@ -27,6 +28,7 @@ class PermissionsError(ExecutionError):
     """
         Exception telling that this user or this chat can't use particular command
     """
+
     def __init__(self, command):
         super().__init__("you can't use **{}** command".format(command))
 
@@ -35,6 +37,7 @@ class NonExistantCommandError(ExecutionError):
     """
         Exception telling that this command is not registered yet
     """
+
     def __init__(self, command):
         super().__init__("**{}** command does not exist".format(command))
 
@@ -43,10 +46,11 @@ class Query:
     """ 
         Class-representation of our command string in python code
     """
+
     def __init__(self, command: str, args=None, kwargs=None):
         self.command = command
         # Could be: List[str | Query]
-        self.args = list(args) if args is not None else [] 
+        self.args = list(args) if args is not None else []
         # Could be: Dict[str: [str | Query]]
         self.kwargs = dict(kwargs) if kwargs is not None else {}
         # original qstr
@@ -108,7 +112,7 @@ class Query:
         if IahrConfig.CMD.is_command(command):
             return cls(command[1:], args, kwargs)
         elif args and '=' not in command:
-            return command, *args
+            return (command, *args)
         else:
             return (*re.split(cls.KWARGS_RE, command, 1), )
 
@@ -120,9 +124,7 @@ class Query:
         return f'Query({res})'
 
     def __eq__(self, other):
-        return self.command == other.command and \
-               self.args == other.args and \
-               self.kwargs == other.kwargs
+        return self.command == other.command and self.args == other.args and self.kwargs == other.kwargs
 
 
 class Routine:
@@ -130,6 +132,7 @@ class Routine:
         Class that contains raw command handler and 
         manages permissions to use it in chats and by users
     """
+
     def __init__(self, handler: Callable, about: str):
         self.about = about
         self.handler = handler
@@ -202,6 +205,7 @@ class Executer:
         And thus pipes all needed handlers directly 
         and checks if commands are compatible
     """
+
     def __init__(self, qstr, commands, action: ActionData):
         self.query = Query.from_str(qstr)
         self.dict = commands
@@ -231,6 +235,7 @@ class Executer:
         return args, kwargs
 
     async def __run(self, query, dct, action):
+
         async def proc(subquery):
             return await self.__run(subquery, dct, action)
 
@@ -251,7 +256,8 @@ class Executer:
             raise PermissionsError(query.command)
 
         try:
-            args, kwargs = await self.__process_args(query.args, query.kwargs, proc)
+            args, kwargs = await self.__process_args(query.args, query.kwargs,
+                                                     proc)
             IahrConfig.LOGGER.info(f'arg={args}:kwargs={kwargs}:{id_msg}')
             return await handler(action.event, *args, **kwargs)
         except (AttributeError, ValueError, TypeError) as e:
