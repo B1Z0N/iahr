@@ -185,6 +185,7 @@ def add_pars():
     '.do usr=None' : '[.do [usr=None]]',
     '.do [usr=not none]' : '[.do [usr=not none]]',
     '.do [usr=.do]' : '[.do [usr=[.do]]]',
+    '.do [usr=.do this and that]' : '[.do [usr=[.do [this] [and] [that]]]]',
     '.do [usr=[.do]]' : '[.do [usr=[.do]]]',
     '.do [usr=[.do this and that]]' : '[.do [usr=[.do [this] [and] [that]]]]',
     '.do [usr=[.do .do]]' : '[.do [usr=[.do [.do]]]]',

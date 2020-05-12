@@ -4,6 +4,10 @@ from iahr.run import Query, Routine, Executer
 from iahr.run import CommandSyntaxError, PermissionsError, \
     ExecutionError, NonExistantCommandError
 
+from iahr.config import IahrConfig 
+from iahr.utils import ActionData
+from telethon import events
+
 idx = lambda x : x
 about = 'something'
 
@@ -69,14 +73,16 @@ qtest_data = [
     ('.do be usr=why', Query('do', ['be'], {'usr' : 'why'})),
     ('.do be usr=why [how]', Query('do', ['be', 'how'], {'usr' : 'why'})),
     # subcommand kwargs
-    # ('.do [usr=.do1]', Query('do', kwargs={'usr' : Query('do1')}))
-    # ('.do usr=[.do1 and]', Query('do', kwargs={'usr' : Query('do1', ['and'])}))
-    # ('.do usr=[.do1 or and=what]', Query('do', kwargs={'usr' : Query('do1', ['or'], {'and' : 'what'})}))
+    ('.do [usr=.do1]', Query('do', kwargs={'usr' : Query('do1')})),
+    ('.do [usr=[.do1 and]]', Query('do', kwargs={'usr' : Query('do1', ['and'])})),
+    ('.do [usr=.do1 and]', Query('do', kwargs={'usr' : Query('do1', ['and'])})),
+    ('.do [usr=.do1 or and=what]', Query('do', kwargs={'usr' : Query('do1', ['or'], {'and' : 'what'})})),
+    ('.do [usr=[.do1 or and=what]]', Query('do', kwargs={'usr' : Query('do1', ['or'], {'and' : 'what'})})),
+    ('.do [usr=.do1 .do2 .do3]', Query('do', kwargs={'usr' : Query('do1', [Query('do2', [Query('do3')])])})),
     # escapings
     ('.do [\.arg \] \[]', Query('do', ['\.arg \] \['])),
     # raw args
     ('.do r[.arg ] []r', Query('do', ['\.arg \] \['])),
-
 ] 
 
 @pytest.mark.parametrize('input, result', qtest_data)
@@ -93,3 +99,47 @@ def test_query_command_syntax_error(input):
         Query.from_str(input)
 
 
+@pytest.fixture
+def action():
+    return ActionData(events.NewMessage(), 'uid', 'chatid')
+
+@pytest.fixture
+def allargs():
+    return Routine(lambda *args, **kwargs: None, 'about')
+
+@pytest.fixture
+def allowall(allargs):
+    def do():
+        rt = allargs
+        rt.allow_chat(IahrConfig.OTHERS)
+        rt.allow_usr(IahrConfig.OTHERS)
+        return rt
+    return do
+
+@pytest.fixture
+def commands(allowall, allargs):
+    res = {cmd : allowall() for cmd in ['.do', '.do1', '.do2']}
+
+    res['.doperm'] = Routine(allargs, 'about') 
+
+    res['.incompatible1'] = Routine(lambda _, arg: arg, 'about')
+    res['.incompatible2'] = Routine(lambda _, arg1, arg2: (arg1, arg2), 'about')
+
+    return res
+
+@pytest.mark.parametrize('errinput, exception', [
+    ('.do3', NonExistantCommandError),
+    ('.do .do1 .do3', NonExistantCommandError),
+    ('.doperm', PermissionsError),
+    ('.do .doperm .do3', PermissionsError),
+    ('.incompatible2', ExecutionError),
+    ('.incompatible2 .incompatible1', ExecutionError),
+    ('.incompatible .incompatible2', ExecutionError),
+    ('.incompatible2 .incompatible2 1 2', ExecutionError),
+])
+@pytest.mark.asyncio
+async def test_executer_errors(errinput, exception, action, commands):
+    with pytest.raises(exception):
+        runner = Executer(errinput, commands, action)
+        await runner.run()
+        
