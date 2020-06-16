@@ -128,12 +128,13 @@ from telethon.events import NewMessage as newmsg
     about='An ancient game in modern messenger', # description on `.help marco`
     take_event=False, # whether it takes event, default - True
     multiret=False, # whether it returns one value, or multiple, default - False
-    on_event=newmsg) # what event it should be called on, default - events.NewMessage
+    on_event=newmsg, # what event it should be called on, default - events.NewMessage
+    tags={'audio'}) # tags facility to quickly search for commands
 async def marco():
     return 'polo'
 ```
 
-**Note**: don't forget`multiret=True` when you want to return list of values instead of one value: list. 
+**NB**: don't forget`multiret=True` when you want to return list of values instead of one value: list. 
 
 -------------------------
 
@@ -186,19 +187,19 @@ Syntax details could be easily changed(see **Configuration** below). So we would
 
 All commands start with ".", arguments can be passed too: 
 
-    .help help or .help [help]
+    .cmds help or .cmds [help]
 
 ------------------------------------
 
 Pros of using brackets is that you can pass args with spaces, but don't forget to escape special symbols in brackets:
 
-    .help [very weird command \.\[\]]
+    .cmds [very weird command \.\[\]]
 
 ------------------------------------
 
 Also there are raw args:
 
-    .help r[very weird command .[]]r
+    .cmds r[very weird command .[]]r
 
 ------------------------------------
 
@@ -247,8 +248,19 @@ To run a command both user and chat need to be allowed to run this command(excep
 
 * `help`
 
-  1. get list of commands: `.help`
-  2. get info about a command: `.help help` 
+  Where to start
+  
+* `cmds`
+
+  1. get list of commands: `.cmds`
+  2. get info about a command: `.cmds cmds` 
+
+* `tags`
+
+  1. get list of tags: `.tags`
+  2. get list of commands with this tag: `.tags sometag` 
+
+* `synhelp` - help about syntax
 
 * `allowusr`
 
@@ -306,7 +318,15 @@ To run a command both user and chat need to be allowed to run this command(excep
 
   4. like previous one, but all commands: `.allowedchat`
 
-* `synhelp` - help about syntax
+* `ignore`
+
+  1. ignore printing output to users without permissions in a chat(decrease spam level): `.ignore chat`
+  2. the same but chat is the one we are writing in: `.ignore`
+
+* `unignore`
+
+  1. print all output to users in a chat(increases spam, and clarity): `.unignore chat`
+  2. the same but chat is the one we are writing in: `.unignore`
 
 # HOW TO extend
 
@@ -318,7 +338,7 @@ To configure use function with this signature:
 from iahr.config import config
 
 config(
-	left=None, # left delimtier, default - '['
+    left=None, # left delimtier, default - '['
     right=None, # right delimiter, default - ']'
     raw=None, # raw arg delimiter, default - 'r'
     new_msg=None, # delimiter for ordinary command, default - '.'
@@ -338,43 +358,38 @@ config(
 
 By default your newly registered command would be allowed to use only you and in all chats.
 
-Most probably you want all your bans for noisy users and chats to be saved when you exit the program. And, thank God, there are state. State stored in a JSON file. Here is an example content for few commands:
+Most probably you want all your bans, ignores for noisy users and chats to be saved when you exit the program. And, thank God, there are state. State stored in a JSON file. Here is an example content for few commands:
 
 ```json
 {
-    ".help": {
-        "usraccess": {
-            "AccessList": {
-                "others": false,
-                "whitelist": [],
-                "blacklist": []
-            }
-        },
-        "chataccess": {
-            "AccessList": {
-                "others": true,
-                "whitelist": [],
-                "blacklist": []
+    "commands": {
+        ".help": {
+            "usraccess": {
+                "AccessList": {
+                    "others": false,
+                    "whitelist": [],
+                    "blacklist": []
+                }
+            },
+            "chataccess": {
+                "AccessList": {
+                    "others": false,
+                    "whitelist": [],
+                    "blacklist": []
+                }
             }
         }
+	...
     },
-    ".synhelp": {
-        "usraccess": {
-            "AccessList": {
-                "others": false,
-                "whitelist": [182912828],
-                "blacklist": []
-            }
-        },
-        "chataccess": {
-            "AccessList": {
-                "others": true,
-                "whitelist": [],
-                "blacklist": []
-            }
+    "chatlist": {
+        "AccessList": {
+            "others": false,
+            "whitelist": [],
+            "blacklist": []
         }
     }
 }
+
 ```
 
 And most of it you could easily change, for example `others`. To change `whitelist` or `blacklist` you need to get user id of user, because it is much more reliable, it won't change over time. 
@@ -463,23 +478,15 @@ Create docker container within `exmpl` folder.
 
 ### Ideas
 
-* Modules support
+* Tags support
 
-  ​	enable modularity, like `.audio.crop` or `.text2speech.english`
+  ​	enable structuring of commands by tags, like `.crop` and `.revert` is tagged with `audio`.
 
 * Dynamic command creation
 
   ​	something like `.alias [oneword x: .concat .split $1]`
 
-*  Spam level reduce
-	
-	too much text from us, let's stop it to save you from ban in all chats
-
-### Problems
-
-*  Solve issues with configuring output files
-	
-	When setting custom `IahrConfig.SESSION_FNAME` or `IahrConfig.LOG_OUT`. Half of it is loaded from initial file and then from ours custom file. They should be settled at import time. 
+### Problems 
 	
 *  Fix `pip` deps and `start.sh` scripts
 	
