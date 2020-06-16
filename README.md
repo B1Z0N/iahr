@@ -128,12 +128,13 @@ from telethon.events import NewMessage as newmsg
     about='An ancient game in modern messenger', # description on `.help marco`
     take_event=False, # whether it takes event, default - True
     multiret=False, # whether it returns one value, or multiple, default - False
-    on_event=newmsg) # what event it should be called on, default - events.NewMessage
+    on_event=newmsg, # what event it should be called on, default - events.NewMessage
+    tags={'audio'}) # tags facility to quickly search for commands
 async def marco():
     return 'polo'
 ```
 
-**Note**: don't forget`multiret=True` when you want to return list of values instead of one value: list. 
+**NB**: don't forget`multiret=True` when you want to return list of values instead of one value: list. 
 
 -------------------------
 
