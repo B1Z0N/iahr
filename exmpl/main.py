@@ -1,32 +1,36 @@
-import os
-from dotenv import load_dotenv
-
-from telethon import TelegramClient
-
-from iahr import init
+# configuration before any imports
+# treat it as a normal config file
 from iahr.config import config
 
+IAHR_LOG_PATH = 'etc/iahr.log'
+IAHR_SESSION_PATH = 'etc/iahr.session'
+TG_SESSION_PATH = 'etc/tg.session'
+
+config(log_out=IAHR_LOG_PATH, session_fname=IAHR_SESSION_PATH)
+
+# then normal code
+import os
 import commands
+
+from dotenv import load_dotenv
+from telethon import TelegramClient
+from iahr import init
 
 # constants
 API_ID = 'TG_API_ID'
 API_HASH = 'TG_API_HASH'
-TG_SESSION_PATH = 'TG_SESSION_PATH'
-IAHR_SESSION_PATH = 'IAHR_SESSION_PATH'
 
 
 def make_client():
     api_id = os.getenv(API_ID)
     api_hash = os.getenv(API_HASH)
-    tg_session_path = os.path.abspath(os.getenv(TG_SESSION_PATH))
+    tg_session_path = os.path.abspath(TG_SESSION_PATH)
     client = TelegramClient(tg_session_path, api_id, api_hash)
     client.parse_mode = 'markdown'
     return client
 
 
 async def main(client):
-    config(session_fname=os.getenv(IAHR_SESSION_PATH), )
-
     await init(client)
     await client.start()
     await client.run_until_disconnected()

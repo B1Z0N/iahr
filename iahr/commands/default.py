@@ -4,7 +4,10 @@ from ..reg import TextSender, VoidSender, MultiArgs
 from ..utils import AccessList
 from ..config import IahrConfig
 
-admin_commands = {'.allowusr', '.allowchat', '.banusr', '.banchat'}
+admin_commands = {
+    '.allowusr', '.allowchat', '.banusr', '.banchat',
+    '.ignore', '.unignore',
+}
 nosuch = """
     No such command(try checking full help)
 """
@@ -25,9 +28,37 @@ def __process_list(single, is_cmds=False):
 
 
 @TextSender(about="""
+    Get general info to start with
+""", take_event=False)
+async def help():
+    return \
+r"""
+
+Get help about syntax 
+with **{new_msg}synhelp**.
+
+See **{new_msg}cmds** for the list 
+of available commands. 
+
+Pass command to get detailed info:
+    
+    `{new_msg}cmds cmds`
+
+See **{new_msg}tags** for the list 
+of available tags.
+
+Pass tag to get detailed info
+and commands with this tag:
+    
+    `{new_msg}tags help`
+
+""".format(new_msg=IahrConfig.CMD.original)
+
+
+@TextSender(about="""
     Get help about a command or list of all commands
 """)
-async def help(event, cmd=None):
+async def cmds(event, cmd=None):
     app = IahrConfig.APP
 
     if cmd is None:
@@ -249,6 +280,66 @@ async def is_allowed_usr(event, usr=None, cmd=None):
     return await __perm_format(event, res)
 
 
+async def __ignore_action(event, chat, action):
+    app = IahrConfig.APP
+    action = getattr(app, action)
+
+    if chat is None:
+        chat = await __chat_from_event(event)
+        action(chat)
+        return
+
+    chats = __process_list(chat)
+
+    for i, chat in enumerate(chats):
+        if not AccessList.is_special(chat) and not is_integer(chat):
+            chat = await event.client.get_chat(chat)
+            chat = chat.id
+        
+        action(chat)
+    
+
+@VoidSender('ignore', """
+    Ignore a chat when processing commands from
+    banned users. Reduces spam level.
+
+        by chatname or id all commands:
+        
+        `.ignore chatname`
+        
+        all chats
+        
+        `.ignore *`
+        
+        the chat that you are writing this in:
+        
+        `.ignore`
+""")
+async def ignore_chat(event, chat=None):
+    await __ignore_action(event, chat, 'ban_chat')
+
+
+@VoidSender('unignore', """
+    Enable chat when processing commands from
+    banned users. Increases spam level, but
+    also increases clarity.
+
+        by chatname or id all commands:
+        
+        `.unignore chatname`
+        
+        all chats
+        
+        `.unignore *`
+        
+        the chat that you are writing this in:
+        
+        `.unignore`
+""")
+async def unignore_chat(event, chat=None):
+    await __ignore_action(event, chat, 'allow_chat')
+
+
 @TextSender(take_event=False, about="""
     Get help about syntax rules
 """)
@@ -259,15 +350,12 @@ async def synhelp():
 r"""
 Hy, my name is [iahr](https://github.com/B1Z0N/iahr/). 
 
-You could use some userdefined functions,
-write `.help` to see the list and info.
-
 ------------------------------------
 
 All commands start with "`{new_msg}`",
 arguments can be passed too: 
 
-    `{new_msg}help help` or `{new_msg}help {left}help{right}`
+    `{new_msg}cmds help` or `{new_msg}cmds {left}help{right}`
 
 ------------------------------------
 
@@ -275,20 +363,20 @@ Pros of using brackets is that you can
 pass args with spaces, but don't forget 
 to escape special symbols in brackets:
 
-    `{new_msg}help {left}very weird command \\{new_msg}\\{left}\\{right}{right}`
+    `{new_msg}cmds {left}very weird command \\{new_msg}\\{left}\\{right}{right}`
 
 ------------------------------------
 
 Also there are `raw args`:
 
-    `{new_msg}help {raw}{left}very weird command {new_msg}{left}{right}{right}{raw}`
+    `{new_msg}cmds {raw}{left}very weird command {new_msg}{left}{right}{right}{raw}`
 
 ------------------------------------
 
 You could use keyword args:
-    allow me to run `help` command
+    allow me to run `cmds` command
 
-    `{new_msg}allowusr usr=me cmd=help`
+    `{new_msg}allowusr usr=me cmd=cmds`
 
     allow ... to run all commands
 

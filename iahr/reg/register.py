@@ -110,6 +110,8 @@ class Register(ABCRegister):
                         e
                     ) + '\n\nsee **.allowedusr**, if you are allowed to ◔ ⌣ ◔'
                     await event.reply(msg)
+                except run.IgnoreError as e:
+                    IahrConfig.LOGGER.info(f'Empty handler due to chat {e.chat} ignore')
                 except run.ExecutionError as e:
                     IahrConfig.LOGGER.error(str(e))
                     await event.reply('{}:\n\n`{}`\n\n{}'.format(

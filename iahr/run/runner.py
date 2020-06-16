@@ -32,6 +32,14 @@ class PermissionsError(ExecutionError):
     def __init__(self, command):
         super().__init__("you can't use **{}** command".format(command))
 
+class IgnoreError(ExecutionError):
+    """
+        Exception telling that this message should be ignored
+    """
+
+    def __init__(self, chat):
+        self.chat = chat
+        super().__init__("ignore message in this chat: **{}**".format(chat))
 
 class NonExistantCommandError(ExecutionError):
     """
@@ -206,13 +214,20 @@ class Executer:
         and checks if commands are compatible
     """
 
-    def __init__(self, qstr, commands, action: ActionData):
+    def __init__(self, qstr, commands, action: ActionData, is_ignored_chat):
         self.query = Query.from_str(qstr)
         self.dict = commands
         self.action = action
+        self.is_ignored_chat = is_ignored_chat
 
     async def run(self):
-        return await self.__run(self.query, self.dict, self.action)
+        try:
+            return await self.__run(self.query, self.dict, self.action)
+        except (PermissionsError, NonExistantCommandError) as e:
+            if self.is_ignored_chat:
+                raise IgnoreError(self.action.chatid)
+            else:
+                raise e
 
     @staticmethod
     async def __process_args(rawargs, rawkwargs, subprocess: Callable):

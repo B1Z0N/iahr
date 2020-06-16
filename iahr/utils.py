@@ -368,7 +368,6 @@ class AccessList:
 
         def object_hook(self, dct):
             if 'AccessList' in dct:
-                print(dct)
                 alst, dct = AccessList(), dct['AccessList']
                 alst.allow_others = dct['others']
                 alst.whitelist = set(dct['whitelist'])
@@ -396,7 +395,6 @@ class ActionData:
 
 def argstr(fun, remove_event=True):
     spec = inspect.getfullargspec(fun)
-    print(fun.__name__, spec)
     args = spec.args
     if remove_event:
         args = spec.args[1:]

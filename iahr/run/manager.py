@@ -1,4 +1,4 @@
-from ..utils import SingletonMeta, ActionData
+from ..utils import SingletonMeta, ActionData, AccessList
 from .runner import Executer, Query, Routine
 from .runner import ExecutionError, CommandSyntaxError, PermissionsError, NonExistantCommandError
 from ..config import IahrConfig
@@ -18,6 +18,7 @@ class ABCManager(ABC):
             atexit
         """
         self.commands = {}
+        self.chatlist = AccessList(allow_others=False)
         self.state = self.load()
         atexit.register(self.dump)
 
@@ -43,7 +44,9 @@ class ABCManager(ABC):
         """
             Save state(commands and routines) to the file(IahrConfig.SESSION_FNAME)
         """
+        IahrConfig.LOGGER.info('Dumping session and exiting')
         dct = {name: cmd.get_state() for name, cmd in self.commands.items()}
+        dct = { 'commands' : dct, 'chatlist' : self.chatlist }
         with open(IahrConfig.SESSION_FNAME, 'w+') as f:
             json.dump(dct, f, indent=4, cls=Routine.JSON_ENCODER)
 
@@ -54,7 +57,9 @@ class ABCManager(ABC):
         fname = IahrConfig.SESSION_FNAME
         if os.path.exists(fname) and os.path.getsize(fname) > 0:
             with open(fname, 'r') as f:
-                return json.load(f, cls=Routine.JSON_DECODER)
+                dct = json.load(f, cls=Routine.JSON_DECODER)
+                self.chatlist = dct['chatlist']
+                return dct['commands']
         else:
             return {}
 
@@ -67,6 +72,19 @@ class ABCManager(ABC):
         if state := self.state.get(command):
             routine.set_state(state)
         return routine
+
+    ##################################################
+    # Chat spam tactic management
+    ##################################################
+
+    def is_allowed_chat(self, chat: str):
+        return self.chatlist.is_allowed(chat)
+
+    def allow_chat(self, chat: str):
+        return self.chatlist.allow(chat)
+
+    def ban_chat(self, chat: str):
+        return self.chatlist.ban(chat)
 
     def __repr__(self):
         return f'Manager({self.commands})'
@@ -103,5 +121,7 @@ class Manager(ABCManager):
         """
         IahrConfig.LOGGER.info(f'executing query:qstr={qstr}')
         action = await ActionData.from_event(event)
-        runner = Executer(qstr, self.commands, action)
+
+        is_ignored = not self.is_allowed_chat(action.chatid)
+        runner = Executer(qstr, self.commands, action, is_ignored)
         return await runner.run()

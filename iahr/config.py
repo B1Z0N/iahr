@@ -32,6 +32,7 @@ class IahrConfig(metaclass=SingletonMeta):
         """
         IahrConfig.APP = app
         IahrConfig.REG.init(reg.reg)
+        IahrConfig.REG = reg
 
     @classmethod
     def _update(cls, preprocess, **kwargs):
