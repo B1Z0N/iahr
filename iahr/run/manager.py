@@ -18,6 +18,7 @@ class ABCManager(ABC):
             atexit
         """
         self.commands = {}
+        self.tags = {}
         self.chatlist = AccessList(allow_others=False)
         self.state = self.load()
         atexit.register(self.dump)
@@ -103,7 +104,7 @@ class Manager(ABCManager):
     # Routine management
     ##################################################
 
-    def add(self, command: str, handler: Callable, about: str, delimiter=None):
+    def add(self, command: str, handler: Callable, about: str, tags, delimiter=None):
         """
             Add a handler and it's name to the list
         """
@@ -115,10 +116,18 @@ class Manager(ABCManager):
 
         self.commands[command] = routine
 
+        for tag in tags:
+            if tag in self.tags:
+                self.tags[tag].add(command)
+            else:
+                self.tags[tag] = { command }
+
+
     async def exec(self, qstr, event):
         """
             Execute query where qstr is raw command text
         """
+        print(self.tags)
         IahrConfig.LOGGER.info(f'executing query:qstr={qstr}')
         action = await ActionData.from_event(event)
 

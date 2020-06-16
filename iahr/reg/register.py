@@ -57,24 +57,24 @@ class Register(ABCRegister):
     # Register handlers
     ##################################################
 
-    def reg(self, name, handler, about, etype):
+    def reg(self, name, handler, about, etype, tags):
         """
             Generic command handler
         """
         IahrConfig.LOGGER.info(f'registering:name={name}:about={about}')
 
         if etype == None:
-            self.reg_new_msg(name, handler, about)
+            self.reg_new_msg(name, handler, about, tags)
         else:
-            self.reg_others(name, handler, about, etype)
+            self.reg_others(name, handler, about, etype, tags)
 
-    def reg_new_msg(self, name, handler, about):
+    def reg_new_msg(self, name, handler, about, tags):
         """
             Register new message handler to our manager
         """
-        self.app.add(name, handler, about, delimiter=IahrConfig.CMD)
+        self.app.add(name, handler, about, tags, delimiter=IahrConfig.CMD)
 
-    def reg_others(self, name, handler, about, event):
+    def reg_others(self, name, handler, about, event, tags):
         """
             Register non-new-message events directly as the client event handler.
             Also add it, just formally, with different delimiter
@@ -85,7 +85,7 @@ class Register(ABCRegister):
             you to create new `run` function like the one here, but with this command
             delimiter and don't forget to pass correct event type to the `app.exec`.
         """
-        self.app.add(self.prefix(event) + name, handler, about)
+        self.app.add(self.prefix(event) + name, handler, about, tags)
         self.client.add_event_handler(handler, event)
 
     async def run(self, event):

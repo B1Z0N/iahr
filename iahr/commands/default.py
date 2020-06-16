@@ -8,9 +8,14 @@ admin_commands = {
     '.allowusr', '.allowchat', '.banusr', '.banchat',
     '.ignore', '.unignore',
 }
-nosuch = """
-    No such command(try checking full help)
+nosuchcmd = """
+    No such command(try checking full list: `.cmds`)
 """
+nosuchtag = """
+    No such tag(try checking full list: `.tags`)
+"""
+DEFAULT_TAG = 'default'
+ADMIN_TAG = 'admin'
 
 
 def __process_list(single, is_cmds=False):
@@ -29,7 +34,7 @@ def __process_list(single, is_cmds=False):
 
 @TextSender(about="""
     Get general info to start with
-""", take_event=False)
+""", take_event=False, tags={DEFAULT_TAG})
 async def help():
     return \
 r"""
@@ -57,7 +62,7 @@ and commands with this tag:
 
 @TextSender(about="""
     Get help about a command or list of all commands
-""")
+""", tags={DEFAULT_TAG})
 async def cmds(event, cmd=None):
     app = IahrConfig.APP
 
@@ -68,7 +73,31 @@ async def cmds(event, cmd=None):
     for cmd in cmds:
         val = app.commands.get(cmd)
         res = '**{}**:\n{}\n'.format(cmd,
-                                     nosuch if val is None else val.help())
+                                     nosuchcmd if val is None else val.help())
+        helplst.append(res)
+
+    res = '\n'.join(helplst)
+    return res
+
+    
+@TextSender(about="""
+    Get the list of all tags or list of commands tagged
+""", tags={DEFAULT_TAG})
+async def tags(event, tag=None):
+    app = IahrConfig.APP
+
+    if tag is None:
+        return '\n'.join(f'**{tag}**' for tag in app.tags.keys())
+
+    tags, helplst = __process_list(tag), []
+    print(tags)
+    for tag in tags:
+        val = app.tags.get(tag)
+        res = f'**{tag}**:\n'
+        if val is None:
+            res += nosuchcmd
+        else:
+            res += '\n'.join(f'    **{cmd}**' for cmd in val)
         helplst.append(res)
 
     res = '\n'.join(helplst)
@@ -145,7 +174,7 @@ async def __access_action(event,
         me or the user that you are replying to
         
         `.allowusr cmd=command`
-""")
+""", tags={DEFAULT_TAG, ADMIN_TAG})
 async def allow_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
@@ -166,7 +195,7 @@ async def allow_usr(event, usr=None, cmd=None):
         the chat that you are writing this in:
         
         `.allowchat cmd=command`
-""")
+""", tags={DEFAULT_TAG, ADMIN_TAG})
 async def allow_chat(event, chat=None, cmd=None):
     if chat is None:
         chat = await __chat_from_event(event)
@@ -187,7 +216,7 @@ async def allow_chat(event, chat=None, cmd=None):
         me or the user that you are replying to
         
         `.banusr cmd=command`
-""")
+""", tags={DEFAULT_TAG, ADMIN_TAG})
 async def ban_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
@@ -208,7 +237,7 @@ async def ban_usr(event, usr=None, cmd=None):
         the chat that you are writing this in:
         
         `.allowchat cmd=command`
-""")
+""", tags={DEFAULT_TAG, ADMIN_TAG})
 async def ban_chat(event, chat=None, cmd=None):
     if chat is None:
         chat = await __chat_from_event(event)
@@ -241,7 +270,7 @@ async def __perm_format(event, lst):
         list of commands, list of chats
         
         `.allowedchat [chat1 chat2] [cmd1 cmd2 cmd3]`
-""")
+""", tags={DEFAULT_TAG})
 async def is_allowed_chat(event, chat=None, cmd=None):
     if chat is None:
         chat = await __chat_from_event(event)
@@ -268,7 +297,7 @@ async def is_allowed_chat(event, chat=None, cmd=None):
         list of commands, list of users
         
         `.allowedusr [usr1 usr2] [cmd1 cmd2 cmd3]`
-""")
+""", tags={DEFAULT_TAG})
 async def is_allowed_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
@@ -314,7 +343,7 @@ async def __ignore_action(event, chat, action):
         the chat that you are writing this in:
         
         `.ignore`
-""")
+""", tags={DEFAULT_TAG, ADMIN_TAG})
 async def ignore_chat(event, chat=None):
     await __ignore_action(event, chat, 'ban_chat')
 
@@ -335,14 +364,14 @@ async def ignore_chat(event, chat=None):
         the chat that you are writing this in:
         
         `.unignore`
-""")
+""", tags={DEFAULT_TAG, ADMIN_TAG})
 async def unignore_chat(event, chat=None):
     await __ignore_action(event, chat, 'allow_chat')
 
 
 @TextSender(take_event=False, about="""
     Get help about syntax rules
-""")
+""", tags={DEFAULT_TAG})
 async def synhelp():
     cfg = IahrConfig
 
@@ -410,3 +439,4 @@ don't forget about your **IMAGINATION**!
     new_msg=cfg.CMD.original, left=cfg.LEFT.original,
     right=cfg.RIGHT.original, raw=cfg.RAW.original
     )
+

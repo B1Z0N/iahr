@@ -88,7 +88,8 @@ def create_sender(name, sendf):
                          about=None,
                          take_event=True,
                          multiret=False,
-                         on_event=None):
+                         on_event=None, 
+                         tags=None):
         """
             Parameterized decorator based on command name and it's description
             event - true if function takes event as the first argument,
@@ -103,15 +104,16 @@ def create_sender(name, sendf):
                 
                 Doesn't change handler itself, just registers appropriate wrapper
             """
-            nonlocal name
-            nonlocal about
+            nonlocal name, about, tags
+            
             name = handler.__name__ if name is None else name
             about = name if about is None else about
             about = '`{}`\n{}'.format(
                 '\n  args: ' + argstr(handler, take_event), about)
             wrapped = wraps(handler)(Sender(handler, take_event, multiret))
+            tags = set() if tags is None else set(tags)
 
-            IahrConfig.REG.do(name, wrapped, about, on_event)
+            IahrConfig.REG.do(name, wrapped, about, on_event, tags)
             return handler
 
         return decorator
