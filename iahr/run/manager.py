@@ -127,7 +127,6 @@ class Manager(ABCManager):
         """
             Execute query where qstr is raw command text
         """
-        print(self.tags)
         IahrConfig.LOGGER.info(f'executing query:qstr={qstr}')
         action = await ActionData.from_event(event)
 

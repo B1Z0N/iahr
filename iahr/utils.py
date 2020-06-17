@@ -86,7 +86,7 @@ class SingletonMeta(type):
 
 class ParseError(Exception):
     def __init__(self, s):
-        super().__init__('parsing the query: {}'.format(s))
+        super().__init__(IahrConfig.LOCAL['ParseError'].format(s))
 
 
 def errstr(s, ebegin, eend):
@@ -146,7 +146,9 @@ def parenthesize(ldel, rdel, cmd_del, raw_del):
         if i == len(s):
             msg = errstr(s, errstart, errstart + 2)
             raise ParseError(
-                f'unbalanced "{raw}{left} {right}{raw}":\n\n{msg}')
+                IahrConfig.LOCAL['Unbalanced raw']
+                    .format(f'"{raw}{left} {right}{raw}":\n\n{msg}')
+            )
         return surround(full_escape(s[start:i])), i + 2
 
     def do(s, i):
@@ -156,7 +158,10 @@ def parenthesize(ldel, rdel, cmd_del, raw_del):
         while not is_right(s, i):
             if len(s) == i:
                 msg = errstr(s, errstart - 1, errstart)
-                raise ParseError(f'unbalanced "{left} {right}"\n\n{msg}')
+                raise ParseError(
+                    IahrConfig.LOCAL['Unbalanced']
+                        .format(f'{left} {right}"\n\n{msg}')
+                )
 
             if is_left_raw(s, i):
                 subres, i = do_raw(s, i)
@@ -220,7 +225,7 @@ class Tokenizer:
         ty, name = next(toks)
         children = []
         if ty != 'WORD':
-            raise ParseError('Bracket should be starting with word')
+            raise ParseError(IahrConfig.LOCAL['Brackets should start'])
 
         while True:
             ty, s = next(toks)
@@ -239,7 +244,7 @@ class Tokenizer:
         """
         ty, _ = next(toks)
         if ty != '(':
-            raise ParseError('token should be surrounded with scopes')
+            raise ParseError(IahrConfig.LOCAL['Surround tokens'])
         return cls.parse_inner(toks)
 
     def perform(self):

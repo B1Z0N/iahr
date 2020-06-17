@@ -100,23 +100,23 @@ class Register(ABCRegister):
                     sender = await self.app.exec(txt, event)
                 except run.NonExistantCommandError as e:
                     IahrConfig.LOGGER.error(f'{e}')
-                    await event.reply(str(e) + '\n\nsee **.help**')
+                    await event.reply(str(e) + IahrConfig.LOCAL['See help'])
                 except run.CommandSyntaxError as e:
                     IahrConfig.LOGGER.error(f'{e}')
-                    await event.reply(str(e) + '\n\nsee **.synhelp**')
+                    await event.reply(str(e) + IahrConfig.LOCAL['See synhelp'])
                 except run.PermissionsError as e:
                     IahrConfig.LOGGER.error(f'{e}')
                     msg = str(
                         e
-                    ) + '\n\nsee **.allowedusr**, if you are allowed to ◔ ⌣ ◔'
+                    ) + IahrConfig.LOCAL['See allowedusr']
                     await event.reply(msg)
                 except run.IgnoreError as e:
                     IahrConfig.LOGGER.info(f'Empty handler due to chat {e.chat} ignore')
                 except run.ExecutionError as e:
                     IahrConfig.LOGGER.error(str(e))
-                    await event.reply('{}:\n\n`{}`\n\n{}'.format(
-                        'Incompatible commands, wrong arguments or just a buggy function',
-                        e.args[0], 'Is that what you truly meant?'))
+                    await event.reply(
+                        IahrConfig.LOCAL['Incompatible commands'].format(e.args[0])
+                    )
                 else:
                     await sender.send()
         except Exception as e:

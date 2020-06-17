@@ -3,6 +3,7 @@ from . import run
 from . import reg
 from . import commands
 from . import config
+from . import localization
 
 
 async def init(client, app=None, register=None):

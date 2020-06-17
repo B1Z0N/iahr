@@ -5,7 +5,6 @@ from ..config import IahrConfig
 import re
 from typing import Callable
 
-
 class ExecutionError(RuntimeError):
     """
         Raise when next sender doesn't accept args from previous one
@@ -21,7 +20,9 @@ class CommandSyntaxError(ExecutionError):
     """
 
     def __init__(self, e):
-        super().__init__("wrong syntax, {}".format(str(e)))
+        super().__init__(
+            IahrConfig.LOCAL['CommandSyntaxError'].format(str(e))
+        )
 
 
 class PermissionsError(ExecutionError):
@@ -30,7 +31,9 @@ class PermissionsError(ExecutionError):
     """
 
     def __init__(self, command):
-        super().__init__("you can't use **{}** command".format(command))
+        super().__init__(
+            IahrConfig.LOCAL['PermissionsError'].format(command)
+        )
 
 class IgnoreError(ExecutionError):
     """
@@ -39,7 +42,9 @@ class IgnoreError(ExecutionError):
 
     def __init__(self, chat):
         self.chat = chat
-        super().__init__("ignore message in this chat: **{}**".format(chat))
+        super().__init__(
+            IahrConfig.LOCAL['IgnoreError'].format(chat)
+        )
 
 class NonExistantCommandError(ExecutionError):
     """
@@ -47,7 +52,9 @@ class NonExistantCommandError(ExecutionError):
     """
 
     def __init__(self, command):
-        super().__init__("**{}** command does not exist".format(command))
+        super().__init__(
+            IahrConfig.LOCAL['NonExistantCommandError'].format(command)
+        )
 
 
 class Query:

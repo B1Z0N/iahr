@@ -2,6 +2,7 @@ from telethon import events
 
 from .utils import Delimiter, CommandDelimiter
 from .utils import parenthesize, Delayed, SingletonMeta
+from .localization import english
 
 import re, sys, logging
 
@@ -91,7 +92,8 @@ def config(left=None,
            log_format=None,
            log_datetime_format=None,
            log_out=None,
-           session_fname=None):
+           session_fname=None,
+           local=None):
     """
         Single entry to framework configuration, 
         just run this with some of updated values and 
@@ -109,7 +111,8 @@ def config(left=None,
                 log_format=log_format,
                 log_datetime_format=log_datetime_format,
                 log_out=log_out,
-                session_fname=session_fname)
+                session_fname=session_fname,
+                local=local)
 
     cfg.COMMAND_RE = update_command_re(cfg.CMD)
     cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.CMD, cfg.RAW)
@@ -143,7 +146,8 @@ def reset():
         '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:',
         log_datetime_format='%m/%d/%Y %I:%M:%S %p',
         log_out=sys.stdout,
-        session_fname='iahr.session')
+        session_fname='iahr.session',
+        local=english)
 
 
 reset()
