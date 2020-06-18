@@ -1,9 +1,9 @@
 from . import utils
+from . import localization
+from . import config
 from . import run
 from . import reg
 from . import commands
-from . import config
-from . import localization
 
 
 async def init(client, app=None, register=None):

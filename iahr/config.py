@@ -2,9 +2,102 @@ from telethon import events
 
 from .utils import Delimiter, CommandDelimiter
 from .utils import parenthesize, Delayed, SingletonMeta
-from .localization import english
+from . import localization
 
-import re, sys, logging
+import re, logging, json, os
+from sys import stdout, stderr
+
+from dotenv import load_dotenv
+
+# constants
+CONFIG_DATA_FOLDER_ENV_NAME = 'IAHR_DATA_FOLDER'
+DATA_FOLDER = os.getenv(CONFIG_DATA_FOLDER_ENV_NAME)
+if DATA_FOLDER is None:
+    DATA_FOLDER = 'data'
+
+CONFIG_FNAME = 'config.json'
+SESSION_FNAME = 'iahr.session'
+LOG_FNAME = 'iahr.log'
+
+##################################################
+# Exceptions
+##################################################
+
+
+class IahrConfigError(RuntimeError):
+    """
+        Base exception class for this module
+    """
+    pass
+
+
+class EventsError(IahrConfigError):
+    """
+        Exception to raise when events
+        are not ok
+    """
+
+    TELETHON_EVENTS_URL = \
+        'https://docs.telethon.dev/en/latest/quick-references/events-reference.html'
+
+    TELETHON_EVENTS = {
+        'NewMessage',
+        'MessageEdited',
+        'MessageDeleted',
+        'MessageRead',
+        'ChatAction',
+        'UserUpdate',
+        'Album',
+    }
+
+    def __init__(self, events: set):
+        should_be = self.TELETHON_EVENTS.difference(events)
+        should_not_be = events.difference(self.TELETHON_EVENTS)
+
+        msg = '\n\n\tSomething wrong with your event strings:\n'
+        msg += f'\tthese should be there: {should_be}\n' if should_be else ''
+        msg += f'\tthese should not be there: {should_not_be}\n' if should_not_be else ''
+        msg += f'\n\tsee telethon docs: {self.TELETHON_EVENTS_URL}\n'
+
+        super().__init__(msg)
+
+    @classmethod
+    def check_events(cls, events: set):
+        if events != cls.TELETHON_EVENTS:
+            raise cls(events)
+
+
+class UnknownLocalizationError(IahrConfigError):
+    """
+        Exception to raise when no such
+        language available in iahr.localization module
+    """
+
+    IAHR_AVAILABLE_LANGS = [
+        var for var in dir(localization) if not var.startswith("__")
+    ]
+    IAHR_LOCALIZATION_URL = \
+        'https://github.com/B1Z0N/iahr/blob/master/README.md#localization'
+
+    def __init__(self, lang: str):
+        msg = f"""\n
+        Currently, there are no such language in Iahr: `{lang}`,
+        but you always can add one yourself: {self.IAHR_LOCALIZATION_URL}.
+
+        These localizations available: {self.IAHR_AVAILABLE_LANGS}
+        """
+        super().__init__(msg)
+
+    @classmethod
+    def lang_from_str(cls, lang: str):
+        if lang not in cls.IAHR_AVAILABLE_LANGS:
+            raise cls(lang)
+        return getattr(localization, lang)
+
+
+##################################################
+# Config class 
+##################################################
 
 
 class IahrConfig(metaclass=SingletonMeta):
@@ -47,7 +140,8 @@ class IahrConfig(metaclass=SingletonMeta):
 
 
 ##################################################
-# Functions for updating dependent config data
+# Functions for updating dependent config data 
+# and utility functions
 ##################################################
 
 
@@ -59,22 +153,39 @@ def update_add_pars(left, right, cmd, raw):
     return parenthesize(left, right, cmd, raw)
 
 
-def update_logger(fmt, datefmt, out):
-    if out in (sys.stdout, sys.stderr):
-        handler_cls = logging.StreamHandler
-    elif type(out) == str:
-        handler_cls = logging.FileHandler
-    else:
-        raise RuntimeError(
-            "out should be one of this: sys.stdout, sys.stdin, `filename`")
+def update_logger(fmt: str, datefmt: str, out: str):
     logger = logging.getLogger('iahr')
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter(fmt, datefmt)
-    handler = handler_cls(out)
+    handler = logging.FileHandler(out)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
     return logger
+
+def prefixes_from_str(prefixes):
+    EventsError.check_events(set(prefixes.keys()))
+
+    return { 
+        getattr(events, key) : val for key, val in prefixes.items()
+    }
+
+
+def config_from_file():
+    global DATA_FOLDER, CONFIG_FNAME
+
+    os.makedirs(DATA_FOLDER, exist_ok=True)
+    config_fname = os.path.join(DATA_FOLDER, CONFIG_FNAME)
+
+    if os.path.exists(config_fname) and os.path.getsize(config_fname) > 0:
+        with open(config_fname) as f:
+            config_data = json.load(f)
+    else:
+        with open(config_fname, 'w') as f:
+            f.write('{}')
+        config_data = {}
+
+    config(**config_data)
 
 
 ##################################################
@@ -91,33 +202,34 @@ def config(left=None,
            others=None,
            log_format=None,
            log_datetime_format=None,
-           log_out=None,
-           session_fname=None,
-           local=None):
+           local=None,
+           data_folder=None):
     """
         Single entry to framework configuration, 
         just run this with some of updated values and 
         it will update IahrConfig accordingly.
     """
-
+    global SESSION_FNAME, LOG_FNAME
     cfg = IahrConfig
 
     cfg._update(Delimiter, left=left, right=right, raw=raw)
     cfg._update(CommandDelimiter, cmd=cmd)
+    cfg._update(UnknownLocalizationError.lang_from_str, local=local)
+    cfg._update(prefixes_from_str, prefixes=prefixes)
     cfg._update(lambda x: x,
-                prefixes=prefixes,
                 me=me,
                 others=others,
                 log_format=log_format,
                 log_datetime_format=log_datetime_format,
-                log_out=log_out,
-                session_fname=session_fname,
-                local=local)
+                data_folder=data_folder)
+    
+    os.makedirs(cfg.DATA_FOLDER, exist_ok=True)
+    cfg.SESSION_FNAME = os.path.join(cfg.DATA_FOLDER, SESSION_FNAME)
+    cfg.LOG_OUT = os.path.join(cfg.DATA_FOLDER, LOG_FNAME)
 
     cfg.COMMAND_RE = update_command_re(cfg.CMD)
     cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.CMD, cfg.RAW)
-    cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT,
-                               cfg.LOG_OUT)
+    cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT, cfg.LOG_OUT)
 
 
 def reset():
@@ -125,29 +237,35 @@ def reset():
         Reset(set) IahrConfig to default value
         Single source of truth about default
     """
+    global DATA_FOLDER, SESSION_FNAME, LOG_FNAME
+
     config(
         left='[',
         right=']',
         raw='r',
         cmd='.',
-        prefixes={
-            events.NewMessage:
-            'onnewmsg_',  # additional handlers(not commands)
-            events.MessageEdited: 'onedit_',
-            events.MessageDeleted: 'ondel_',
-            events.MessageRead: 'onread_',
-            events.ChatAction: 'onchataction_',
-            events.UserUpdate: 'onusrupdate_',
-            events.Album: 'onalbum_',
+        prefixes= {
+            # additional handlers(not commands)
+            'NewMessage' :'onnewmsg_',
+            'MessageEdited' : 'onedit_',
+            'MessageDeleted' : 'ondel_',
+            'MessageRead' : 'onread_',
+            'ChatAction' : 'onchataction_',
+            'UserUpdate' : 'onusrupdate_',
+            'Album' : 'onalbum_',
         },
         me='me',
         others='*',
-        log_format=
-        '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:',
+        log_format='%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:',
         log_datetime_format='%m/%d/%Y %I:%M:%S %p',
-        log_out=sys.stdout,
-        session_fname='iahr.session',
-        local=english)
+        local='english',
+        data_folder=DATA_FOLDER)
+
+
+##################################################
+# Setting config on import
+##################################################
 
 
 reset()
+config_from_file()

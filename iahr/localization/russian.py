@@ -6,7 +6,7 @@ russian = {
     'IgnoreError' : 'игнорирую сообщение в **{}** чате',
     'NonExistantCommandError' : '**{}** такой команды не существует',
     # reg/register.py
-    'See help' : '\n\nсмотрите **.help**',
+    'See cmds' : '\n\nсмотрите **.cmds**',
     'See synhelp' : '\n\nсмотрите **.synhelp**',
     'See allowedusr' : '\n\nсмотрите **.allowedusr**, если у вас есть разрешение ◔ ⌣ ◔',
     'Incompatible commands' : 

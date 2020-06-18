@@ -100,7 +100,7 @@ class Register(ABCRegister):
                     sender = await self.app.exec(txt, event)
                 except run.NonExistantCommandError as e:
                     IahrConfig.LOGGER.error(f'{e}')
-                    await event.reply(str(e) + IahrConfig.LOCAL['See help'])
+                    await event.reply(str(e) + IahrConfig.LOCAL['See cmds'])
                 except run.CommandSyntaxError as e:
                     IahrConfig.LOGGER.error(f'{e}')
                     await event.reply(str(e) + IahrConfig.LOCAL['See synhelp'])

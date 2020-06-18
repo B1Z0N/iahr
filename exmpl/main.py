@@ -1,31 +1,19 @@
-# configuration before any imports
-# treat it as a normal config file
-from iahr.config import config
+from os import path, getenv         # env vars to tell where the iahr data 
+from dotenv import load_dotenv      # telethon session file is being stored
+load_dotenv()                       # and some tg secrets to initialize client
 
-IAHR_LOG_PATH = 'etc/iahr.log'
-IAHR_SESSION_PATH = 'etc/iahr.session'
-TG_SESSION_PATH = 'etc/tg.session'
+TG_API_ID = getenv('TG_API_ID')
+TG_API_HASH = getenv('TG_API_HASH')
+TG_SESSION_PATH = path.abspath(getenv('TG_SESSION_PATH'))
 
-config(log_out=IAHR_LOG_PATH, session_fname=IAHR_SESSION_PATH)
-
-# then normal code
-import os
-import commands
-
-from dotenv import load_dotenv
-from telethon import TelegramClient
-from iahr import init
-
-# constants
-API_ID = 'TG_API_ID'
-API_HASH = 'TG_API_HASH'
+import commands                     # userspace routines
+from telethon import TelegramClient # telegram
+from iahr import init               # iahr
 
 
 def make_client():
-    api_id = os.getenv(API_ID)
-    api_hash = os.getenv(API_HASH)
-    tg_session_path = os.path.abspath(TG_SESSION_PATH)
-    client = TelegramClient(tg_session_path, api_id, api_hash)
+    global TG_API_ID, TG_API_HASH, TG_SESSION_PATH
+    client = TelegramClient(TG_SESSION_PATH, TG_API_ID, TG_API_HASH)
     client.parse_mode = 'markdown'
     return client
 
@@ -37,7 +25,6 @@ async def main(client):
 
 
 if __name__ == '__main__':
-    load_dotenv()
     client = make_client()
     client.loop.run_until_complete(main(client))
     client.loop.close()

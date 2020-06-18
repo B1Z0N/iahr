@@ -109,3 +109,5 @@ sessions/
 .idea/
 *.session
 my
+data
+.vscode

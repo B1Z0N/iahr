@@ -6,7 +6,7 @@ english = {
     'IgnoreError' : 'ignore message in this chat: **{}**',
     'NonExistantCommandError' : '**{}** command does not exist',
     # reg/register.py
-    'See help' : '\n\nsee **.help**',
+    'See cmds' : '\n\nsee **.cmds**',
     'See synhelp' : '\n\nsee **.synhelp**',
     'See allowedusr' : '\n\nsee **.allowedusr**, if you are allowed to ◔ ⌣ ◔',
     'Incompatible commands' : 

@@ -521,5 +521,3 @@ localization['russian'] = {
     `{left}{new_msg}do1 {left}{new_msg}do2 {left}arg1{right} {left}{new_msg}do3{right}{right}{right}`
 """
 }
-
-local = lambda: localization[IahrConfig.LOCAL['lang']]

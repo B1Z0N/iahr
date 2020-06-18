@@ -3,7 +3,7 @@ from telethon import events
 from ..reg import TextSender, VoidSender, MultiArgs
 from ..utils import AccessList
 from ..config import IahrConfig
-from .default_loc import local
+from .default_loc import localization
 
 
 ##################################################
@@ -11,9 +11,11 @@ from .default_loc import local
 ##################################################
 
 
+local = localization[IahrConfig.LOCAL['lang']]
+
 admin_commands = {
     '.allowusr', '.allowchat', '.banusr', '.banchat',
-    '.ignore', '.unignore', '.changelocal'
+    '.ignore', '.unignore'
 }
 
 DEFAULT_TAG = 'default'
@@ -94,11 +96,13 @@ async def __access_action(event,
 
     return entres
 
-enabled = ' - ' + local()['enabled']
-disabled = ' - ' + local()['disabled']
 
 async def __perm_format(event, lst):
-    global enabled, disabled
+    global local # :)
+
+    enabled = ' - ' + local['enabled']
+    disabled = ' - ' + local['disabled']
+
     res = ''
     for ent, perms in lst:
         perms = '\n  '.join(cmd + (enabled if flag else disabled)
@@ -134,12 +138,12 @@ async def __ignore_action(event, chat, action):
 ##################################################
 
 
-@TextSender(about=local()['abouthelp'], take_event=False, tags={DEFAULT_TAG})
+@TextSender(about=local['abouthelp'], take_event=False, tags={DEFAULT_TAG})
 async def help():
-    return local()['help'].format(new_msg=IahrConfig.CMD.original)
+    return local['help'].format(new_msg=IahrConfig.CMD.original)
 
 
-@TextSender(about=local()['aboutcmds'], tags={DEFAULT_TAG})
+@TextSender(about=local['aboutcmds'], tags={DEFAULT_TAG})
 async def cmds(event, cmd=None):
     app = IahrConfig.APP
 
@@ -150,14 +154,14 @@ async def cmds(event, cmd=None):
     for cmd in cmds:
         val = app.commands.get(cmd)
         res = '**{}**:\n{}\n'\
-            .format(cmd, local()['nosuchcmd'] if val is None else val.help())
+            .format(cmd, local['nosuchcmd'] if val is None else val.help())
         helplst.append(res)
 
     res = '\n'.join(helplst)
     return res
 
     
-@TextSender(about=local()['abouttags'], tags={DEFAULT_TAG})
+@TextSender(about=local['abouttags'], tags={DEFAULT_TAG})
 async def tags(event, tag=None):
     app = IahrConfig.APP
 
@@ -169,7 +173,7 @@ async def tags(event, tag=None):
         val = app.tags.get(tag)
         res = f'**{tag}**:\n'
         if val is None:
-            res += local()['nosuchtag']
+            res += local['nosuchtag']
         else:
             res += '\n'.join(f'    **{cmd}**' for cmd in val)
         helplst.append(res)
@@ -177,35 +181,35 @@ async def tags(event, tag=None):
     res = '\n'.join(helplst)
     return res
 
-@VoidSender('allowusr', about=local()['aboutallowusr'], tags={DEFAULT_TAG, ADMIN_TAG})
+@VoidSender('allowusr', about=local['aboutallowusr'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def allow_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
     await __access_action(event, 'allow_usr', usr, cmd=cmd)
 
 
-@VoidSender('allowchat', about=local()['aboutallowchat'], tags={DEFAULT_TAG, ADMIN_TAG})
+@VoidSender('allowchat', about=local['aboutallowchat'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def allow_chat(event, chat=None, cmd=None):
     if chat is None:
         chat = await __chat_from_event(event)
     await __access_action(event, 'allow_chat', chat, cmd=cmd)
 
 
-@VoidSender('banusr', about = local()['aboutbanusr'], tags={DEFAULT_TAG, ADMIN_TAG})
+@VoidSender('banusr', about = local['aboutbanusr'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def ban_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
     await __access_action(event, 'ban_usr', usr, cmd=cmd)
 
 
-@VoidSender('banchat', about=local()['aboutbanchat'], tags={DEFAULT_TAG, ADMIN_TAG})
+@VoidSender('banchat', about=local['aboutbanchat'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def ban_chat(event, chat=None, cmd=None):
     if chat is None:
         chat = await __chat_from_event(event)
     await __access_action(event, 'ban_chat', chat, cmd=cmd)
 
 
-@TextSender('allowedchat', about=local()['aboutallowedchat'], tags={DEFAULT_TAG})
+@TextSender('allowedchat', about=local['aboutallowedchat'], tags={DEFAULT_TAG})
 async def is_allowed_chat(event, chat=None, cmd=None):
     if chat is None:
         chat = await __chat_from_event(event)
@@ -217,7 +221,7 @@ async def is_allowed_chat(event, chat=None, cmd=None):
     return await __perm_format(event, res)
 
 
-@TextSender('allowedusr', about=local()['aboutallowedusr'], tags={DEFAULT_TAG})
+@TextSender('allowedusr', about=local['aboutallowedusr'], tags={DEFAULT_TAG})
 async def is_allowed_usr(event, usr=None, cmd=None):
     if usr is None:
         usr = await __usr_from_event(event)
@@ -229,21 +233,21 @@ async def is_allowed_usr(event, usr=None, cmd=None):
     return await __perm_format(event, res)
     
 
-@VoidSender('ignore', about=local()['aboutignore'], tags={DEFAULT_TAG, ADMIN_TAG})
+@VoidSender('ignore', about=local['aboutignore'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def ignore_chat(event, chat=None):
     await __ignore_action(event, chat, 'ban_chat')
 
 
-@VoidSender('unignore', about=local()['aboutunignore'], tags={DEFAULT_TAG, ADMIN_TAG})
+@VoidSender('unignore', about=local['aboutunignore'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def unignore_chat(event, chat=None):
     await __ignore_action(event, chat, 'allow_chat')
 
 
-@TextSender(take_event=False, about=local()['aboutsynhelp'], tags={DEFAULT_TAG})
+@TextSender(take_event=False, about=local['aboutsynhelp'], tags={DEFAULT_TAG})
 async def synhelp():
     cfg = IahrConfig
 
-    return local()['synhelp'].format(
+    return local['synhelp'].format(
         new_msg=cfg.CMD.original, left=cfg.LEFT.original,
         right=cfg.RIGHT.original, raw=cfg.RAW.original
     )
