@@ -260,7 +260,13 @@ The brackets will add up automatically:
     `{new_msg}do1 {new_msg}do2 arg1 {new_msg}do3`
         means
     `{left}{new_msg}do1 {left}{new_msg}do2 {left}arg1{right} {left}{new_msg}do3{right}{right}{right}`
-"""
+""",
+'aboutalias' : """
+    Create new routine by combining existing ones:
+
+        `.alias r[fun x y: .do1 $y [.do3 $x]]r`
+""",
+'alias_name_err': 'Invalid var name: **{varname}**'
 }
 
 
@@ -519,5 +525,11 @@ localization['russian'] = {
     `{new_msg}do1 {new_msg}do2 arg1 {new_msg}do3`
         то же самое что
     `{left}{new_msg}do1 {left}{new_msg}do2 {left}arg1{right} {left}{new_msg}do3{right}{right}{right}`
-"""
+""",
+'aboutalias' : """
+    Создать новую команду из существующих:
+
+        `.alias r[fun x y: .do1 $y [.do3 $x]]r`
+""",
+'alias_name_err': 'Неправильное имя переменной: **{varname}**'
 }

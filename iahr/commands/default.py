@@ -252,3 +252,56 @@ async def synhelp():
         right=cfg.RIGHT.original, raw=cfg.RAW.original
     )
 
+
+import re
+import atexit
+
+varname_re = re.compile('[a-zA-Z_][a-zA-Z_0-9]*')
+alias_template = """
+def doalias(event, {passargs}):
+    global args, body
+    if args and ({passargs}):
+        [body.replace('$' + arg, parg) for arg, parg in zip(args, ({passargs}))]
+
+    event.message.message = body
+    cfg.REG.run(event)
+"""
+
+def __parse_alias(event, signature: str):
+    global varname_re
+    strip = lambda x: x.strip()
+
+    signature, body = map(strip, re.split(':', signature, 1))
+    name, *args = map(strip, signature.split())
+
+    for varname in (name, *args):
+        if re.match(varname_re, varname) is None:
+            event.message.reply(
+                local['alias_name_err'].format(varname=varname)
+            )
+            return
+    
+    return name, args, body
+
+
+@VoidSender(about=local['aboutalias'], tags={DEFAULT_TAG, ADMIN_TAG})
+async def alias(event, signature: str, about=None):
+    global aliases, alias_template
+
+    res = __parse_alias(event, signature)
+    if res is None:
+        return
+    
+    name, args, body = res
+
+    scope = {'args' : args, 'body' : body, 'cfg' : IahrConfig}
+    exec(
+        alias_template.format(passargs=', '.join(args)), 
+        scope
+    )
+    VoidSender(name=name, about=about)(scope['doalias'])
+
+    def remove():
+        del IahrConfig.APP.commands[name]
+
+    atexit.register(remove)
