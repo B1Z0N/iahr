@@ -112,7 +112,8 @@ class IahrConfig(metaclass=SingletonMeta):
     """
 
     APP = None  # to be settled, but needed here for use in command execution time
-    REG = Delayed()  # to be settled, but needed for use in import time
+    REG = Delayed()  # Register in import time
+    BARE_REG = None # Register in runtime
 
     ##################################################
     # Config methods
@@ -124,8 +125,9 @@ class IahrConfig(metaclass=SingletonMeta):
             Should be called with initial setup args.
             The core call to start a framework.
         """
-        IahrConfig.APP = reg.app
-        IahrConfig.REG.init(reg.reg)
+        cls.APP = reg.app
+        cls.REG.init(reg.reg)
+        cls.BARE_REG = reg
 
     @classmethod
     def _update(cls, preprocess, **kwargs):
