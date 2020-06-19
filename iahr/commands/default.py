@@ -258,13 +258,22 @@ import atexit
 
 varname_re = re.compile('[a-zA-Z_][a-zA-Z_0-9]*')
 alias_template = """
-def doalias(event, {passargs}):
+async def doalias(event, {passargs}):
     global args, body
-    if args and ({passargs}):
-        [body.replace('$' + arg, parg) for arg, parg in zip(args, ({passargs}))]
+    local_body = body
+    passargs = [{passargs}]
 
-    event.message.message = body
-    cfg.REG.run(event)
+    if args and passargs:
+        print(args, passargs)
+        for arg, parg in zip(args, passargs):
+            local_body = local_body.replace('$' + arg, parg)
+
+    local_body = cfg.CMD.unescape(local_body)
+    local_body = cfg.LEFT.unescape(local_body)
+    local_body = cfg.RIGHT.unescape(local_body)
+
+    event.message.raw_text = local_body
+    await cfg.BARE_REG.run(event)
 """
 
 def __parse_alias(event, signature: str):
