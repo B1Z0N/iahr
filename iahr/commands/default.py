@@ -300,7 +300,6 @@ async def alias(event, signature: str, about=None):
     res = __parse_alias(event, signature)
     if res is None:
         return
-    
     name, args, body = res
 
     scope = {'args' : args, 'body' : body, 'cfg' : IahrConfig}
@@ -310,7 +309,9 @@ async def alias(event, signature: str, about=None):
     )
     VoidSender(name=name, about=about)(scope['doalias'])
 
+    # remove at exit to disable 
+    # saving alias's state to a session file
     def remove():
-        del IahrConfig.APP.commands[name]
+        del IahrConfig.APP.commands[IahrConfig.CMD.full_command(name)]
 
     atexit.register(remove)
