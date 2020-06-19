@@ -9,4 +9,4 @@ from . import commands
 async def init(client, app=None, register=None):
     app = run.Manager() if app is None else app
     register = reg.Register(client, app) if register is None else register
-    config.IahrConfig.init(register.app, register)
+    config.IahrConfig.init(register)

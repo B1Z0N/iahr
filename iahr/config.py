@@ -5,7 +5,7 @@ from .utils import parenthesize, Delayed, SingletonMeta
 from . import localization
 
 import re, logging, json, os
-from sys import stdout, stderr
+import sys
 
 from dotenv import load_dotenv
 
@@ -119,14 +119,13 @@ class IahrConfig(metaclass=SingletonMeta):
     ##################################################
 
     @classmethod
-    def init(cls, app, reg):
+    def init(cls, reg):
         """ 
             Should be called with initial setup args.
             The core call to start a framework.
         """
-        IahrConfig.APP = app
+        IahrConfig.APP = reg.app
         IahrConfig.REG.init(reg.reg)
-        IahrConfig.REG = reg
 
     @classmethod
     def _update(cls, preprocess, **kwargs):
@@ -153,15 +152,24 @@ def update_add_pars(left, right, cmd, raw):
     return parenthesize(left, right, cmd, raw)
 
 
-def update_logger(fmt: str, datefmt: str, out: str):
+def update_logger(fmt, datefmt, out):
+    if out in (sys.stdout, sys.stderr):
+        handler_cls = logging.StreamHandler
+    elif type(out) == str:
+        handler_cls = logging.FileHandler
+    else:
+        raise RuntimeError(
+            "out should be one of this: sys.stdout, sys.stdin, `filename`")
+
     logger = logging.getLogger('iahr')
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter(fmt, datefmt)
-    handler = logging.FileHandler(out)
+    handler = handler_cls(out)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
     return logger
+
 
 def prefixes_from_str(prefixes):
     EventsError.check_events(set(prefixes.keys()))
@@ -239,6 +247,10 @@ def reset():
     """
     global DATA_FOLDER, SESSION_FNAME, LOG_FNAME
 
+    log_format='%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
+    log_datetime_format='%m/%d/%Y %I:%M:%S %p'
+    IahrConfig.LOGGER = update_logger(log_format, log_datetime_format, sys.stdout)
+
     config(
         left='[',
         right=']',
@@ -256,11 +268,10 @@ def reset():
         },
         me='me',
         others='*',
-        log_format='%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:',
-        log_datetime_format='%m/%d/%Y %I:%M:%S %p',
+        log_format=log_format,
+        log_datetime_format=log_datetime_format,
         local='english',
         data_folder=DATA_FOLDER)
-
 
 ##################################################
 # Setting config on import
