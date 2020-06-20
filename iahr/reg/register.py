@@ -1,7 +1,7 @@
 from telethon import events
 
 from .. import run
-from ..utils import Delimiter, CommandDelimiter
+from ..utils import Delimiter, CommandDelimiter, ev_to_type, ev_prefix
 from ..config import IahrConfig
 
 import re
@@ -20,8 +20,13 @@ class ABCRegister:
         self.client.add_event_handler(
             self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE))
 
+        for etype in IahrConfig.PREFIXES.keys():
+            if etype is events.NewMessage:
+                continue
+            self.client.add_event_handler(self.run, etype())
+
     @abstractmethod
-    def reg(self, name, handler, about, event_type):
+    def reg(self, name, handler, about, event_type, tags):
         pass
 
     @abstractmethod
@@ -34,24 +39,6 @@ class Register(ABCRegister):
         Like Manager, but unified to enable adding non-textbased commands
         e.g. EditMessage, ChatAction...
     """
-    @staticmethod
-    def to_type(event):
-        """
-            Return type of this event. 
-            event - type or instance of an event
-        """
-        if not isinstance(event, type):
-            return type(event)
-        return event
-
-    @classmethod
-    def prefix(cls, etype):
-        """
-            Get prefix to different types of events
-        """
-        etype = cls.to_type(etype)
-        pr = IahrConfig.PREFIXES.get(etype)
-        return IahrConfig.CMD.original if pr is None else pr
 
     ##################################################
     # Register handlers
@@ -59,36 +46,23 @@ class Register(ABCRegister):
 
     def reg(self, name, handler, about, etype, tags):
         """
-            Generic command handler
+            Generic command registering
         """
         IahrConfig.LOGGER.info(f'registering:name={name}:about={about}')
-
-        if etype == None:
-            self.reg_new_msg(name, handler, about, tags)
-        else:
-            self.reg_others(name, handler, about, etype, tags)
-
-    def reg_new_msg(self, name, handler, about, tags):
-        """
-            Register new message handler to our manager
-        """
-        self.app.add(name, handler, about, tags, delimiter=IahrConfig.CMD)
-
-    def reg_others(self, name, handler, about, event, tags):
-        """
-            Register non-new-message events directly as the client event handler.
-            Also add it, just formally, with different delimiter
-            (self.NON_NEW_MSG_COMMAND_DELIMITER) to the manager. Just so that
-            we could get help, but no one could execute this handler. 
-
-            P. S. If you do want to execute this handlers by typing, then i suggest
-            you to create new `run` function like the one here, but with this command
-            delimiter and don't forget to pass correct event type to the `app.exec`.
-        """
-        self.app.add(self.prefix(event) + name, handler, about, tags)
-        self.client.add_event_handler(handler, event)
+        etype = ev_to_type(etype)
+        name = ev_prefix(name) + name
+        
+        self.app.add(name, handler, about, etype, tags)
 
     async def run(self, event):
+        etype = type(event)
+
+        if etype == events.NewMessage:
+            self.run_new_msg(event)
+        else:
+            self.run_others(event)
+
+    async def run_new_msg(self, event):
         """
             Process incoming message with our handlers and manager
         """
@@ -121,3 +95,6 @@ class Register(ABCRegister):
                     await sender.send()
         except Exception as e:
             IahrConfig.LOGGER.error('exception', exc_info=True)
+
+    async def run_others(self, event):
+        await self.app.run(event)

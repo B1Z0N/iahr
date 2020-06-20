@@ -233,12 +233,12 @@ async def is_allowed_usr(event, usr=None, cmd=None):
     return await __perm_format(event, res)
     
 
-@VoidSender('ignore', about=local['aboutignore'], tags={DEFAULT_TAG, ADMIN_TAG})
+@VoidSender('errignore', about=local['aboutignore'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def ignore_chat(event, chat=None):
     await __ignore_action(event, chat, 'ban_chat')
 
 
-@VoidSender('unignore', about=local['aboutunignore'], tags={DEFAULT_TAG, ADMIN_TAG})
+@VoidSender('errverbose', about=local['aboutverbose'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def unignore_chat(event, chat=None):
     await __ignore_action(event, chat, 'allow_chat')
 

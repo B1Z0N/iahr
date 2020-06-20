@@ -423,3 +423,23 @@ def argstr(fun, remove_event=True):
         res += ' **' + spec.varkw
 
     return res
+
+
+def ev_to_type(event):
+    """
+        Return type of this event. 
+        event - type or instance of an event
+    """
+    if not isinstance(event, type):
+        return type(event)
+    return event
+
+
+def ev_prefix(etype):
+    """
+        Get prefix to different types of events
+    """
+    etype = ev_to_type(etype)
+    pr = IahrConfig.PREFIXES.get(etype)
+    return IahrConfig.CMD.original if pr is None else pr
+

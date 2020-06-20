@@ -105,7 +105,7 @@ def create_sender(name, sendf):
                 Doesn't change handler itself, just registers appropriate wrapper
             """
             nonlocal name, about, tags
-            
+
             name = handler.__name__ if name is None else name
             about = '' if about is None else about
             about = '`{}`\n{}'.format(

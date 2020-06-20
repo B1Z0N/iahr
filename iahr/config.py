@@ -260,7 +260,7 @@ def reset():
         cmd='.',
         prefixes= {
             # additional handlers(not commands)
-            'NewMessage' :'onnewmsg_',
+            'NewMessage' :'',
             'MessageEdited' : 'onedit_',
             'MessageDeleted' : 'ondel_',
             'MessageRead' : 'onread_',

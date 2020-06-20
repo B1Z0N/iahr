@@ -186,7 +186,7 @@ don't forget about your **IMAGINATION**!
         
         `.ignore`
 """,
-'aboutunignore' : """
+'aboutverbose' : """
     Enable chat when processing commands from
     banned users. Increases spam level, but
     also increases clarity
@@ -449,7 +449,7 @@ localization['russian'] = {
         
         `.ignore`
 """,
-'aboutunignore' : """
+'aboutverbose' : """
     Реагирвать на сообщения от пользователей 
     без доступа. Увеличивает уровень спама,
     повышает ясность
