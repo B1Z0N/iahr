@@ -273,13 +273,11 @@ class Executer:
             raise NonExistantCommandError(query.command)
 
         if handler is None:
-            IahrConfig.LOGGER.warning(
-                f'executer:getting handler:not permitted:{id_msg}')
+            IahrConfig.LOGGER.warning(f'executer:getting handler:not permitted:{id_msg}')
             raise PermissionsError(query.command)
 
         try:
-            args, kwargs = await self.__process_args(query.args, query.kwargs,
-                                                     proc)
+            args, kwargs = await self.__process_args(query.args, query.kwargs, proc)
             IahrConfig.LOGGER.info(f'arg={args}:kwargs={kwargs}:{id_msg}')
             return await handler(action.event, *args, **kwargs)
         except (AttributeError, ValueError, TypeError) as e:

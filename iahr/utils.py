@@ -390,13 +390,17 @@ class ActionData:
     uid: int
     chatid: int
 
-    MESSAGE_T = {
-        events.NewMessage, events.MessageDeleted, 
-        events.MessageEdited, events.MessageRead
+    MESSAGE_T = { 
+        etype.Event for etype in [
+            events.NewMessage, events.MessageDeleted, 
+            events.MessageEdited, events.MessageRead
+        ]
     }
 
     OTHER_T = {
-        events.ChatAction, events.UserUpdate
+        etype.Event for etype in [
+            events.ChatAction, events.UserUpdate
+        ]
     }
 
     @classmethod
@@ -406,7 +410,7 @@ class ActionData:
         etype = type(event)
 
         if etype in cls.MESSAGE_T:
-            uid = event.message.from_id
+            uid = me(event.message.from_id)
         elif etype in cls.OTHER_T:
             # no definition of user, just pass `me`
             uid = IahrConfig.ME
@@ -459,5 +463,5 @@ def ev_prefix(etype):
     """
     etype = ev_to_type(etype)
     pr = IahrConfig.PREFIXES.get(etype)
-    return IahrConfig.CMD.original if pr is None else pr
+    return '' if pr is None else pr
 

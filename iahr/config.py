@@ -41,13 +41,11 @@ class EventsError(IahrConfigError):
         'https://docs.telethon.dev/en/latest/quick-references/events-reference.html'
 
     TELETHON_EVENTS = {
-        'NewMessage',
         'MessageEdited',
         'MessageDeleted',
         'MessageRead',
         'ChatAction',
         'UserUpdate',
-        'Album',
     }
 
     def __init__(self, events: set):

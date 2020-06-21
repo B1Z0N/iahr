@@ -22,7 +22,7 @@ class ABCManager(ABC):
         # for new message events only(commands)
         self.commands = {}
         # for all other types of events, plain handlers, can't be combined
-        self.handlers = { etype : {} for etype in IahrConfig.PREFIXES.keys() }
+        self.handlers = { etype.__name__ : {} for etype in IahrConfig.PREFIXES.keys() }
         # tags for quick search
         self.tags = {}
         # for errignore on chat level
@@ -78,16 +78,19 @@ class ABCManager(ABC):
             with open(fname, 'r') as f:
                 dct = json.load(f, cls=Routine.JSON_DECODER)
                 self.chatlist = dct['chatlist']
-                return dct['commands'], dct['handlers']
+                handlers = dct['handlers'] 
+                commands = dct['commands']
+
+                return commands, handlers
         else:
-            return {}, {}
+            return {}, {etype.__name__ : {} for etype in IahrConfig.PREFIXES.keys()}
 
     def init_routine(self, name, fun, about, etype):
         """
             Check if routine that is being added is not in state,
             if it is, set her state appropriately
         """
-        state = self.commands_state if etype is events.NewMessage else self.handlers_state[etype]
+        state = self.commands_state if etype is events.NewMessage else self.handlers_state[etype.__name__]
         routine = Routine(fun, about)
         if state := state.get(name):
             routine.set_state(state)
@@ -102,14 +105,14 @@ class ABCManager(ABC):
         if etype is events.NewMessage:
             self.commands[name] = routine
         else:
-            self.handlers[etype][name] = routine
+            self.handlers[etype.__name__][name] = routine
 
     def add_tags(self, tags, name):
         for tag in tags:
             if tag in self.tags:
                 self.tags[tag].add(name)
-        else:
-            self.tags[tag] = { name }
+            else:
+                self.tags[tag] = { name }
 
     ##################################################
     # Chat spam tactic management
@@ -154,10 +157,10 @@ class Manager(ABCManager):
         action = await ActionData.from_event(event)
         is_ignored = not self.is_allowed_chat(action.chatid)
 
-        if qstr is None:
-            await self.exec_new_msg(event, qstr, action, is_ignored)
+        if qstr is not None:
+            return await self.exec_new_msg(event, qstr, action, is_ignored)
         else:
-            await self.exec_others(event, action, is_ignored)
+            return await self.exec_others(event, action, is_ignored)
 
     async def exec_new_msg(self, event, qstr, action: ActionData, is_ignored):
         IahrConfig.LOGGER.info(f'executing query:qstr={qstr}')
@@ -169,7 +172,7 @@ class Manager(ABCManager):
         etype = type(event)
         IahrConfig.LOGGER.info(f'executing handler:etype={etype}')
 
-        handlers = self.handlers.get(etype)
+        handlers = self.handlers.get(etype.__name__)
         if handlers is None:
             return
 

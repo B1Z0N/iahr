@@ -48,7 +48,7 @@ async def kwtest(_, arg1, arg2):
 
 
 @TextSender(about="""
-
+    Directly on new message
 """, on_event=events.NewMessage)
 async def directly_on_new_message(event):
     return 'directly_on_new_message'

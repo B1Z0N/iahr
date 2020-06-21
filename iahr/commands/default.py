@@ -34,10 +34,7 @@ def __process_list(single, is_cmds=False):
     """
     if type(single) != str: return [single]
     lst = single.split()
-    if is_cmds:
-        for i, cmd in enumerate(lst):
-            if not IahrConfig.CMD.is_command(cmd) and not cmd.startswith('on'):
-                lst[i] = IahrConfig.CMD.full_command(cmd)
+
     return lst
 
 
@@ -55,8 +52,7 @@ async def __usr_from_event(event):
 
 
 async def __chat_from_event(event):
-    chat = await event.message.get_chat()
-    return chat.id
+    return event.chat_id
 
 
 async def __access_action(event,

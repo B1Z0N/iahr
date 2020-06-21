@@ -18,10 +18,11 @@ class ABCRegister:
         self.app = app
 
         self.client.add_event_handler(
-            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE))
+            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE)
+        )
 
-        for etype in IahrConfig.PREFIXES.keys():
-            self.client.add_event_handler(self.run, etype())
+        # for etype in IahrConfig.PREFIXES.keys():
+            # self.client.add_event_handler(self.run, etype())
 
     @abstractmethod
     def reg(self, name, handler, about, event_type, tags):
@@ -53,12 +54,10 @@ class Register(ABCRegister):
         self.app.add(name, handler, about, etype, tags)
 
     async def run(self, event):
-        etype = type(event)
-
-        if etype == events.NewMessage:
-            self.run_new_msg(event)
+        if isinstance(event, events.NewMessage.Event):
+            await self.run_new_msg(event)
         else:
-            self.run_others(event)
+            await self.run_others(event)
 
     async def run_new_msg(self, event):
         """
@@ -69,7 +68,7 @@ class Register(ABCRegister):
         try:
             if IahrConfig.CMD.is_command(txt):
                 try:
-                    sender = await self.app.exec(txt, event)
+                    sender = await self.app.exec(event, txt)
                 except run.NonExistantCommandError as e:
                     IahrConfig.LOGGER.error(f'{e}')
                     await event.reply(str(e) + IahrConfig.LOCAL['See cmds'])
