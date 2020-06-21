@@ -266,7 +266,6 @@ def reset():
             'MessageRead' : 'onread_',
             'ChatAction' : 'onchataction_',
             'UserUpdate' : 'onusrupdate_',
-            'Album' : 'onalbum_',
         },
         me='me',
         others='*',

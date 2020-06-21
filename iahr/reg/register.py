@@ -8,7 +8,7 @@ import re
 from abc import ABC, abstractmethod
 
 
-class CommandRegisterError(Exception):
+class RoutineRegisterError(Exception):
     pass
 
 

@@ -390,12 +390,30 @@ class ActionData:
     uid: int
     chatid: int
 
+    MESSAGE_T = {
+        events.NewMessage, events.MessageDeleted, 
+        events.MessageEdited, events.MessageRead
+    }
+
+    OTHER_T = {
+        events.ChatAction, events.UserUpdate
+    }
+
     @classmethod
-    async def from_event(cls, event: events.NewMessage):
+    async def from_event(cls, event):
         me = await AccessList.check_me(event.client)
-        uid = event.message.from_id
-        c = await event.message.get_chat()
-        return cls(event, me(uid), me(c.id))
+        cid = me(event.chat_id)
+        etype = type(event)
+
+        if etype in cls.MESSAGE_T:
+            uid = event.message.from_id
+        elif etype in cls.OTHER_T:
+            # no definition of user, just pass `me`
+            uid = IahrConfig.ME
+        else:
+            raise RuntimeError('Event type `{etype}` is currently unsupported')
+ 
+        return cls(event, uid, cid)
 
 
 def argstr(fun, remove_event=True):

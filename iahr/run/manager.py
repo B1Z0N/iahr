@@ -177,5 +177,5 @@ class Manager(ABCManager):
                 return
 
             sender = await handler(event)
-            sender.send()
+            await sender.send()
         
