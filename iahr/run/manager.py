@@ -85,7 +85,7 @@ class ABCManager(ABC):
         else:
             return {}, {etype.__name__ : {} for etype in IahrConfig.PREFIXES.keys()}
 
-    def init_routine(self, name, fun, about, etype):
+    def init_routine(self, etype, name, fun, about):
         """
             Check if routine that is being added is not in state,
             if it is, set her state appropriately
@@ -107,7 +107,9 @@ class ABCManager(ABC):
         else:
             self.handlers[etype.__name__][name] = routine
 
-    def add_tags(self, tags, name):
+    def add_tags(self, etype, tags, name):
+        if etype is not events.NewMessage:
+            name = IahrConfig.PREFIXES[etype] + name
         for tag in tags:
             if tag in self.tags:
                 self.tags[tag].add(name)
@@ -148,10 +150,10 @@ class Manager(ABCManager):
         IahrConfig.LOGGER.info(f'adding handler:name={name}:etype={etype}')
 
         name = self.full_name(etype, name)
-        routine = self.init_routine(name, handler, about, etype)
+        routine = self.init_routine(etype, name, handler, about)
 
         self.add_routine(etype, name, routine)
-        self.add_tags(tags, name)
+        self.add_tags(etype, tags, name)
 
     async def exec(self, event, qstr=None):
         action = await ActionData.from_event(event)

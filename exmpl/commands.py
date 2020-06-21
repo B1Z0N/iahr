@@ -2,7 +2,7 @@ from iahr.reg import TextSender, VoidSender
 from telethon import events
 
 
-@VoidSender(name='isaw',
+@VoidSender(name='isaw', tags={'myspecifictag'},
             on_event=events.MessageEdited,
             about="""
     Notifies when someone edits the message
