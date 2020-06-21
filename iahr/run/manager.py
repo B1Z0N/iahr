@@ -53,7 +53,7 @@ class ABCManager(ABC):
 
     @staticmethod
     def get_state(dct):
-        return {name: cmd.get_state() for name, cmd in dct.items()}
+        return {key: val.get_state() for key, val in dct.items()}
 
     def dump(self):
         """
@@ -82,27 +82,34 @@ class ABCManager(ABC):
         else:
             return {}, {}
 
-    def init_routine(self, command, handler, about, etype):
+    def init_routine(self, name, fun, about, etype):
         """
             Check if routine that is being added is not in state,
             if it is, set her state appropriately
         """
-        routine = Routine(handler, about)
-        state = self.commands_state if etype is events.NewMessage else self.handlers[etype]
-        if state := state.get(command):
+        state = self.commands_state if etype is events.NewMessage else self.handlers_state[etype]
+        routine = Routine(fun, about)
+        if state := state.get(name):
             routine.set_state(state)
         return routine
 
-    def full_command(self, etype, command):
+    def full_name(self, etype, command):
         if etype is events.NewMessage:
             return IahrConfig.CMD.full_command(command)
         return command
 
-    def add_command(self, etype, command, routine):
+    def add_routine(self, etype, name, routine):
         if etype is events.NewMessage:
-            self.commands[command] = routine
+            self.commands[name] = routine
         else:
-            self.handlers[etype][command] = routine
+            self.handlers[etype][name] = routine
+
+    def add_tags(self, tags, name):
+        for tag in tags:
+            if tag in self.tags:
+                self.tags[tag].add(name)
+        else:
+            self.tags[tag] = { name }
 
     ##################################################
     # Chat spam tactic management
@@ -134,39 +141,34 @@ class Manager(ABCManager):
     # Routine management
     ##################################################
 
-    def add(self, command: str, handler: Callable, about: str, etype: type, tags: set):
-        IahrConfig.LOGGER.info(f'adding handler:name={command}:etype={etype}')
+    def add(self, name: str, handler: Callable, about: str, etype: type, tags: set):
+        IahrConfig.LOGGER.info(f'adding handler:name={name}:etype={etype}')
 
-        command = self.full_command(etype, command)
-        routine = self.init_routine(command, handler, about, etype)
-        self.add_command(etype, command, routine)
+        name = self.full_name(etype, name)
+        routine = self.init_routine(name, handler, about, etype)
 
-        for tag in tags:
-            if tag in self.tags:
-                self.tags[tag].add(command)
-            else:
-                self.tags[tag] = { command }
+        self.add_routine(etype, name, routine)
+        self.add_tags(tags, name)
 
     async def exec(self, event, qstr=None):
-        if qstr is None:
-            await self.exec_new_msg(event, qstr)
-        else:
-            await self.exec_others(event)
-
-    async def exec_new_msg(self, event, qstr):
-        IahrConfig.LOGGER.info(f'executing query:qstr={qstr}')
         action = await ActionData.from_event(event)
-
         is_ignored = not self.is_allowed_chat(action.chatid)
+
+        if qstr is None:
+            await self.exec_new_msg(event, qstr, action, is_ignored)
+        else:
+            await self.exec_others(event, action, is_ignored)
+
+    async def exec_new_msg(self, event, qstr, action: ActionData, is_ignored):
+        IahrConfig.LOGGER.info(f'executing query:qstr={qstr}')
+
         runner = Executer(qstr, self.commands, action, is_ignored)
         return await runner.run()
 
-    async def exec_others(self, event):
+    async def exec_others(self, event, action: ActionData, is_ignored):
         etype = type(event)
         IahrConfig.LOGGER.info(f'executing handler:etype={etype}')
 
-        action = await ActionData.from_event(event)
-        is_ignored = not self.is_allowed_chat(action.chatid)
         handlers = self.handlers.get(etype)
         if handlers is None:
             return
@@ -174,7 +176,7 @@ class Manager(ABCManager):
         for handler in handlers:
             handler = handler.get_handler(action.uid, action.chatid)
             if handler is None:
-                return
+                continue
 
             sender = await handler(event)
             await sender.send()

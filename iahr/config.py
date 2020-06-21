@@ -111,7 +111,7 @@ class IahrConfig(metaclass=SingletonMeta):
         from userspace use `config` function below. 
     """
 
-    APP = None  # to be settled, but needed here for use in command execution time
+    APP = None  # to be settled, but needed here for use in routine execution time
     REG = Delayed()  # Register in import time
     BARE_REG = None # Register in runtime
 
@@ -199,7 +199,7 @@ def config_from_file():
 
 
 ##################################################
-# Interface(not literally) for changing IahrConfig
+# Interface for changing IahrConfig
 ##################################################
 
 
@@ -260,7 +260,6 @@ def reset():
         cmd='.',
         prefixes= {
             # additional handlers(not commands)
-            'NewMessage' :'',
             'MessageEdited' : 'onedit_',
             'MessageDeleted' : 'ondel_',
             'MessageRead' : 'onread_',

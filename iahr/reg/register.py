@@ -21,8 +21,6 @@ class ABCRegister:
             self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE))
 
         for etype in IahrConfig.PREFIXES.keys():
-            if etype is events.NewMessage:
-                continue
             self.client.add_event_handler(self.run, etype())
 
     @abstractmethod
@@ -97,4 +95,4 @@ class Register(ABCRegister):
             IahrConfig.LOGGER.error('exception', exc_info=True)
 
     async def run_others(self, event):
-        await self.app.run(event)
+        await self.app.exec(event)
