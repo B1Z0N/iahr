@@ -5,6 +5,7 @@ from ..utils import AccessList
 from ..config import IahrConfig
 from .default_loc import localization
 
+from typing import Union, Mapping, Sequence
 
 ##################################################
 # Constants
@@ -27,88 +28,15 @@ ADMIN_TAG = 'admin'
 ##################################################
 
 
-def __process_list(single, is_cmds=False):
-    """
-        'first second', True -> ['.first', '.second']
-        'first second', False -> ['first', 'second']
-    """
-    if type(single) != str: return [single]
-    lst = single.split()
+def __process_list(lst: str, is_cmds=False):
+    lst = lst.split()
+    if is_cmds:
+        cmddel = IahrConfig.CMD
+        for i, cmd in enumerate(lst):
+            if not cmddel.is_command(cmd):
+                lst[i] = cmddel.full_command(cmd)
 
     return lst
-
-
-is_integer = lambda x: str(x).lstrip('-').isdigit()
-
-
-async def __usr_from_event(event):
-    reply = await event.message.get_reply_message()
-    me = await AccessList.check_me(event.client)
-    if reply is None:
-        res = event.message.from_id
-    else:
-        res = reply.from_id
-    return me(res)
-
-
-async def __chat_from_event(event):
-    return event.chat_id
-
-
-async def __access_action(event,
-                          action: str,
-                          entity: str,
-                          cmd,
-                          admintoo=False):
-    app = IahrConfig.APP
-
-    entities = __process_list(entity)
-
-    for i, entity in enumerate(entities):
-        if not AccessList.is_special(entity) and not is_integer(entity):
-            entity = await event.client.get_entity(entity)
-            entity = entity.id
-            entities[i] = entity
-
-    all_cmds = cmd is None
-    if not all_cmds:
-        cmds = __process_list(cmd, is_cmds=True)
-    else:
-        cmds = app.commands.keys()
-
-    entres = []
-    for entity in entities:
-        cmdres = {}
-        for cmd in cmds:
-            applies = cmd not in admin_commands or \
-                (not AccessList.is_special(entity) and not all_cmds) or admintoo
-
-            if applies:
-                routine = app.commands.get(cmd)
-                if routine is not None:
-                    cmdres[cmd] = getattr(routine, action)(entity)
-
-        entres.append((entity, cmdres))
-
-    return entres
-
-
-async def __perm_format(event, lst):
-    global local # :)
-
-    enabled = ' - ' + local['enabled']
-    disabled = ' - ' + local['disabled']
-
-    res = ''
-    for ent, perms in lst:
-        perms = '\n  '.join(cmd + (enabled if flag else disabled)
-                            for cmd, flag in perms.items())
-        if ent != IahrConfig.ME:
-            ent = await event.client.get_entity(ent)
-            ent = ent.username
-        res += '**{}**:\n  {}\n'.format(ent, perms)
-    return res
-
 
 async def __ignore_action(event, chat, action):
     app = IahrConfig.APP
@@ -139,8 +67,8 @@ async def help():
     return local['help'].format(new_msg=IahrConfig.CMD.original)
 
 
-@TextSender(about=local['aboutcmds'], tags={DEFAULT_TAG})
-async def cmds(event, cmd=None):
+@TextSender(about=local['aboutcommands'], tags={DEFAULT_TAG})
+async def commands(event, cmd=None):
     app = IahrConfig.APP
 
     if cmd is None:
@@ -151,6 +79,52 @@ async def cmds(event, cmd=None):
         val = app.commands.get(cmd)
         res = '**{}**:\n{}\n'\
             .format(cmd, local['nosuchcmd'] if val is None else val.help())
+        helplst.append(res)
+
+    res = '\n'.join(helplst)
+    return res
+
+
+@TextSender(about=local['abouthandlers'], tags={DEFAULT_TAG})
+async def handlers(event, etype=None, hndl=None):
+    app = IahrConfig.APP
+
+    if etype is None and hndl is not None:
+        return local['handlers']['wrongordering']
+    
+    def for_etype(etype_name):
+        handlers = app.handlers[etype_name]
+        res = f'**{IahrConfig.PREFIXES[getattr(events, etype_name)]}**' + ':\n'
+        for name in handlers.keys():
+            res += f'  `{name}`'
+
+        return res
+
+    def get_reverse_etype(etype_front_name):
+        pre = IahrConfig.PREFIXES
+        rev = dict(zip(pre.values(), pre.keys()))
+        revetype = rev.get(etype_front_name)
+        if revetype is None:
+            return local['handlers']['nosuchtype'].format(etype=etype_front_name), False
+        return revetype.__name__, True
+
+    if hndl is None:
+        if etype is None:
+            return '\n'.join(map(for_etype, app.handlers.keys()))
+        else:
+            res, status = get_reverse_etype(etype)
+            return for_etype(res) if status else res
+
+    hndls, helplst = __process_list(hndl), [ f'`{etype}`' + ':\n']
+    res, status = get_reverse_etype(etype)
+    if not status:
+        return res
+    dct = app.handlers[res]
+
+    for hndl in hndls:
+        val = dct.get(hndl)
+        res = '\t**{}**:\n{}\n'\
+            .format(hndl, '\n    ' + local['handlers']['nosuchhndl'] if val is None else val.help())
         helplst.append(res)
 
     res = '\n'.join(helplst)
