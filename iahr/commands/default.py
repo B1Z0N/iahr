@@ -14,9 +14,11 @@ from typing import Union, Mapping, Sequence
 
 local = localization[IahrConfig.LOCAL['lang']]
 
-admin_commands = {
-    '.allowusr', '.allowchat', '.banusr', '.banchat',
-    '.ignore', '.unignore'
+admin_commands = { 
+    IahrConfig.CMD.full_command(cmd) for cmd in { 
+        'allowusr', 'allowchat', 'banusr', 'banchat',
+        'errignore', 'errverbose'
+    }
 }
 
 DEFAULT_TAG = 'default'
@@ -37,6 +39,140 @@ def __process_list(lst: str, is_cmds=False):
                 lst[i] = cmddel.full_command(cmd)
 
     return lst
+
+
+is_integer = lambda x: str(x).lstrip('-').isdigit()
+
+
+async def __usr_from_event(event):
+    reply = await event.message.get_reply_message()
+    me = await AccessList.check_me(event.client)
+    if reply is None:
+        res = event.message.from_id
+    else:
+        res = reply.from_id
+    return me(res)
+
+
+async def __chat_from_event(event):
+    chat = await event.message.get_chat()
+    return chat.id
+
+def __get_reverse_etype(etype_front_name):
+    pre = IahrConfig.PREFIXES
+    rev = dict(zip(pre.values(), pre.keys()))
+    revetype = rev.get(etype_front_name)
+    if revetype is None:
+        return local['handlers']['nosuchtype'].format(etype=etype_front_name), False
+    return revetype.__name__, True
+
+async def __collect_routines(statements):
+    pre, app = IahrConfig.PREFIXES, IahrConfig.APP
+    res = {}
+
+    for st in statements:
+        for etype, prefix in pre.items():
+            if st.startswith(prefix):
+                res[st[len(prefix):]] = app.handlers[etype.__name__].get(st)
+                break
+        else:
+            res[st] = app.commands[st]
+
+    return res
+
+
+async def __handlers_access_action(
+    event, action: str, entities: Sequence[str], 
+    prefix: str, handlers=None: Sequence[str], admintoo=False
+):
+    dct = IahrConfig.APP.handlers.get(prefix)
+    if dct is None:
+        return local['handlers']['nosuchtype'].format(prefix)
+
+    all_handlers = handlers is None
+    if all_handlers:
+        handlers = dct.keys()
+
+    entres = []
+    for ent in entities:
+        hndlres = {}
+        for handler in handlers:
+            applies = (prefix + handler) not in admin_commands \
+                or not all_handlers or admintoo
+
+            routine = dct.get(handler)
+            if routine is None:
+                continue
+
+            if applies:
+                hndlres[handler] = getattr(routine, action)(ent)
+        
+        entres.append((ent, hndlres))
+    
+    return entres
+            
+
+async def __commands_access_action(
+    event, action: str, entities: Sequence[str], 
+    commands=None: Sequence[str], admintoo=False
+):
+    dct = IahrConfig.APP.commands
+    CMD = IahrConfig.CMD
+    if dct is None:
+        return local['nosuchcmd']
+
+    all_commands = commands is None
+    if all_commands:
+        commands = dct.keys()
+
+    for ent in entities:
+        entres = []
+        for command in commands:
+            cmdres = {}
+            applies = CMD.full_command(command) not in admin_commands or not all_commands or admintoo
+            routine = dct.get(command)
+            if routine is None:
+                continue
+            if applies:
+                cmdres[cmd] = getattr(routine, action)(ent)
+        entres.append((ent, cmdres))
+
+    return entres
+
+async def __access_action(event,
+                          action: str,
+                          entity: str,
+                          ,
+                          admintoo=False):
+    app = IahrConfig.APP
+
+    entities = __process_list(entity)
+
+    for i, entity in enumerate(entities):
+        if not AccessList.is_special(entity) and not is_integer(entity):
+            entity = await event.client.get_entity(entity)
+            entity = entity.id
+            entities[i] = entity
+
+    everything = statements is None
+    # divide and conquer
+
+async def __perm_format(event, lst):
+    global local # :)
+
+    enabled = ' - ' + local['enabled']
+    disabled = ' - ' + local['disabled']
+
+    res = ''
+    for ent, perms in lst:
+        perms = '\n  '.join(cmd + (enabled if flag else disabled)
+                            for cmd, flag in perms.items())
+        if ent != IahrConfig.ME:
+            ent = await event.client.get_entity(ent)
+            ent = ent.username
+        res += '**{}**:\n  {}\n'.format(ent, perms)
+    return res
+
 
 async def __ignore_action(event, chat, action):
     app = IahrConfig.APP
@@ -100,23 +236,15 @@ async def handlers(event, etype=None, hndl=None):
 
         return res
 
-    def get_reverse_etype(etype_front_name):
-        pre = IahrConfig.PREFIXES
-        rev = dict(zip(pre.values(), pre.keys()))
-        revetype = rev.get(etype_front_name)
-        if revetype is None:
-            return local['handlers']['nosuchtype'].format(etype=etype_front_name), False
-        return revetype.__name__, True
-
     if hndl is None:
         if etype is None:
             return '\n'.join(map(for_etype, app.handlers.keys()))
         else:
-            res, status = get_reverse_etype(etype)
+            res, status = __get_reverse_etype(etype)
             return for_etype(res) if status else res
 
     hndls, helplst = __process_list(hndl), [ f'`{etype}`' + ':\n']
-    res, status = get_reverse_etype(etype)
+    res, status = __get_reverse_etype(etype)
     if not status:
         return res
     dct = app.handlers[res]
