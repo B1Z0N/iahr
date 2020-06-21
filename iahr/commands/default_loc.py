@@ -75,7 +75,7 @@ don't forget about your **IMAGINATION**!
         `.handlers onedit_ [hndl1 hndl2]`
 """,
 'handlers' : {
-    'wrongordering' : 'You can\'t pass **hndl**, not specifying **etype** first\n',
+    'wrongordering' : 'You can\'t pass handlers, not specifying event type first\n',
     'nosuchtype' : 'No such event type **{etype}**\n\nCheck **.handlers**!',
     'nosuchhndl' : 'No such handler, try checking full list: **.handlers**'
 },

@@ -41,6 +41,18 @@ def __process_list(lst: str, is_cmds=False):
     return lst
 
 
+async def __process_entities(event, entities):
+    entities = __process_list(entity)
+
+    for i, entity in enumerate(entities):
+        if not AccessList.is_special(entity) and not is_integer(entity):
+            entity = await event.client.get_entity(entity)
+            entity = entity.id
+            entities[i] = entity
+    
+    return entities
+
+
 is_integer = lambda x: str(x).lstrip('-').isdigit()
 
 
@@ -139,23 +151,23 @@ async def __commands_access_action(
 
     return entres
 
-async def __access_action(event,
-                          action: str,
-                          entity: str,
-                          ,
-                          admintoo=False):
+
+async def __tags_access_action(
+    event, action: str, entity, tag, admintoo=False
+):
     app = IahrConfig.APP
+    entities = __process_entities(entity)
+    tags = __process_list(tag)
 
-    entities = __process_list(entity)
+    res = {}
+    for tag in tags:
+        dct = app.tags.get(tag)
+        if dct is None:
+            res[tag] = locals['nosuchtag']
+            continue
+        for name in dct.items():
+            getattr()
 
-    for i, entity in enumerate(entities):
-        if not AccessList.is_special(entity) and not is_integer(entity):
-            entity = await event.client.get_entity(entity)
-            entity = entity.id
-            entities[i] = entity
-
-    everything = statements is None
-    # divide and conquer
 
 async def __perm_format(event, lst):
     global local # :)
