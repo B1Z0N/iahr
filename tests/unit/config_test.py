@@ -12,9 +12,6 @@ PREFIXES = {
     events.MessageEdited: 'edit',
     events.MessageDeleted: 'del',
     events.MessageRead: 'read',
-    events.ChatAction: 'chataction',
-    events.UserUpdate: 'usrupdate',
-    events.Album: 'album',
 }
 
 

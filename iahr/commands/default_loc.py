@@ -11,11 +11,9 @@ localization = {}
 
 localization['english'] = {
 'nosuchcmd' : """
-    No such command(try checking full list: `.cmds`)
+    No such command(try checking full list: `.commands`)
 """,
-'nosuchtag' : """
-    No such tag(try checking full list: `.tagsf`)
-""",
+'nosuchtag' : 'No such tag: {tag}\n\ntry checking full list: `.tagsf`',
 'abouthelp' : """
     Get general info about how to start
 """,
@@ -27,12 +25,12 @@ Hy, my name is [iahr](https://github.com/B1Z0N/iahr/).
 Get help about syntax 
 with **{new_msg}synhelp**.
 
-See **{new_msg}cmds** for the list 
+See **{new_msg}commands** for the list 
 of commands. 
 
 Pass command to get detailed info:
 
-    `{new_msg}cmds cmds`
+    `{new_msg}commands commands`
 
 See **{new_msg}tags** for the list 
 of tags.
@@ -47,17 +45,38 @@ with this tag:
 Hey, **buddy**, use me tenderly and 
 don't forget about your **IMAGINATION**!
 """,
-'aboutcmds' : """
+'aboutcommands' : """
     Get the list of all commands or info about command
 
         Commands list:
 
-        `.cmds`
+        `.commands`
 
         Info about command:
 
-        `.cmds cmds`
+        `.commands commands`
 """,
+'abouthandlers' : """
+    Get the info about handlers.
+    Handler is non new message routine.
+
+        Handlers list(divided by event types):
+
+        `.handlers`
+
+        Handlers on specific event type:
+
+        `.handlers onedit_`
+
+        Info about handlers(specify event type):
+
+        `.handlers onedit_ [hndl1 hndl2]`
+""",
+'handlers' : {
+    'wrongordering' : 'You can\'t pass handlers, not specifying event type first\n',
+    'nosuchtype' : 'No such event type **{etype}**\n\nCheck **.handlers**!',
+    'nosuchhndl' : 'No such handler, try checking full list: **.handlers**'
+},
 'abouttags' : """
     Get the list of all tags or list of commands tagged,
 
@@ -71,6 +90,7 @@ don't forget about your **IMAGINATION**!
 """,
 'enabled' : 'enabled',
 'disabled' : 'disabled',
+'unknownactiontype' : 'Unknown type to operate on: **{}**\nMust be one of ["commands", "handlers", "tags"]',
 'aboutallowusr' : """
     Allow usr to run a command
 
@@ -186,7 +206,7 @@ don't forget about your **IMAGINATION**!
         
         `.ignore`
 """,
-'aboutunignore' : """
+'aboutverbose' : """
     Enable chat when processing commands from
     banned users. Increases spam level, but
     also increases clarity
@@ -214,7 +234,7 @@ Hy, my name is [iahr](https://github.com/B1Z0N/iahr/).
 All commands start with "`{new_msg}`",
 arguments can be passed too: 
 
-    `{new_msg}cmds help` or `{new_msg}cmds {left}help{right}`
+    `{new_msg}commands help` or `{new_msg}commands {left}help{right}`
 
 ------------------------------------
 
@@ -222,20 +242,20 @@ Pros of using brackets is that you can
 pass args with spaces, but don't forget 
 to escape special symbols in brackets:
 
-    `{new_msg}cmds {left}very weird command \\{new_msg}\\{left}\\{right}{right}`
+    `{new_msg}commands {left}very weird command \\{new_msg}\\{left}\\{right}{right}`
 
 ------------------------------------
 
 Also there are `raw args`:
 
-    `{new_msg}cmds {raw}{left}very weird command {new_msg}{left}{right}{right}{raw}`
+    `{new_msg}commands {raw}{left}very weird command {new_msg}{left}{right}{right}{raw}`
 
 ------------------------------------
 
 You could use keyword args:
-    allow me to run `cmds` command
+    allow me to run `commands` command
 
-    `{new_msg}allowusr usr=me cmd=cmds`
+    `{new_msg}allowusr usr=me cmd=commands`
 
     allow ... to run all commands
     (not tagged with `admin`)
@@ -272,12 +292,9 @@ The brackets will add up automatically:
 localization['russian'] = {
 'nosuchcmd' : """
     Нет такой команды,
-    попробуйте посмотреть их список: `.cmds`
+    попробуйте посмотреть их список: `.commands`
 """,
-'nosuchtag' : """
-    Нет такого тэга,
-    попробуйте посмотреть их список: `.tags`
-""",
+'nosuchtag' : 'Нет такого тэга: {tag}\n\nпопробуйте посмотреть их список: `.tags`',
 'abouthelp' : """
     Общая информация о том с чего начать
 """,
@@ -288,13 +305,13 @@ localization['russian'] = {
     
 Информация по синтаксису: **{new_msg}synhelp**.
 
-**{new_msg}cmds** - для получения
+**{new_msg}commands** - для получения
 списка команд.
 
 Передайте имя команды, чтобы получить
 детальную информацию:
 
-    `{new_msg}cmds cmds`
+    `{new_msg}commands commands`
 
 **{new_msg}tags** - для получения
 списка тэгов
@@ -309,17 +326,40 @@ localization['russian'] = {
 Хей, **дружище**, используй меня нежно
 и не забывай про свое **ВООБРАЖЕНИЕ**!
 """,
-'aboutcmds' : """
+'aboutcommands' : """
     Список всех команд или информация по команде
 
         Список команд:
 
-        `.cmds`
+        `.commands`
 
         Информация по команде:
 
-        `.cmds cmds`
+        `.commands commands`
 """,
+'abouthandlers' : """
+    Информация про хендлеры.
+    Хендлер - команда, котороую нельзя
+    комбинировать и использовать явно.
+
+        Список хендлеров(разбит по типу события):
+
+        `.handlers`
+
+        Всё по конкретному типу события:
+
+        `.handlers onedit_`
+
+        Информация по конкретным хендлерам
+        (тип события - обязателен):
+
+        `.handlers onedit_ [hndl1 hndl2]`
+""",
+'handlers' : {
+    'wrongordering' : 'Нельзя передать **hndl**, не указав **etype** сначала\n',
+    'nosuchtype' : 'Нет такого типа события **{etype}**\n\nСмотрите **.handlers**!',
+    'nosuchhndl' : 'Нет такого хендлера, смотрите весь список: **.handlers**'
+},
 'abouttags' : """
     Список тэгов или команд с этим тэгом
 
@@ -333,6 +373,7 @@ localization['russian'] = {
 """,
 'enabled' : 'разрешено',
 'disabled' : 'запрещено',
+'unknownactiontype' : 'Неизвестны тип: **{}**\nДолжен быть один из ["commands", "handlers", "tags"]',
 'aboutallowusr' : """
     Разрешить пользователю исполнять команду
 
@@ -449,7 +490,7 @@ localization['russian'] = {
         
         `.ignore`
 """,
-'aboutunignore' : """
+'aboutverbose' : """
     Реагирвать на сообщения от пользователей 
     без доступа. Увеличивает уровень спама,
     повышает ясность
@@ -473,7 +514,7 @@ localization['russian'] = {
 Все команды начинаются с "`{new_msg}`",
 вы можете передавать аргументы: 
 
-    `{new_msg}cmds help` или `{new_msg}cmds {left}help{right}`
+    `{new_msg}commands help` или `{new_msg}commands {left}help{right}`
 
 ------------------------------------
 
@@ -483,20 +524,20 @@ localization['russian'] = {
 пробелами, но не забывайте эскейпить 
 спец. символы внутри:
 
-    `{new_msg}cmds {left}очень_странная_команда \\{new_msg}\\{left}\\{right}{right}`
+    `{new_msg}commands {left}очень_странная_команда \\{new_msg}\\{left}\\{right}{right}`
 
 ------------------------------------
 
 Также можно использовать `raw args`(`чистые аргументы`):
 
-    `{new_msg}cmds {raw}{left}очень_странная_команда {new_msg}{left}{right}{right}{raw}`
+    `{new_msg}commands {raw}{left}очень_странная_команда {new_msg}{left}{right}{right}{raw}`
 
 ------------------------------------
 
 Вы можете использовать именованые аргументы:
-    разрешить себе использовать команду `cmds`
+    разрешить себе использовать команду `commands`
 
-    `{new_msg}allowusr usr=me cmd=cmds`
+    `{new_msg}allowusr usr=me cmd=commands`
 
     разрешить ... использовать все команды(не тэгнутые admin)
 

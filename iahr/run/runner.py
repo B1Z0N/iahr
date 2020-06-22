@@ -148,11 +148,12 @@ class Routine:
         manages permissions to use it in chats and by users
     """
 
-    def __init__(self, handler: Callable, about: str):
+    def __init__(self, handler: Callable, about: str, allow_selfact=False):
         self.about = about
         self.handler = handler
-        self.usraccess = AccessList(allow_others=False)
-        self.chataccess = AccessList(allow_others=True)
+
+        self.usraccess = AccessList(allow_others=False, allow_selfact=allow_selfact)
+        self.chataccess = AccessList(allow_others=True, allow_selfact=allow_selfact)
 
     def help(self):
         return self.about
@@ -185,8 +186,10 @@ class Routine:
         """
         if usr is None or chat is None:
             return
-        if not self.is_allowed_usr(usr) or not self.is_allowed_chat(chat):
-            return
+
+        if not self.is_allowed_chat(chat) or not self.is_allowed_usr(usr):
+            if not (self.chataccess.is_self(usr) and self.usraccess.is_self(usr)):
+                return
 
         return self.handler
 
@@ -273,13 +276,11 @@ class Executer:
             raise NonExistantCommandError(query.command)
 
         if handler is None:
-            IahrConfig.LOGGER.warning(
-                f'executer:getting handler:not permitted:{id_msg}')
+            IahrConfig.LOGGER.warning(f'executer:getting handler:not permitted:{id_msg}')
             raise PermissionsError(query.command)
 
         try:
-            args, kwargs = await self.__process_args(query.args, query.kwargs,
-                                                     proc)
+            args, kwargs = await self.__process_args(query.args, query.kwargs, proc)
             IahrConfig.LOGGER.info(f'arg={args}:kwargs={kwargs}:{id_msg}')
             return await handler(action.event, *args, **kwargs)
         except (AttributeError, ValueError, TypeError) as e:

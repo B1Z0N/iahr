@@ -1,3 +1,5 @@
+from telethon import events
+
 from .. import run
 from ..utils import Delayed, argstr
 from ..config import IahrConfig
@@ -104,14 +106,18 @@ def create_sender(name, sendf):
                 
                 Doesn't change handler itself, just registers appropriate wrapper
             """
-            nonlocal name, about, tags
-            
+            nonlocal name, about, tags, on_event
+
             name = handler.__name__ if name is None else name
+            on_event = events.NewMessage if on_event is None else on_event
+            tags = set() if tags is None else set(tags)
+
+            wrapped = wraps(handler)(Sender(handler, take_event, multiret))
+
             about = '' if about is None else about
             about = '`{}`\n{}'.format(
-                '\n  args: ' + argstr(handler, take_event), about)
-            wrapped = wraps(handler)(Sender(handler, take_event, multiret))
-            tags = set() if tags is None else set(tags)
+                '\n  args: ' + argstr(handler, take_event), about
+            )
 
             IahrConfig.REG.do(name, wrapped, about, on_event, tags)
             return handler

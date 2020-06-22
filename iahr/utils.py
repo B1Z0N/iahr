@@ -301,15 +301,19 @@ class AccessList:
     def is_special(cls, ent):
         return ent in (IahrConfig.OTHERS, IahrConfig.ME)
 
-    def __init__(self, allow_others=False):
+    def __init__(self, allow_others=False, allow_selfact=False):
 
         self.whitelist = set()
         self.blacklist = set()
         self.allow_others = allow_others
+        self.selfact = { 'allow' : allow_selfact, 'selfban' : False }
 
     def allow(self, entity: str):
         if entity == IahrConfig.ME:
+            if self.selfact['allow']:
+                self.selfact['selfban'] = True
             return
+
 
         if entity == IahrConfig.OTHERS:
             self.whitelist = set()
@@ -322,6 +326,8 @@ class AccessList:
 
     def ban(self, entity: str):
         if entity == IahrConfig.ME:
+            if self.selfact['allow']:
+                self.selfact['selfban'] = True
             return
 
         if entity == IahrConfig.OTHERS:
@@ -333,13 +339,19 @@ class AccessList:
             self.whitelist.remove(entity)
 
     def is_allowed(self, entity: str):
-        me = entity == IahrConfig.ME
-        return me or (self.allow_others and entity not in self.blacklist)\
+        if entity == IahrConfig.ME:
+            return not self.selfact['selfban']
+
+        return (self.allow_others and entity not in self.blacklist)\
                 or (not self.allow_others and entity in self.whitelist)
 
+    def is_self(self, entity: str):
+        return entity == IahrConfig.ME and not self.selfact['selfban']
+        
+
     def __repr__(self):
-        return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {})'\
-                .format(self.whitelist, self.blacklist, self.allow_others)
+        return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {}, selfact: {})'\
+                .format(self.whitelist, self.blacklist, self.allow_others, self.selfact)
 
     @classmethod
     async def check_me(cls, client):
@@ -357,6 +369,7 @@ class AccessList:
                 return {
                     'AccessList': {
                         'others': obj.allow_others,
+                        'selfact': obj.selfact,
                         'whitelist': list(obj.whitelist),
                         'blacklist': list(obj.blacklist),
                     }
@@ -375,6 +388,7 @@ class AccessList:
             if 'AccessList' in dct:
                 alst, dct = AccessList(), dct['AccessList']
                 alst.allow_others = dct['others']
+                alst.selfact = dct['selfact']
                 alst.whitelist = set(dct['whitelist'])
                 alst.blacklist = set(dct['blacklist'])
                 return alst
@@ -390,12 +404,32 @@ class ActionData:
     uid: int
     chatid: int
 
+    MESSAGE_T = { 
+        etype.Event for etype in [
+            events.NewMessage, events.MessageDeleted, 
+            events.MessageEdited, events.MessageRead
+        ]
+    }
+
+    OTHER_T = {
+        
+    }
+
     @classmethod
-    async def from_event(cls, event: events.NewMessage):
+    async def from_event(cls, event):
         me = await AccessList.check_me(event.client)
-        uid = event.message.from_id
-        c = await event.message.get_chat()
-        return cls(event, me(uid), me(c.id))
+        cid = me((await event.get_chat()).id)
+        etype = type(event)
+
+        if etype in cls.MESSAGE_T:
+            uid = me(event.message.from_id)
+        elif etype in cls.OTHER_T:
+            # no definition of user, just pass `me`
+            uid = IahrConfig.ME
+        else:
+            raise RuntimeError('Event type `{etype}` is currently unsupported')
+ 
+        return cls(event, uid, cid)
 
 
 def argstr(fun, remove_event=True):
@@ -412,10 +446,10 @@ def argstr(fun, remove_event=True):
         kwargs = []
 
     res = ' '.join(args) + ' '
-    res += ' '.join('{}={}'.format(arg, val) for arg, val in kwargs) + ' '
+    res += ' '.join('{}={}'.format(arg, val) for arg, val in kwargs)
 
     if spec.varargs is not None:
-        res += ' *' + spec.varargs + ' '
+        res += '*' + spec.varargs + ' '
     if spec.kwonlydefaults is not None:
         res += ' '.join(arg + '=' + val
                         for arg, val in spec.kwonlydefaults.items())
@@ -423,3 +457,23 @@ def argstr(fun, remove_event=True):
         res += ' **' + spec.varkw
 
     return res
+
+
+def ev_to_type(event):
+    """
+        Return type of this event. 
+        event - type or instance of an event
+    """
+    if not isinstance(event, type):
+        return type(event)
+    return event
+
+
+def ev_prefix(etype):
+    """
+        Get prefix to different types of events
+    """
+    etype = ev_to_type(etype)
+    pr = IahrConfig.PREFIXES.get(etype)
+    return '' if pr is None else pr
+
