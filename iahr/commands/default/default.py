@@ -2,9 +2,8 @@ from telethon import events
 
 from iahr.reg import TextSender, VoidSender, MultiArgs
 from iahr.config import IahrConfig
-from iahr.commands.default.utils import local, DEFAULT_TAG, ADMIN_TAG
-from iahr.commands.default.utils import usr_from_event, chat_from_event, commands_access_action, \
-    handlers_access_action, tags_access_action, process_list, ignore_action
+from .utils import local, DEFAULT_TAG, ADMIN_TAG
+from .utils import *
 
 ##################################################
 # Routines themselves
@@ -26,8 +25,7 @@ async def commands(event, cmd=None):
     cmds, helplst = process_list(cmd, is_cmds=True), []
     for cmd in cmds:
         val = app.commands.get(cmd)
-        res = '**{}**:\n{}\n'\
-            .format(cmd, local['nosuchcmd'] if val is None else val.help())
+        res = '**{}**:\n{}\n'.format(cmd, local['nosuchcmd'] if val is None else val.help())
         helplst.append(res)
 
     res = '\n'.join(helplst)
@@ -71,7 +69,7 @@ async def handlers(event, etype=None, hndl=None):
     res = '\n'.join(helplst)
     return res
 
-    
+
 @TextSender(about=local['abouttags'], tags={DEFAULT_TAG})
 async def tags(event, tag=None):
     app = IahrConfig.APP
@@ -113,50 +111,65 @@ async def synhelp():
     )
 
 
-async def generic_access_action(
-    event, action, action_type,
-    ent, *args, **kwargs
-):
-    if ent == IahrConfig.CUSTOM['current_entity']:
-        if action.endswith('chat'):
-            ent = await chat_from_event(event)
-        elif action.endswith('usr'):
-            ent = await usr_from_event(event)
-
-    if action_type == 'commands':
-        await commands_access_action(event, action, ent, *args, **kwargs)
-    elif action_type == 'handlers':
-        await handlers_access_action(event, action, ent, *args, **kwargs)
-    elif action_type == 'tags':
-        await tags_access_action(event, action, ent, *args, **kwargs)
-    else:
-        await event.message.reply(local['unknownactiontype'].format(action_type))
-
-
 @VoidSender('allowchat', about=local['aboutallowchat'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def allowchat(event, act_t, chat, *args, admintoo='False', **kwargs):
-    await generic_access_action(
+    res = await generic_access_action(
         event, 'allow_chat', act_t, chat, *args, admintoo=bool(admintoo), **kwargs
     )
+
+    if type(res) is str:
+        await event.message.reply(res)
 
 
 @VoidSender('banchat', about=local['aboutbanchat'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def banchat(event, act_t, chat, *args, admintoo='False', **kwargs):
-    await generic_access_action(
+    res = await generic_access_action(
         event, 'ban_chat', act_t, chat, *args, admintoo=bool(admintoo), **kwargs
     )
+
+    if type(res) is str:
+        await event.message.reply(res)
 
 
 @VoidSender('allowusr', about=local['aboutallowusr'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def allowusr(event, act_t, usr, *args, admintoo='False', **kwargs):
-    await generic_access_action(
+    res = await generic_access_action(
         event, 'allow_usr', act_t, usr, *args, admintoo=bool(admintoo), **kwargs
     )
+
+    if type(res) is str:
+        await event.message.reply(res)
 
 
 @VoidSender('banusr', about=local['aboutbanusr'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def banusr(event, act_t, usr, *args, admintoo='False', **kwargs):
-    await generic_access_action(
+    res = await generic_access_action(
         event, 'ban_usr', act_t, usr, *args, admintoo=bool(admintoo), **kwargs
-    )   
-        
+    )
+
+    if type(res) is str:
+        await event.message.reply(res)
+
+
+@TextSender('allowedusr', about=local['aboutallowedusr'], tags={DEFAULT_TAG})
+async def allowedusr(event, act_t, usr, *args, **kwargs):
+    res = await generic_access_action(
+        event, 'is_allowed_usr', act_t, usr, *args, admintoo=True, **kwargs
+    )
+
+    if type(res) is str:
+        return res
+
+    return await perm_format(event, res)
+
+
+@TextSender('allowedchat', about=local['aboutallowedchat'], tags={DEFAULT_TAG})
+async def allowedchat(event, act_t, chat, *args, **kwargs):
+    res = await generic_access_action(
+        event, 'is_allowed_chat', act_t, chat, *args, admintoo=True, **kwargs
+    )
+
+    if type(res) is str:
+        return res
+
+    return await perm_format(event, res)

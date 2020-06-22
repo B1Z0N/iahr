@@ -117,9 +117,7 @@ async def handlers_access_action(
     entities = await __process_entities(event, entity)
     dct = IahrConfig.APP.handlers.get(prefix)
     if dct is None:
-        msg = local['handlers']['nosuchtype'].format(etype=etype_front_name)
-        await event.message.reply(msg)
-        return
+        return local['handlers']['nosuchtype'].format(etype=prefix)
 
     all_handlers = handlers is None
     if all_handlers:
@@ -158,35 +156,53 @@ async def tags_access_action(
     else:
         tags = process_list(tag)
 
-    tagres = {}
+    entres = {}
     for ent in entities:
+        tagres = {}
         for tag in tags:
             applies = tag != ADMIN_TAG or not all_tags or admintoo
             dct = app.tags.get(tag)
             if dct is None:
-                tagres[tag] = local['nosuchtag'].format(tag)
+                tagres[tag] = False
                 continue
+            tagres[tag] = True
             for name, routine in dct.items():
-                getattr(routine, action)(ent)
-    
-    return tagres
+                tagres[tag] = tagres[tag] and getattr(routine, action)(ent)
+        entres[ent] = tagres
+    return entres
 
+enabled = ' - ' + local['enabled']
+disabled = ' - ' + local['disabled']
 
-async def perm_format(event, lst):
-    global local # :)
-
-    enabled = ' - ' + local['enabled']
-    disabled = ' - ' + local['disabled']
-
+async def perm_format(event, ent_perms: dict):
     res = ''
-    for ent, perms in lst:
-        perms = '\n  '.join(cmd + (enabled if flag else disabled)
-                            for cmd, flag in perms.items())
+    for ent, perms in ent_perms.items():
+        perms = '\n  '.join(perm + (enabled if flag else disabled) for perm, flag in perms.items())
         if ent != IahrConfig.ME:
             ent = await event.client.get_entity(ent)
             ent = ent.username
         res += '**{}**:\n  {}\n'.format(ent, perms)
     return res
+
+
+async def generic_access_action(
+    event, action, action_type,
+    ent, *args, **kwargs
+):
+    if ent == IahrConfig.CUSTOM['current_entity']:
+        if action.endswith('chat'):
+            ent = await chat_from_event(event)
+        elif action.endswith('usr'):
+            ent = await usr_from_event(event)
+
+    if action_type == 'commands':
+        return await commands_access_action(event, action, ent, *args, **kwargs)
+    elif action_type == 'handlers':
+        return await handlers_access_action(event, action, ent, *args, **kwargs)
+    elif action_type == 'tags':
+        return await tags_access_action(event, action, ent, *args, **kwargs)
+    else:
+        return local['unknownactiontype'].format(action_type)
 
 
 async def ignore_action(event, chat, action):
