@@ -2,7 +2,6 @@ from telethon import events
 
 from iahr.reg import TextSender, VoidSender, MultiArgs
 from iahr.config import IahrConfig
-from .utils import local, DEFAULT_TAG, ADMIN_TAG
 from .utils import *
 
 ##################################################
@@ -114,7 +113,7 @@ async def synhelp():
 @VoidSender('allowchat', about=local['aboutallowchat'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def allowchat(event, act_t, chat, *args, admintoo='False', **kwargs):
     res = await generic_access_action(
-        event, 'allow_chat', act_t, chat, *args, admintoo=bool(admintoo), **kwargs
+        event, 'allow_chat', act_t, chat, *args, admintoo=to_bool(admintoo), **kwargs
     )
 
     if type(res) is str:
@@ -124,7 +123,7 @@ async def allowchat(event, act_t, chat, *args, admintoo='False', **kwargs):
 @VoidSender('banchat', about=local['aboutbanchat'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def banchat(event, act_t, chat, *args, admintoo='False', **kwargs):
     res = await generic_access_action(
-        event, 'ban_chat', act_t, chat, *args, admintoo=bool(admintoo), **kwargs
+        event, 'ban_chat', act_t, chat, *args, admintoo=to_bool(admintoo), **kwargs
     )
 
     if type(res) is str:
@@ -134,7 +133,7 @@ async def banchat(event, act_t, chat, *args, admintoo='False', **kwargs):
 @VoidSender('allowusr', about=local['aboutallowusr'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def allowusr(event, act_t, usr, *args, admintoo='False', **kwargs):
     res = await generic_access_action(
-        event, 'allow_usr', act_t, usr, *args, admintoo=bool(admintoo), **kwargs
+        event, 'allow_usr', act_t, usr, *args, admintoo=to_bool(admintoo), **kwargs
     )
 
     if type(res) is str:
@@ -144,7 +143,7 @@ async def allowusr(event, act_t, usr, *args, admintoo='False', **kwargs):
 @VoidSender('banusr', about=local['aboutbanusr'], tags={DEFAULT_TAG, ADMIN_TAG})
 async def banusr(event, act_t, usr, *args, admintoo='False', **kwargs):
     res = await generic_access_action(
-        event, 'ban_usr', act_t, usr, *args, admintoo=bool(admintoo), **kwargs
+        event, 'ban_usr', act_t, usr, *args, admintoo=to_bool(admintoo), **kwargs
     )
 
     if type(res) is str:

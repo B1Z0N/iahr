@@ -61,6 +61,9 @@ async def __process_entities(event, entities: str):
 __is_integer = lambda x: str(x).lstrip('-').isdigit()
 
 
+to_bool = lambda bstr: str(bstr).lower() in ['true', 'yes', 'y']
+
+
 async def usr_from_event(event):
     reply = await event.message.get_reply_message()
     me = await AccessList.check_me(event.client)
@@ -77,7 +80,7 @@ async def chat_from_event(event):
     return me(chat.id)
 
 
-# backend for .{allow|ban}{chat|usr} commands
+# backend for .{allow|ban|allowed}{chat|usr} commands
 async def commands_access_action(
     event, action: str, entity: str, 
     commands=None, admintoo=False
@@ -109,7 +112,7 @@ async def commands_access_action(
     return entres
 
 
-# backend for .{allow|ban}{chat|usr} handlers
+# backend for .{allow|ban|allowed}{chat|usr} handlers
 async def handlers_access_action(
     event, action: str, entity: str, 
     prefix: str, handlers=None, admintoo=False
@@ -124,8 +127,6 @@ async def handlers_access_action(
         handlers = dct.keys()
     else:
         handlers = process_list(handlers)
-
-    print('\n\n', entities, handlers, '\n\n')
 
     entres = {}
     for ent in entities:
@@ -143,7 +144,7 @@ async def handlers_access_action(
     return entres
 
 
-# backend for .{allow|ban}{chat|usr} tags
+# backend for .{allow|ban|allowed}{chat|usr} tags
 async def tags_access_action(
     event, action: str, entity, tag=None, admintoo=False
 ):
@@ -178,7 +179,7 @@ async def perm_format(event, ent_perms: dict):
     res = ''
     for ent, perms in ent_perms.items():
         perms = '\n  '.join(perm + (enabled if flag else disabled) for perm, flag in perms.items())
-        if ent != IahrConfig.ME:
+        if not AccessList.is_special(ent):
             ent = await event.client.get_entity(ent)
             ent = ent.username
         res += '**{}**:\n  {}\n'.format(ent, perms)
