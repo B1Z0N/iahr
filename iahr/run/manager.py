@@ -1,13 +1,37 @@
 from telethon import events
 
 from iahr.utils import SingletonMeta, ActionData, AccessList
-from iahr.config import IahrConfig
+from iahr.config import IahrConfig, IahrConfigError
 from iahr.run.runner import Executer, Query, Routine
 from iahr.run.runner import ExecutionError, CommandSyntaxError, PermissionsError, NonExistantCommandError, IgnoreError
 
 from typing import Iterable, Union, Callable
 from abc import ABC, abstractmethod
 import json, os, atexit
+
+
+class PrefixMismatchError(IahrConfigError):
+    """
+        Exception to raise, when IahrConfig.PREFIXES were changed
+        but session file remains with old ones
+    """
+    def __init__(self, events: set):
+        before = events
+        after = set(IahrConfig.PREFIXES.values()) 
+
+        msg = '\n\n\tIt seems, that you\'ve changed your config '
+        msg += '\n\tand event prefixes don\'t match now:\n'
+        msg += f'\n\told ones: {before}\n\tnew ones: {after}'
+        msg += '\n\n\tRevert changes in config or remove iahr.session file ' 
+        msg += '\n\tor manually rename prefixes in it'
+
+        super().__init__(msg)
+
+    @classmethod
+    def check_events(cls, events: set):
+        events = set(events)
+        if events != set(IahrConfig.PREFIXES.values()):
+            raise cls(events)
 
 
 class ABCManager(ABC):
@@ -80,6 +104,8 @@ class ABCManager(ABC):
                 self.chatlist = dct['chatlist']
                 handlers = dct['handlers'] 
                 commands = dct['commands']
+
+                PrefixMismatchError.check_events(handlers.keys())
 
                 return commands, handlers
         else:
