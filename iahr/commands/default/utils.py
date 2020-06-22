@@ -2,7 +2,7 @@
 from telethon import events
 
 from iahr.config import IahrConfig
-from .default_loc import localization
+from iahr.commands.default.localization import localization
 from iahr.utils import AccessList
 
 from typing import Union, Mapping, Sequence

@@ -1,9 +1,9 @@
 from telethon import events
 
-from ..utils import SingletonMeta, ActionData, AccessList
-from .runner import Executer, Query, Routine
-from .runner import ExecutionError, CommandSyntaxError, PermissionsError, NonExistantCommandError, IgnoreError
-from ..config import IahrConfig
+from iahr.utils import SingletonMeta, ActionData, AccessList
+from iahr.config import IahrConfig
+from iahr.run.runner import Executer, Query, Routine
+from iahr.run.runner import ExecutionError, CommandSyntaxError, PermissionsError, NonExistantCommandError, IgnoreError
 
 from typing import Iterable, Union, Callable
 from abc import ABC, abstractmethod

@@ -1,8 +1,8 @@
 from telethon import events
 
-from .. import run
-from ..utils import Delayed, argstr
-from ..config import IahrConfig
+from iahr import run
+from iahr.utils import Delayed, argstr
+from iahr.config import IahrConfig
 
 from functools import wraps
 from abc import ABC, abstractmethod

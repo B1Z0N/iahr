@@ -1,8 +1,8 @@
 from telethon import events
 
-from .utils import Delimiter, CommandDelimiter
-from .utils import parenthesize, Delayed, SingletonMeta
-from . import localization
+from iahr.utils import Delimiter, CommandDelimiter
+from iahr.utils import parenthesize, Delayed, SingletonMeta
+from iahr import localization
 
 import re, logging, json, os
 import sys

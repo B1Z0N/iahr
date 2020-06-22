@@ -1,8 +1,8 @@
 from telethon import events
 
-from .. import run
-from ..utils import Delimiter, CommandDelimiter, ev_to_type, ev_prefix
-from ..config import IahrConfig
+from iahr import run
+from iahr.utils import Delimiter, CommandDelimiter, ev_to_type, ev_prefix
+from iahr.config import IahrConfig
 
 import re
 from abc import ABC, abstractmethod
