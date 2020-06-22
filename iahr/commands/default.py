@@ -128,10 +128,9 @@ async def generic_access_action(
     elif action_type == 'handlers':
         await handlers_access_action(event, action, ent, *args, **kwargs)
     elif action_type == 'tags':
-        res = await tags_access_action(event, action, ent, *args, **kwargs)
-        await event.message.reply(res)
+        await tags_access_action(event, action, ent, *args, **kwargs)
     else:
-        return locals['unknownactiontype'].format(action_type)
+        await event.message.reply(local['unknownactiontype'].format(action_type))
 
 
 @VoidSender('allowchat', about=local['aboutallowchat'], tags={DEFAULT_TAG, ADMIN_TAG})

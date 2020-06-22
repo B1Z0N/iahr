@@ -161,7 +161,7 @@ async def tags_access_action(
     tagres = {}
     for ent in entities:
         for tag in tags:
-            applies = tag != ADMIN_TAG or not all_handlers or admintoo
+            applies = tag != ADMIN_TAG or not all_tags or admintoo
             dct = app.tags.get(tag)
             if dct is None:
                 tagres[tag] = local['nosuchtag'].format(tag)

@@ -92,12 +92,12 @@ class ABCManager(ABC):
         """
         if etype is events.NewMessage:
             state = self.commands_state
-            allow_selfban = False
+            allow_selfact = False
         else: 
             prefix = IahrConfig.PREFIXES[etype]
             state = self.handlers_state[prefix]
-            allow_selfban = True
-        routine = Routine(fun, about, allow_selfban=allow_selfban)
+            allow_selfact = True
+        routine = Routine(fun, about, allow_selfact=allow_selfact)
         if state := state.get(name):
             routine.set_state(state)
         return routine

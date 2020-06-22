@@ -148,11 +148,12 @@ class Routine:
         manages permissions to use it in chats and by users
     """
 
-    def __init__(self, handler: Callable, about: str, allow_selfban=False):
+    def __init__(self, handler: Callable, about: str, allow_selfact=False):
         self.about = about
         self.handler = handler
-        self.usraccess = AccessList(allow_others=False, allow_selfban=allow_selfban)
-        self.chataccess = AccessList(allow_others=True, allow_selfban=allow_selfban)
+
+        self.usraccess = AccessList(allow_others=False, allow_selfact=allow_selfact)
+        self.chataccess = AccessList(allow_others=True, allow_selfact=allow_selfact)
 
     def help(self):
         return self.about
@@ -185,8 +186,10 @@ class Routine:
         """
         if usr is None or chat is None:
             return
-        if not self.is_allowed_usr(usr) or not self.is_allowed_chat(chat):
-            return
+
+        if not self.is_allowed_chat(chat) or not self.is_allowed_usr(usr):
+            if not (self.chataccess.is_self(usr) and self.usraccess.is_self(usr)):
+                return
 
         return self.handler
 

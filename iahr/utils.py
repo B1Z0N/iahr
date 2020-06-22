@@ -301,16 +301,19 @@ class AccessList:
     def is_special(cls, ent):
         return ent in (IahrConfig.OTHERS, IahrConfig.ME)
 
-    def __init__(self, allow_others=False, allow_selfban=False):
+    def __init__(self, allow_others=False, allow_selfact=False):
 
         self.whitelist = set()
         self.blacklist = set()
         self.allow_others = allow_others
-        self.allow_selfban = allow_selfban
+        self.selfact = { 'allow' : allow_selfact, 'selfban' : False }
 
     def allow(self, entity: str):
-        if entity == IahrConfig.ME and not self.allow_selfban:
+        if entity == IahrConfig.ME:
+            if self.selfact['allow']:
+                self.selfact['selfban'] = True
             return
+
 
         if entity == IahrConfig.OTHERS:
             self.whitelist = set()
@@ -322,7 +325,9 @@ class AccessList:
             self.blacklist.remove(entity)
 
     def ban(self, entity: str):
-        if entity == IahrConfig.ME and not self.allow_selfban:
+        if entity == IahrConfig.ME:
+            if self.selfact['allow']:
+                self.selfact['selfban'] = True
             return
 
         if entity == IahrConfig.OTHERS:
@@ -334,13 +339,19 @@ class AccessList:
             self.whitelist.remove(entity)
 
     def is_allowed(self, entity: str):
-        me = not self.allow_selfban and entity == IahrConfig.ME 
-        return me or (self.allow_others and entity not in self.blacklist)\
+        if entity == IahrConfig.ME:
+            return not self.selfact['selfban']
+
+        return (self.allow_others and entity not in self.blacklist)\
                 or (not self.allow_others and entity in self.whitelist)
 
+    def is_self(self, entity: str):
+        return entity == IahrConfig.ME and not self.selfact['selfban']
+        
+
     def __repr__(self):
-        return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {}, allow_selfban: {})'\
-                .format(self.whitelist, self.blacklist, self.allow_others, self.allow_selfban)
+        return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {}, selfact: {})'\
+                .format(self.whitelist, self.blacklist, self.allow_others, self.selfact)
 
     @classmethod
     async def check_me(cls, client):
@@ -358,7 +369,7 @@ class AccessList:
                 return {
                     'AccessList': {
                         'others': obj.allow_others,
-                        'selfban': obj.allow_selfban,
+                        'selfact': obj.selfact,
                         'whitelist': list(obj.whitelist),
                         'blacklist': list(obj.blacklist),
                     }
@@ -377,7 +388,7 @@ class AccessList:
             if 'AccessList' in dct:
                 alst, dct = AccessList(), dct['AccessList']
                 alst.allow_others = dct['others']
-                alst.allow_selfban = dct['selfban']
+                alst.selfact = dct['selfact']
                 alst.whitelist = set(dct['whitelist'])
                 alst.blacklist = set(dct['blacklist'])
                 return alst
