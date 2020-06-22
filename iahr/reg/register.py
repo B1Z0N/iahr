@@ -21,8 +21,8 @@ class ABCRegister:
             self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE)
         )
 
-        # for etype in IahrConfig.PREFIXES.keys():
-            # self.client.add_event_handler(self.run, etype())
+        for etype in IahrConfig.PREFIXES.keys():
+            self.client.add_event_handler(self.run, etype())
 
     @abstractmethod
     def reg(self, name, handler, about, event_type, tags):
@@ -36,7 +36,7 @@ class ABCRegister:
 class Register(ABCRegister):
     """
         Like Manager, but unified to enable adding non-textbased commands
-        e.g. EditMessage, ChatAction...
+        e.g. EditMessage, ...
     """
 
     ##################################################
@@ -54,7 +54,7 @@ class Register(ABCRegister):
         self.app.add(name, handler, about, etype, tags)
 
     async def run(self, event):
-        if isinstance(event, events.NewMessage.Event):
+        if type(event) is events.NewMessage.Event:
             await self.run_new_msg(event)
         else:
             await self.run_others(event)
@@ -63,6 +63,7 @@ class Register(ABCRegister):
         """
             Process incoming message with our handlers and manager
         """
+        import traceback
         txt = event.message.raw_text
         IahrConfig.LOGGER.info(f'msg={txt}:usr={event.message.from_id}')
         try:
@@ -88,10 +89,11 @@ class Register(ABCRegister):
                     await event.reply(
                         IahrConfig.LOCAL['Incompatible commands'].format(e.args[0])
                     )
+                    traceback.print_exc()
                 else:
                     await sender.send()
         except Exception as e:
             IahrConfig.LOGGER.error('exception', exc_info=True)
-
+            traceback.print_exc()
     async def run_others(self, event):
         await self.app.exec(event)

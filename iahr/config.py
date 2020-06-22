@@ -44,8 +44,6 @@ class EventsError(IahrConfigError):
         'MessageEdited',
         'MessageDeleted',
         'MessageRead',
-        'ChatAction',
-        'UserUpdate',
     }
 
     def __init__(self, events: set):
@@ -174,9 +172,12 @@ def update_logger(fmt, datefmt, out):
 def prefixes_from_str(prefixes):
     EventsError.check_events(set(prefixes.keys()))
 
-    return { 
+    return {
         getattr(events, key) : val for key, val in prefixes.items()
     }
+
+def reverse_prefixes_from_str(prefixes):
+    return dict(zip(prefixes.values(), prefixes.keys()))
 
 
 def config_from_file():
@@ -211,7 +212,8 @@ def config(left=None,
            log_format=None,
            log_datetime_format=None,
            local=None,
-           data_folder=None):
+           data_folder=None,
+           custom=None):
     """
         Single entry to framework configuration, 
         just run this with some of updated values and 
@@ -224,12 +226,14 @@ def config(left=None,
     cfg._update(CommandDelimiter, cmd=cmd)
     cfg._update(UnknownLocalizationError.lang_from_str, local=local)
     cfg._update(prefixes_from_str, prefixes=prefixes)
+    cfg._update(reverse_prefixes_from_str, reverse_prefixes=prefixes)
     cfg._update(lambda x: x,
                 me=me,
                 others=others,
                 log_format=log_format,
                 log_datetime_format=log_datetime_format,
-                data_folder=data_folder)
+                data_folder=data_folder,
+                custom=custom)
     
     os.makedirs(cfg.DATA_FOLDER, exist_ok=True)
     cfg.SESSION_FNAME = os.path.join(cfg.DATA_FOLDER, SESSION_FNAME)
@@ -261,15 +265,18 @@ def reset():
             'MessageEdited' : 'onedit_',
             'MessageDeleted' : 'ondel_',
             'MessageRead' : 'onread_',
-            'ChatAction' : 'onchataction_',
-            'UserUpdate' : 'onusrupdate_',
         },
         me='me',
         others='*',
         log_format=log_format,
         log_datetime_format=log_datetime_format,
         local='english',
-        data_folder=DATA_FOLDER)
+        data_folder=DATA_FOLDER,
+        custom={ # custom user config dictionary
+            # entity to deduce user of chat in access rights actions
+            # (e.g. `allowchat`, `banusr`)
+            'current_entity' : '_' 
+        })
 
 ##################################################
 # Setting config on import

@@ -13,9 +13,7 @@ localization['english'] = {
 'nosuchcmd' : """
     No such command(try checking full list: `.commands`)
 """,
-'nosuchtag' : """
-    No such tag(try checking full list: `.tagsf`)
-""",
+'nosuchtag' : 'No such tag: {tag}\n\ntry checking full list: `.tagsf`',
 'abouthelp' : """
     Get general info about how to start
 """,
@@ -92,6 +90,7 @@ don't forget about your **IMAGINATION**!
 """,
 'enabled' : 'enabled',
 'disabled' : 'disabled',
+'unknownactiontype' : 'Unknown type to operate on: **{}**\nMust be one of ["commands", "handlers", "tags"]',
 'aboutallowusr' : """
     Allow usr to run a command
 
@@ -295,10 +294,7 @@ localization['russian'] = {
     Нет такой команды,
     попробуйте посмотреть их список: `.commands`
 """,
-'nosuchtag' : """
-    Нет такого тэга,
-    попробуйте посмотреть их список: `.tags`
-""",
+'nosuchtag' : 'Нет такого тэга: {tag}\n\nпопробуйте посмотреть их список: `.tags`',
 'abouthelp' : """
     Общая информация о том с чего начать
 """,
@@ -377,6 +373,7 @@ localization['russian'] = {
 """,
 'enabled' : 'разрешено',
 'disabled' : 'запрещено',
+'unknownactiontype' : 'Неизвестны тип: **{}**\nДолжен быть один из ["commands", "handlers", "tags"]',
 'aboutallowusr' : """
     Разрешить пользователю исполнять команду
 

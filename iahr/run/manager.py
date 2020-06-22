@@ -22,7 +22,7 @@ class ABCManager(ABC):
         # for new message events only(commands)
         self.commands = {}
         # for all other types of events, plain handlers, can't be combined
-        self.handlers = { etype.__name__ : {} for etype in IahrConfig.PREFIXES.keys() }
+        self.handlers = { prefix : {} for prefix in IahrConfig.REVERSE_PREFIXES.keys() }
         # tags for quick search
         self.tags = {}
         # for errignore on chat level
@@ -62,7 +62,7 @@ class ABCManager(ABC):
         IahrConfig.LOGGER.info('Dumping session and exiting')
         command_dct= self.get_state(self.commands)
         handler_dct = { 
-            etype : self.get_state(handlers) for etype, handlers in self.handlers.items() 
+            prefix : self.get_state(handlers) for prefix, handlers in self.handlers.items() 
         }
         dct = { 'commands' : command_dct, 'handlers' : handler_dct, 'chatlist' : self.chatlist }
 
@@ -83,15 +83,21 @@ class ABCManager(ABC):
 
                 return commands, handlers
         else:
-            return {}, {etype.__name__ : {} for etype in IahrConfig.PREFIXES.keys()}
+            return {}, { prefix : {} for prefix in IahrConfig.REVERSE_PREFIXES.keys() }
 
     def init_routine(self, etype, name, fun, about):
         """
             Check if routine that is being added is not in state,
             if it is, set her state appropriately
         """
-        state = self.commands_state if etype is events.NewMessage else self.handlers_state[etype.__name__]
-        routine = Routine(fun, about)
+        if etype is events.NewMessage:
+            state = self.commands_state
+            allow_selfban = False
+        else: 
+            prefix = IahrConfig.PREFIXES[etype]
+            state = self.handlers_state[prefix]
+            allow_selfban = True
+        routine = Routine(fun, about, allow_selfban=allow_selfban)
         if state := state.get(name):
             routine.set_state(state)
         return routine
@@ -105,28 +111,29 @@ class ABCManager(ABC):
         if etype is events.NewMessage:
             self.commands[name] = routine
         else:
-            self.handlers[etype.__name__][name] = routine
+            prefix = IahrConfig.PREFIXES[etype]
+            self.handlers[prefix][name] = routine
 
-    def add_tags(self, etype, tags, name):
+    def add_tags(self, etype, tags, name, routine):
         if etype is not events.NewMessage:
             name = IahrConfig.PREFIXES[etype] + name
         for tag in tags:
             if tag in self.tags:
-                self.tags[tag].add(name)
+                self.tags[tag][name] = routine
             else:
-                self.tags[tag] = { name }
+                self.tags[tag] = { name : routine }
 
     ##################################################
     # Chat spam tactic management
     ##################################################
 
-    def is_allowed_chat(self, chat: str):
+    def is_ignored_chat(self, chat: str):
         return self.chatlist.is_allowed(chat)
 
-    def allow_chat(self, chat: str):
+    def verbose_chat(self, chat: str):
         return self.chatlist.allow(chat)
 
-    def ban_chat(self, chat: str):
+    def ignore_chat(self, chat: str):
         return self.chatlist.ban(chat)
 
     def __repr__(self):
@@ -153,11 +160,11 @@ class Manager(ABCManager):
         routine = self.init_routine(etype, name, handler, about)
 
         self.add_routine(etype, name, routine)
-        self.add_tags(etype, tags, name)
+        self.add_tags(etype, tags, name, routine)
 
     async def exec(self, event, qstr=None):
         action = await ActionData.from_event(event)
-        is_ignored = not self.is_allowed_chat(action.chatid)
+        is_ignored = not self.is_ignored_chat(action.chatid)
 
         if qstr is not None:
             return await self.exec_new_msg(event, qstr, action, is_ignored)
@@ -171,15 +178,14 @@ class Manager(ABCManager):
         return await runner.run()
 
     async def exec_others(self, event, action: ActionData, is_ignored):
-        etype = type(event)
+        etype = type(event)._event_name.split('.')[0]
         IahrConfig.LOGGER.info(f'executing handler:etype={etype}')
 
-        handlers = self.handlers.get(etype.__name__)
-        if handlers is None:
-            return
+        prefix = IahrConfig.PREFIXES[getattr(events, etype)]
+        handlers = self.handlers[prefix]
 
-        for handler in handlers:
-            handler = handler.get_handler(action.uid, action.chatid)
+        for handler, routine in handlers.items():
+            handler = routine.get_handler(action.uid, action.chatid)
             if handler is None:
                 continue
 

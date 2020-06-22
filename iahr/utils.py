@@ -301,14 +301,15 @@ class AccessList:
     def is_special(cls, ent):
         return ent in (IahrConfig.OTHERS, IahrConfig.ME)
 
-    def __init__(self, allow_others=False):
+    def __init__(self, allow_others=False, allow_selfban=False):
 
         self.whitelist = set()
         self.blacklist = set()
         self.allow_others = allow_others
+        self.allow_selfban = allow_selfban
 
     def allow(self, entity: str):
-        if entity == IahrConfig.ME:
+        if entity == IahrConfig.ME and not self.allow_selfban:
             return
 
         if entity == IahrConfig.OTHERS:
@@ -321,7 +322,7 @@ class AccessList:
             self.blacklist.remove(entity)
 
     def ban(self, entity: str):
-        if entity == IahrConfig.ME:
+        if entity == IahrConfig.ME and not self.allow_selfban:
             return
 
         if entity == IahrConfig.OTHERS:
@@ -333,13 +334,13 @@ class AccessList:
             self.whitelist.remove(entity)
 
     def is_allowed(self, entity: str):
-        me = entity == IahrConfig.ME
+        me = not self.allow_selfban and entity == IahrConfig.ME 
         return me or (self.allow_others and entity not in self.blacklist)\
                 or (not self.allow_others and entity in self.whitelist)
 
     def __repr__(self):
-        return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {})'\
-                .format(self.whitelist, self.blacklist, self.allow_others)
+        return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {}, allow_selfban: {})'\
+                .format(self.whitelist, self.blacklist, self.allow_others, self.allow_selfban)
 
     @classmethod
     async def check_me(cls, client):
@@ -357,6 +358,7 @@ class AccessList:
                 return {
                     'AccessList': {
                         'others': obj.allow_others,
+                        'selfban': obj.allow_selfban,
                         'whitelist': list(obj.whitelist),
                         'blacklist': list(obj.blacklist),
                     }
@@ -375,6 +377,7 @@ class AccessList:
             if 'AccessList' in dct:
                 alst, dct = AccessList(), dct['AccessList']
                 alst.allow_others = dct['others']
+                alst.allow_selfban = dct['selfban']
                 alst.whitelist = set(dct['whitelist'])
                 alst.blacklist = set(dct['blacklist'])
                 return alst
@@ -398,15 +401,13 @@ class ActionData:
     }
 
     OTHER_T = {
-        etype.Event for etype in [
-            events.ChatAction, events.UserUpdate
-        ]
+        
     }
 
     @classmethod
     async def from_event(cls, event):
         me = await AccessList.check_me(event.client)
-        cid = me(event.chat_id)
+        cid = me((await event.get_chat()).id)
         etype = type(event)
 
         if etype in cls.MESSAGE_T:
@@ -434,10 +435,10 @@ def argstr(fun, remove_event=True):
         kwargs = []
 
     res = ' '.join(args) + ' '
-    res += ' '.join('{}={}'.format(arg, val) for arg, val in kwargs) + ' '
+    res += ' '.join('{}={}'.format(arg, val) for arg, val in kwargs)
 
     if spec.varargs is not None:
-        res += ' *' + spec.varargs + ' '
+        res += '*' + spec.varargs + ' '
     if spec.kwonlydefaults is not None:
         res += ' '.join(arg + '=' + val
                         for arg, val in spec.kwonlydefaults.items())

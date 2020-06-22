@@ -13,7 +13,7 @@ async def isaw(event):
 
 @TextSender(about="""
     Concatenate unlimited number of args
-""")
+""", tags={'myspecifictag'})
 async def concat(_, *args):
     return ''.join(str(arg) for arg in args)
 
