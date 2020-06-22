@@ -63,7 +63,6 @@ class Register(ABCRegister):
         """
             Process incoming message with our handlers and manager
         """
-        import traceback
         txt = event.message.raw_text
         IahrConfig.LOGGER.info(f'msg={txt}:usr={event.message.from_id}')
         try:
@@ -89,11 +88,19 @@ class Register(ABCRegister):
                     await event.reply(
                         IahrConfig.LOCAL['Incompatible commands'].format(e.args[0])
                     )
-                    traceback.print_exc()
+                    if IahrConfig.MODE == 'DEBUG':
+                        traceback.print_exc()
                 else:
                     await sender.send()
         except Exception as e:
             IahrConfig.LOGGER.error('exception', exc_info=True)
-            traceback.print_exc()
+            if IahrConfig.MODE == 'DEBUG':
+                traceback.print_exc()
+
     async def run_others(self, event):
-        await self.app.exec(event)
+        try:
+            await self.app.exec(event)
+        except Exception as e:
+            IahrConfig.LOGGER.error('exception', exc_info=True)
+            if IahrConfig.MODE == 'DEBUG':
+                traceback.print_exc()

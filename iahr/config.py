@@ -213,7 +213,8 @@ def config(left=None,
            log_datetime_format=None,
            local=None,
            data_folder=None,
-           custom=None):
+           custom=None,
+           mode=None):
     """
         Single entry to framework configuration, 
         just run this with some of updated values and 
@@ -233,7 +234,8 @@ def config(left=None,
                 log_format=log_format,
                 log_datetime_format=log_datetime_format,
                 data_folder=data_folder,
-                custom=custom)
+                custom=custom,
+                mode=mode)
     
     os.makedirs(cfg.DATA_FOLDER, exist_ok=True)
     cfg.SESSION_FNAME = os.path.join(cfg.DATA_FOLDER, SESSION_FNAME)
@@ -276,7 +278,8 @@ def reset():
             # entity to deduce user of chat in access rights actions
             # (e.g. `allowchat`, `banusr`)
             'current_entity' : '_' 
-        })
+        },
+        mode='RELEASE')
 
 ##################################################
 # Setting config on import
