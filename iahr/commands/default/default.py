@@ -1,7 +1,7 @@
 from telethon import events
 
-from ..reg import TextSender, VoidSender, MultiArgs
-from ..config import IahrConfig
+from iahr.reg import TextSender, VoidSender, MultiArgs
+from iahr.config import IahrConfig
 from .utils import local, DEFAULT_TAG, ADMIN_TAG
 from .utils import usr_from_event, chat_from_event, commands_access_action, \
     handlers_access_action, tags_access_action, process_list, ignore_action

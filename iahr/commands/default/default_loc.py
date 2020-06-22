@@ -1,5 +1,5 @@
 # localization for default routines
-from ..config import IahrConfig
+from iahr.config import IahrConfig
 
 localization = {}
 

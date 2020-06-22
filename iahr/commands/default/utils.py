@@ -1,9 +1,9 @@
 
 from telethon import events
 
-from ..config import IahrConfig
+from iahr.config import IahrConfig
 from .default_loc import localization
-from ..utils import AccessList
+from iahr.utils import AccessList
 
 from typing import Union, Mapping, Sequence
 
