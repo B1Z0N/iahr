@@ -4,9 +4,7 @@
     "raw": "r",
     "cmd": ".",
     "prefixes": {
-        "MessageEdited": "onedit",
-        "MessageDeleted": "ondel",
-        "MessageRead": "onread"
+        "MessageEdited": "onedit"
     },
     "me": "me",
     "others": "*",

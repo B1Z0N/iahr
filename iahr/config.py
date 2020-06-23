@@ -42,8 +42,6 @@ class EventsError(IahrConfigError):
 
     TELETHON_EVENTS = {
         'MessageEdited',
-        'MessageDeleted',
-        'MessageRead',
     }
 
     def __init__(self, events: set):
@@ -266,8 +264,6 @@ def reset():
         prefixes={
             # additional handlers(not commands)
             'MessageEdited': 'onedit',
-            'MessageDeleted': 'ondel',
-            'MessageRead': 'onread',
         },
         me='me',
         others='*',

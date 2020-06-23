@@ -11,8 +11,6 @@ from iahr import config
 
 PREFIXES = {
     'MessageEdited': 'edit',
-    'MessageDeleted': 'del',
-    'MessageRead': 'read',
 }
 
 TRUE_PREFIXES = {

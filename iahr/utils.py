@@ -415,6 +415,7 @@ class ActionData:
         etype = type(event)
 
         if etype in cls.MESSAGE_T:
+            print(event)
             uid = me(event.message.from_id)
         elif etype in cls.OTHER_T:
             # no definition of user, just pass `me`
