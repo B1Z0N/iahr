@@ -145,10 +145,8 @@ def parenthesize(ldel, rdel, cmd_del, raw_del):
             i += 1
         if i == len(s):
             msg = errstr(s, errstart, errstart + 2)
-            raise ParseError(
-                IahrConfig.LOCAL['Unbalanced raw']
-                    .format(f'"{raw}{left} {right}{raw}":\n\n{msg}')
-            )
+            raise ParseError(IahrConfig.LOCAL['Unbalanced raw'].format(
+                f'"{raw}{left} {right}{raw}":\n\n{msg}'))
         return surround(full_escape(s[start:i])), i + 2
 
     def do(s, i):
@@ -158,10 +156,8 @@ def parenthesize(ldel, rdel, cmd_del, raw_del):
         while not is_right(s, i):
             if len(s) == i:
                 msg = errstr(s, errstart - 1, errstart)
-                raise ParseError(
-                    IahrConfig.LOCAL['Unbalanced']
-                        .format(f'{left} {right}"\n\n{msg}')
-                )
+                raise ParseError(IahrConfig.LOCAL['Unbalanced'].format(
+                    f'{left} {right}"\n\n{msg}'))
 
             if is_left_raw(s, i):
                 subres, i = do_raw(s, i)
@@ -306,14 +302,13 @@ class AccessList:
         self.whitelist = set()
         self.blacklist = set()
         self.allow_others = allow_others
-        self.selfact = { 'allow' : allow_selfact, 'selfban' : False }
+        self.selfact = {'allow': allow_selfact, 'selfban': False}
 
     def allow(self, entity: str):
         if entity == IahrConfig.ME:
             if self.selfact['allow']:
                 self.selfact['selfban'] = True
             return
-
 
         if entity == IahrConfig.OTHERS:
             self.whitelist = set()
@@ -347,7 +342,6 @@ class AccessList:
 
     def is_self(self, entity: str):
         return entity == IahrConfig.ME and not self.selfact['selfban']
-        
 
     def __repr__(self):
         return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {}, selfact: {})'\
@@ -404,16 +398,15 @@ class ActionData:
     uid: int
     chatid: int
 
-    MESSAGE_T = { 
-        etype.Event for etype in [
-            events.NewMessage, events.MessageDeleted, 
-            events.MessageEdited, events.MessageRead
+    MESSAGE_T = {
+        etype.Event
+        for etype in [
+            events.NewMessage, events.MessageDeleted, events.MessageEdited,
+            events.MessageRead
         ]
     }
 
-    OTHER_T = {
-        
-    }
+    OTHER_T = {}
 
     @classmethod
     async def from_event(cls, event):
@@ -428,7 +421,7 @@ class ActionData:
             uid = IahrConfig.ME
         else:
             raise RuntimeError('Event type `{etype}` is currently unsupported')
- 
+
         return cls(event, uid, cid)
 
 
@@ -476,4 +469,3 @@ def ev_prefix(etype):
     etype = ev_to_type(etype)
     pr = IahrConfig.PREFIXES.get(etype)
     return '' if pr is None else pr
-

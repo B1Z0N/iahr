@@ -17,12 +17,12 @@ class PrefixMismatchError(IahrConfigError):
     """
     def __init__(self, events: set):
         before = events
-        after = set(IahrConfig.PREFIXES.values()) 
+        after = set(IahrConfig.PREFIXES.values())
 
         msg = '\n\n\tIt seems, that you\'ve changed your config '
         msg += '\n\tand event prefixes don\'t match now:\n'
         msg += f'\n\told ones: {before}\n\tnew ones: {after}'
-        msg += '\n\n\tRevert changes in config or remove iahr.session file ' 
+        msg += '\n\n\tRevert changes in config or remove iahr.session file '
         msg += '\n\tor manually rename prefixes in it'
 
         super().__init__(msg)
@@ -46,14 +46,17 @@ class ABCManager(ABC):
         # for new message events only(commands)
         self.commands = {}
         # for all other types of events, plain handlers, can't be combined
-        self.handlers = { prefix : {} for prefix in IahrConfig.REVERSE_PREFIXES.keys() }
+        self.handlers = {
+            prefix: {}
+            for prefix in IahrConfig.REVERSE_PREFIXES.keys()
+        }
         # tags for quick search
         self.tags = {}
         # for errignore on chat level
         self.chatlist = AccessList(allow_others=False)
         # state for dumping and loading from file
         self.commands_state, self.handlers_state = self.load()
-        
+
         atexit.register(self.dump)
 
     @abstractmethod
@@ -84,11 +87,16 @@ class ABCManager(ABC):
             Save state(commands and routines) to the file(IahrConfig.SESSION_FNAME)
         """
         IahrConfig.LOGGER.info('Dumping session and exiting')
-        command_dct= self.get_state(self.commands)
-        handler_dct = { 
-            prefix : self.get_state(handlers) for prefix, handlers in self.handlers.items() 
+        command_dct = self.get_state(self.commands)
+        handler_dct = {
+            prefix: self.get_state(handlers)
+            for prefix, handlers in self.handlers.items()
         }
-        dct = { 'commands' : command_dct, 'handlers' : handler_dct, 'chatlist' : self.chatlist }
+        dct = {
+            'commands': command_dct,
+            'handlers': handler_dct,
+            'chatlist': self.chatlist
+        }
 
         with open(IahrConfig.SESSION_FNAME, 'w+') as f:
             json.dump(dct, f, indent=4, cls=Routine.JSON_ENCODER)
@@ -102,14 +110,17 @@ class ABCManager(ABC):
             with open(fname, 'r') as f:
                 dct = json.load(f, cls=Routine.JSON_DECODER)
                 self.chatlist = dct['chatlist']
-                handlers = dct['handlers'] 
+                handlers = dct['handlers']
                 commands = dct['commands']
 
                 PrefixMismatchError.check_events(handlers.keys())
 
                 return commands, handlers
         else:
-            return {}, { prefix : {} for prefix in IahrConfig.REVERSE_PREFIXES.keys() }
+            return {}, {
+                prefix: {}
+                for prefix in IahrConfig.REVERSE_PREFIXES.keys()
+            }
 
     def init_routine(self, etype, name, fun, about):
         """
@@ -119,7 +130,7 @@ class ABCManager(ABC):
         if etype is events.NewMessage:
             state = self.commands_state
             allow_selfact = False
-        else: 
+        else:
             prefix = IahrConfig.PREFIXES[etype]
             state = self.handlers_state[prefix]
             allow_selfact = True
@@ -147,7 +158,7 @@ class ABCManager(ABC):
             if tag in self.tags:
                 self.tags[tag][name] = routine
             else:
-                self.tags[tag] = { name : routine }
+                self.tags[tag] = {name: routine}
 
     ##################################################
     # Chat spam tactic management
@@ -179,7 +190,8 @@ class Manager(ABCManager):
     # Routine management
     ##################################################
 
-    def add(self, name: str, handler: Callable, about: str, etype: type, tags: set):
+    def add(self, name: str, handler: Callable, about: str, etype: type,
+            tags: set):
         IahrConfig.LOGGER.info(f'adding handler:name={name}:etype={etype}')
 
         name = self.full_name(etype, name)
@@ -217,4 +229,3 @@ class Manager(ABCManager):
 
             sender = await handler(event)
             await sender.send()
-        

@@ -90,7 +90,7 @@ def create_sender(name, sendf):
                          about=None,
                          take_event=True,
                          multiret=False,
-                         on_event=None, 
+                         on_event=None,
                          tags=None):
         """
             Parameterized decorator based on command name and it's description
@@ -116,8 +116,7 @@ def create_sender(name, sendf):
 
             about = '' if about is None else about
             about = '`{}`\n{}'.format(
-                '\n  args: ' + argstr(handler, take_event), about
-            )
+                '\n  args: ' + argstr(handler, take_event), about)
 
             IahrConfig.REG.do(name, wrapped, about, on_event, tags)
             return handler

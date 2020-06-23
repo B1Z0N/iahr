@@ -14,7 +14,8 @@ def gen_handler():
     i = 1
 
     def do(cmd):
-        return cmd, lambda *args, **kwargs: i, 'about', events.NewMessage, set()
+        return cmd, lambda *args, **kwargs: i, 'about', events.NewMessage, set(
+        )
 
     return do
 
@@ -29,4 +30,3 @@ def compare_handlers():
         return fst == snd
 
     return do
-

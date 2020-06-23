@@ -5,6 +5,7 @@ from iahr.config import IahrConfig
 import re
 from typing import Callable
 
+
 class ExecutionError(RuntimeError):
     """
         Raise when next sender doesn't accept args from previous one
@@ -18,50 +19,40 @@ class CommandSyntaxError(ExecutionError):
     """ 
         Plug exception to tell that some input is faulty 
     """
-
     def __init__(self, e):
-        super().__init__(
-            IahrConfig.LOCAL['CommandSyntaxError'].format(str(e))
-        )
+        super().__init__(IahrConfig.LOCAL['CommandSyntaxError'].format(str(e)))
 
 
 class PermissionsError(ExecutionError):
     """
         Exception telling that this user or this chat can't use particular command
     """
-
     def __init__(self, command):
-        super().__init__(
-            IahrConfig.LOCAL['PermissionsError'].format(command)
-        )
+        super().__init__(IahrConfig.LOCAL['PermissionsError'].format(command))
+
 
 class IgnoreError(ExecutionError):
     """
         Exception telling that this message should be ignored
     """
-
     def __init__(self, chat):
         self.chat = chat
-        super().__init__(
-            IahrConfig.LOCAL['IgnoreError'].format(chat)
-        )
+        super().__init__(IahrConfig.LOCAL['IgnoreError'].format(chat))
+
 
 class NonExistantCommandError(ExecutionError):
     """
         Exception telling that this command is not registered yet
     """
-
     def __init__(self, command):
         super().__init__(
-            IahrConfig.LOCAL['NonExistantCommandError'].format(command)
-        )
+            IahrConfig.LOCAL['NonExistantCommandError'].format(command))
 
 
 class Query:
     """ 
         Class-representation of our command string in python code
     """
-
     def __init__(self, command: str, args=None, kwargs=None):
         self.command = command
         # Could be: List[str | Query]
@@ -147,13 +138,14 @@ class Routine:
         Class that contains raw command handler and 
         manages permissions to use it in chats and by users
     """
-
     def __init__(self, handler: Callable, about: str, allow_selfact=False):
         self.about = about
         self.handler = handler
 
-        self.usraccess = AccessList(allow_others=False, allow_selfact=allow_selfact)
-        self.chataccess = AccessList(allow_others=True, allow_selfact=allow_selfact)
+        self.usraccess = AccessList(allow_others=False,
+                                    allow_selfact=allow_selfact)
+        self.chataccess = AccessList(allow_others=True,
+                                     allow_selfact=allow_selfact)
 
     def help(self):
         return self.about
@@ -188,7 +180,8 @@ class Routine:
             return
 
         if not self.is_allowed_chat(chat) or not self.is_allowed_usr(usr):
-            if not (self.chataccess.is_self(usr) and self.usraccess.is_self(usr)):
+            if not (self.chataccess.is_self(usr)
+                    and self.usraccess.is_self(usr)):
                 return
 
         return self.handler
@@ -223,7 +216,6 @@ class Executer:
         And thus pipes all needed handlers directly 
         and checks if commands are compatible
     """
-
     def __init__(self, qstr, commands, action: ActionData, is_ignored_chat):
         self.query = Query.from_str(qstr)
         self.dict = commands
@@ -260,7 +252,6 @@ class Executer:
         return args, kwargs
 
     async def __run(self, query, dct, action):
-
         async def proc(subquery):
             return await self.__run(subquery, dct, action)
 
@@ -276,11 +267,13 @@ class Executer:
             raise NonExistantCommandError(query.command)
 
         if handler is None:
-            IahrConfig.LOGGER.warning(f'executer:getting handler:not permitted:{id_msg}')
+            IahrConfig.LOGGER.warning(
+                f'executer:getting handler:not permitted:{id_msg}')
             raise PermissionsError(query.command)
 
         try:
-            args, kwargs = await self.__process_args(query.args, query.kwargs, proc)
+            args, kwargs = await self.__process_args(query.args, query.kwargs,
+                                                     proc)
             IahrConfig.LOGGER.info(f'arg={args}:kwargs={kwargs}:{id_msg}')
             return await handler(action.event, *args, **kwargs)
         except (AttributeError, ValueError, TypeError) as e:

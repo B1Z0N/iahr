@@ -3,21 +3,23 @@ from iahr.config import IahrConfig
 
 localization = {}
 
-
 ##################################################
 # English
 ##################################################
 
-
 localization['english'] = {
-'nosuchcmd' : """
+    'nosuchcmd':
+    """
     No such command(try checking full list: `.commands`)
 """,
-'nosuchtag' : '\n    No such tag: **{tag}**\n\n    try checking full list: `.tags`',
-'abouthelp' : """
+    'nosuchtag':
+    '\n    No such tag: **{tag}**\n\n    try checking full list: `.tags`',
+    'abouthelp':
+    """
     Get general info about how to start
 """,
-'help' : r"""
+    'help':
+    r"""
 Hy, my name is [iahr](https://github.com/B1Z0N/iahr/). 
 
 ------------------------------------
@@ -45,7 +47,8 @@ with this tag:
 Hey, **buddy**, use me tenderly and 
 don't forget about your **IMAGINATION**!
 """,
-'aboutcommands' : """
+    'aboutcommands':
+    """
     Get the list of all commands or info about command
 
         Commands list:
@@ -56,7 +59,8 @@ don't forget about your **IMAGINATION**!
 
         `.commands commands`
 """,
-'abouthandlers' : """
+    'abouthandlers':
+    """
     Get the info about handlers.
     Handler is non new message routine.
 
@@ -72,12 +76,14 @@ don't forget about your **IMAGINATION**!
 
         `.handlers onedit_ [hndl1 hndl2]`
 """,
-'handlers' : {
-    'wrongordering' : 'You can\'t pass handlers, not specifying event type first\n',
-    'nosuchtype' : 'No such event type **{etype}**\n\nCheck **.handlers**!',
-    'nosuchhndl' : 'No such handler, try checking full list: **.handlers**'
-},
-'abouttags' : """
+    'handlers': {
+        'wrongordering':
+        'You can\'t pass handlers, not specifying event type first\n',
+        'nosuchtype': 'No such event type **{etype}**\n\nCheck **.handlers**!',
+        'nosuchhndl': 'No such handler, try checking full list: **.handlers**'
+    },
+    'abouttags':
+    """
     Get the list of all tags or list of commands tagged,
 
         Tags list:
@@ -88,10 +94,14 @@ don't forget about your **IMAGINATION**!
 
         `.tags default`
 """,
-'enabled' : 'enabled',
-'disabled' : 'disabled',
-'unknownactiontype' : 'Unknown type to operate on: **{}**\nMust be one of ["commands", "handlers", "tags"]',
-'aboutallowusr' : """
+    'enabled':
+    'enabled',
+    'disabled':
+    'disabled',
+    'unknownactiontype':
+    'Unknown type to operate on: **{}**\nMust be one of ["commands", "handlers", "tags"]',
+    'aboutallowusr':
+    """
     Allow usr to run a command
 
         by nick, id or phone number all comands:
@@ -110,7 +120,8 @@ don't forget about your **IMAGINATION**!
 
     **You can't allow admin commands to all users**
 """,
-'aboutallowchat' : """
+    'aboutallowchat':
+    """
     Allow a command to be runned in a chat
 
         by chatname or id all commands:
@@ -128,7 +139,8 @@ don't forget about your **IMAGINATION**!
 
     **You can't allow admin commands in all chats**
 """,
-'aboutbanusr' : """
+    'aboutbanusr':
+    """
     Ban usr from running a command
 
         by nick, id or phone number all comands:
@@ -144,7 +156,8 @@ don't forget about your **IMAGINATION**!
         
         `.banusr cmd=command`
 """,
-'aboutbanchat' : """
+    'aboutbanchat':
+    """
     Ban command from running in a chat
 
         by chatname or id all commands:
@@ -159,7 +172,8 @@ don't forget about your **IMAGINATION**!
         
         `.banchat cmd=command`
 """,
-'aboutallowedchat' : """
+    'aboutallowedchat':
+    """
     Get the commands allowed in a chat
 
         by chatname or id:
@@ -174,7 +188,8 @@ don't forget about your **IMAGINATION**!
         
         `.allowedchat [chat1 chat2] [cmd1 cmd2 cmd3]`
 """,
-'aboutallowedusr' : """
+    'aboutallowedusr':
+    """
     Get the commands allowed to a usr
 
         by username, id or phone number:
@@ -190,7 +205,8 @@ don't forget about your **IMAGINATION**!
         
         `.allowedusr [usr1 usr2] [cmd1 cmd2 cmd3]`
 """,
-'aboutignore' : """
+    'aboutignore':
+    """
     Ignore a chat when processing commands from
     banned users. Reduces spam level
 
@@ -206,7 +222,8 @@ don't forget about your **IMAGINATION**!
         
         `.ignore`
 """,
-'aboutverbose' : """
+    'aboutverbose':
+    """
     Enable chat when processing commands from
     banned users. Increases spam level, but
     also increases clarity
@@ -223,10 +240,12 @@ don't forget about your **IMAGINATION**!
         
         `.unignore`
 """,
-'aboutsynhelp' : """
+    'aboutsynhelp':
+    """
     Get help about syntax rules
 """,
-'synhelp' : r"""
+    'synhelp':
+    r"""
 Hy, my name is [iahr](https://github.com/B1Z0N/iahr/). 
 
 ------------------------------------
@@ -283,22 +302,24 @@ The brackets will add up automatically:
 """
 }
 
-
 ##################################################
 # Russian
 ##################################################
 
-
 localization['russian'] = {
-'nosuchcmd' : """
+    'nosuchcmd':
+    """
     Нет такой команды,
     попробуйте посмотреть их список: `.commands`
 """,
-'nosuchtag' : '\n    Нет такого тэга: **{tag}**\n\n    попробуйте посмотреть их список: `.tags`\n',
-'abouthelp' : """
+    'nosuchtag':
+    '\n    Нет такого тэга: **{tag}**\n\n    попробуйте посмотреть их список: `.tags`\n',
+    'abouthelp':
+    """
     Общая информация о том с чего начать
 """,
-'help' : r"""
+    'help':
+    r"""
 Привет, меня зовут [iahr](https://github.com/B1Z0N/iahr/). 
 
 ------------------------------------
@@ -326,7 +347,8 @@ localization['russian'] = {
 Хей, **дружище**, используй меня нежно
 и не забывай про свое **ВООБРАЖЕНИЕ**!
 """,
-'aboutcommands' : """
+    'aboutcommands':
+    """
     Список всех команд или информация по команде
 
         Список команд:
@@ -337,7 +359,8 @@ localization['russian'] = {
 
         `.commands commands`
 """,
-'abouthandlers' : """
+    'abouthandlers':
+    """
     Информация про хендлеры.
     Хендлер - команда, котороую нельзя
     комбинировать и использовать явно.
@@ -355,12 +378,16 @@ localization['russian'] = {
 
         `.handlers onedit_ [hndl1 hndl2]`
 """,
-'handlers' : {
-    'wrongordering' : 'Нельзя передать **hndl**, не указав **etype** сначала\n',
-    'nosuchtype' : 'Нет такого типа события **{etype}**\n\nСмотрите **.handlers**!',
-    'nosuchhndl' : 'Нет такого хендлера **{hndl}**, смотрите весь список: **.handlers**'
-},
-'abouttags' : """
+    'handlers': {
+        'wrongordering':
+        'Нельзя передать **hndl**, не указав **etype** сначала\n',
+        'nosuchtype':
+        'Нет такого типа события **{etype}**\n\nСмотрите **.handlers**!',
+        'nosuchhndl':
+        'Нет такого хендлера **{hndl}**, смотрите весь список: **.handlers**'
+    },
+    'abouttags':
+    """
     Список тэгов или команд с этим тэгом
 
         Список тэгов:
@@ -371,10 +398,14 @@ localization['russian'] = {
 
         `.tags default`
 """,
-'enabled' : 'разрешено',
-'disabled' : 'запрещено',
-'unknownactiontype' : 'Неизвестны тип: **{}**\nДолжен быть один из ["commands", "handlers", "tags"]',
-'aboutallowusr' : """
+    'enabled':
+    'разрешено',
+    'disabled':
+    'запрещено',
+    'unknownactiontype':
+    'Неизвестны тип: **{}**\nДолжен быть один из ["commands", "handlers", "tags"]',
+    'aboutallowusr':
+    """
     Разрешить пользователю исполнять команду
 
 
@@ -394,7 +425,8 @@ localization['russian'] = {
 
     **Запрещено разрешать админ команду всем**
 """,
-'aboutallowchat' : """
+    'aboutallowchat':
+    """
     Разрешить исполнение команды в чате
 
         по логину или по id чата, все команды:
@@ -412,7 +444,8 @@ localization['russian'] = {
 
     **Запрещено разрешать админ команду всем**
 """,
-'aboutbanusr' : """
+    'aboutbanusr':
+    """
     Запретить пользователю исполнять команду
 
         по нику или номеру телефона, все команды:
@@ -428,7 +461,8 @@ localization['russian'] = {
         
         `.banusr cmd=command`
 """,
-'aboutbanchat' : """
+    'aboutbanchat':
+    """
     Запретить исполнение команды в чате
 
         по логину или по id чата, все команды:
@@ -443,7 +477,8 @@ localization['russian'] = {
         
         `.banchat cmd=command`
 """,
-'aboutallowedchat' : """
+    'aboutallowedchat':
+    """
     Получить список команд, разрешенных в этом чате
 
         по логину или по id чата:
@@ -458,7 +493,8 @@ localization['russian'] = {
         
         `.allowedchat [chat1 chat2] [cmd1 cmd2 cmd3]`
 """,
-'aboutallowedusr' : """
+    'aboutallowedusr':
+    """
     Получить список команд разрешенных пользователю
 
         по нику, или номеру телефона:
@@ -474,7 +510,8 @@ localization['russian'] = {
         
         `.allowedusr [usr1 usr2] [cmd1 cmd2 cmd3]`
 """,
-'aboutignore' : """
+    'aboutignore':
+    """
     Игнорировать сообщения от пользователей 
     без доступа. Уменьшает уровень спама
 
@@ -490,7 +527,8 @@ localization['russian'] = {
         
         `.ignore`
 """,
-'aboutverbose' : """
+    'aboutverbose':
+    """
     Реагирвать на сообщения от пользователей 
     без доступа. Увеличивает уровень спама,
     повышает ясность
@@ -507,10 +545,12 @@ localization['russian'] = {
         
         `.unignore`
 """,
-'aboutsynhelp' : """
+    'aboutsynhelp':
+    """
     Получить информацию по правилам синтаксиса
 """,
-'synhelp' : r"""
+    'synhelp':
+    r"""
 Все команды начинаются с "`{new_msg}`",
 вы можете передавать аргументы: 
 

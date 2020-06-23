@@ -2,7 +2,8 @@ from iahr.reg import TextSender, VoidSender
 from telethon import events
 
 
-@VoidSender(name='isaw', tags={'myspecifictag'},
+@VoidSender(name='isaw',
+            tags={'myspecifictag'},
             on_event=events.MessageEdited,
             about="""
     Notifies when someone edits the message
@@ -13,7 +14,8 @@ async def isaw(event):
 
 @TextSender(about="""
     Concatenate unlimited number of args
-""", tags={'myspecifictag'})
+""",
+            tags={'myspecifictag'})
 async def concat(_, *args):
     return ''.join(str(arg) for arg in args)
 
@@ -49,7 +51,7 @@ async def kwtest(_, arg1, arg2):
 
 @TextSender(about="""
     Directly on new message
-""", on_event=events.NewMessage)
+""",
+            on_event=events.NewMessage)
 async def directly_on_new_message(event):
     return 'directly_on_new_message'
-    

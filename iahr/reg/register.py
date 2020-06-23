@@ -18,8 +18,7 @@ class ABCRegister:
         self.app = app
 
         self.client.add_event_handler(
-            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE)
-        )
+            self.run, events.NewMessage(pattern=IahrConfig.COMMAND_RE))
 
         for etype in IahrConfig.PREFIXES.keys():
             self.client.add_event_handler(self.run, etype())
@@ -50,7 +49,7 @@ class Register(ABCRegister):
         IahrConfig.LOGGER.info(f'registering:name={name}:about={about}')
         etype = ev_to_type(etype)
         name = ev_prefix(name) + name
-        
+
         self.app.add(name, handler, about, etype, tags)
 
     async def run(self, event):
@@ -77,17 +76,16 @@ class Register(ABCRegister):
                     await event.reply(str(e) + IahrConfig.LOCAL['See synhelp'])
                 except run.PermissionsError as e:
                     IahrConfig.LOGGER.error(f'{e}')
-                    msg = str(
-                        e
-                    ) + IahrConfig.LOCAL['See allowedusr']
+                    msg = str(e) + IahrConfig.LOCAL['See allowedusr']
                     await event.reply(msg)
                 except run.IgnoreError as e:
-                    IahrConfig.LOGGER.info(f'Empty handler due to chat {e.chat} ignore')
+                    IahrConfig.LOGGER.info(
+                        f'Empty handler due to chat {e.chat} ignore')
                 except run.ExecutionError as e:
                     IahrConfig.LOGGER.error(str(e))
                     await event.reply(
-                        IahrConfig.LOCAL['Incompatible commands'].format(e.args[0])
-                    )
+                        IahrConfig.LOCAL['Incompatible commands'].format(
+                            e.args[0]))
                     if IahrConfig.MODE == 'DEBUG':
                         traceback.print_exc()
                 else:

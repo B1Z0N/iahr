@@ -270,10 +270,12 @@ def ev_to_type(event):
         return type(event)
     return event
 
+
 def test_ev_to_type():
     for etype in IahrConfig.PREFIXES.keys():
         assert ev_to_type(etype) == etype
         assert ev_to_type(etype()) == etype
+
 
 def test_ev_prefix():
     for etype in IahrConfig.PREFIXES.keys():

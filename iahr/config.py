@@ -92,7 +92,7 @@ class UnknownLocalizationError(IahrConfigError):
 
 
 ##################################################
-# Config class 
+# Config class
 ##################################################
 
 
@@ -109,7 +109,7 @@ class IahrConfig(metaclass=SingletonMeta):
 
     APP = None  # to be settled, but needed here for use in routine execution time
     REG = Delayed()  # Register in import time
-    BARE_REG = None # Register in runtime
+    BARE_REG = None  # Register in runtime
 
     ##################################################
     # Config methods
@@ -137,7 +137,7 @@ class IahrConfig(metaclass=SingletonMeta):
 
 
 ##################################################
-# Functions for updating dependent config data 
+# Functions for updating dependent config data
 # and utility functions
 ##################################################
 
@@ -172,9 +172,8 @@ def update_logger(fmt, datefmt, out):
 def prefixes_from_str(prefixes):
     EventsError.check_events(set(prefixes.keys()))
 
-    return {
-        getattr(events, key) : val for key, val in prefixes.items()
-    }
+    return {getattr(events, key): val for key, val in prefixes.items()}
+
 
 def reverse_prefixes_from_str(prefixes):
     return dict(zip(prefixes.values(), prefixes.keys()))
@@ -236,14 +235,15 @@ def config(left=None,
                 data_folder=data_folder,
                 custom=custom,
                 mode=mode)
-    
+
     os.makedirs(cfg.DATA_FOLDER, exist_ok=True)
     cfg.SESSION_FNAME = os.path.join(cfg.DATA_FOLDER, SESSION_FNAME)
     cfg.LOG_OUT = os.path.join(cfg.DATA_FOLDER, LOG_FNAME)
 
     cfg.COMMAND_RE = update_command_re(cfg.CMD)
     cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.CMD, cfg.RAW)
-    cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT, cfg.LOG_OUT)
+    cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT,
+                               cfg.LOG_OUT)
 
 
 def reset():
@@ -253,20 +253,21 @@ def reset():
     """
     global DATA_FOLDER, SESSION_FNAME, LOG_FNAME
 
-    log_format='%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
-    log_datetime_format='%m/%d/%Y %I:%M:%S %p'
-    IahrConfig.LOGGER = update_logger(log_format, log_datetime_format, sys.stdout)
+    log_format = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
+    log_datetime_format = '%m/%d/%Y %I:%M:%S %p'
+    IahrConfig.LOGGER = update_logger(log_format, log_datetime_format,
+                                      sys.stdout)
 
     config(
         left='[',
         right=']',
         raw='r',
         cmd='.',
-        prefixes= {
+        prefixes={
             # additional handlers(not commands)
-            'MessageEdited' : 'onedit',
-            'MessageDeleted' : 'ondel',
-            'MessageRead' : 'onread',
+            'MessageEdited': 'onedit',
+            'MessageDeleted': 'ondel',
+            'MessageRead': 'onread',
         },
         me='me',
         others='*',
@@ -274,17 +275,17 @@ def reset():
         log_datetime_format=log_datetime_format,
         local='english',
         data_folder=DATA_FOLDER,
-        custom={ # custom user config dictionary
+        custom={  # custom user config dictionary
             # entity to deduce user of chat in access rights actions
             # (e.g. `allowchat`, `banusr`)
-            'current_entity' : '$' 
+            'current_entity': '$'
         },
         mode='RELEASE')
+
 
 ##################################################
 # Setting config on import
 ##################################################
-
 
 reset()
 config_from_file()
