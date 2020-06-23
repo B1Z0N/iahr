@@ -3,17 +3,17 @@ version: '3'
 services:
   iahr_exmpl:
     build: .
-    command: ["exmpl"]
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     volumes:
-      - ./exmpl/etc:/opt/app/exmpl/etc
+      - ./exmpl:/opt/app/exmpl
+    command: ["exmpl"]
 
   iahr_tests:
     build: .
-    command: ["tests"]
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     volumes:
-      - ./tests/etc:/opt/app/tests/etc
+      - ./tests:/opt/app/tests
+    command: ["tests"]
 
