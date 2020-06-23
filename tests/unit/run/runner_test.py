@@ -171,5 +171,5 @@ def commands(allowall, allargs):
 @pytest.mark.asyncio
 async def test_executer_errors(errinput, exception, action, commands):
     with pytest.raises(exception):
-        runner = Executer(errinput, commands, action)
+        runner = Executer(errinput, commands, action, False)
         await runner.run()
