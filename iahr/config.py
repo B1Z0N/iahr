@@ -264,9 +264,9 @@ def reset():
         cmd='.',
         prefixes= {
             # additional handlers(not commands)
-            'MessageEdited' : 'onedit_',
-            'MessageDeleted' : 'ondel_',
-            'MessageRead' : 'onread_',
+            'MessageEdited' : 'onedit',
+            'MessageDeleted' : 'ondel',
+            'MessageRead' : 'onread',
         },
         me='me',
         others='*',
@@ -277,7 +277,7 @@ def reset():
         custom={ # custom user config dictionary
             # entity to deduce user of chat in access rights actions
             # (e.g. `allowchat`, `banusr`)
-            'current_entity' : '_' 
+            'current_entity' : '$' 
         },
         mode='RELEASE')
 
