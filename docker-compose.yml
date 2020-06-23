@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  iahr_exmpl:
+    build: .
+    entrypoint: ["sh", "-c"]
+    command: ["cd exmpl && ./start.sh"]
+
+  iahr_tests:
+    build: .
+    entrypoint: ["sh", "-c"]
+    command: ["cd tests && ./start.sh"]
