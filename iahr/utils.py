@@ -288,7 +288,7 @@ class Tokenizer:
 
 
 # import here, due to the circular import
-from .config import IahrConfig
+from iahr.config import IahrConfig
 
 
 class AccessList:

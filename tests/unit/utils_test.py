@@ -1,6 +1,6 @@
 from iahr.utils import Delimiter, CommandDelimiter, \
 Delayed, SingletonMeta, parenthesize, Tokenizer, AccessList,\
-ActionData, ParseError
+ActionData, ParseError, ev_to_type, ev_prefix
 
 from iahr.config import IahrConfig
 
@@ -259,3 +259,26 @@ def test_tokenizer(tokenize, input, result):
 def test_tokenizer_parse_error(tokenize, input):
     with pytest.raises(ParseError):
         tokenize(input)
+
+
+def ev_to_type(event):
+    """
+        Return type of this event. 
+        event - type or instance of an event
+    """
+    if not isinstance(event, type):
+        return type(event)
+    return event
+
+def test_ev_to_type():
+    for etype in IahrConfig.PREFIXES.keys():
+        assert ev_to_type(etype) == etype
+        assert ev_to_type(etype()) == etype
+
+def test_ev_prefix():
+    for etype in IahrConfig.PREFIXES.keys():
+        res = IahrConfig.PREFIXES.get(etype)
+        assert ev_prefix(etype) == res
+        assert ev_prefix(etype()) == res
+
+    assert ev_prefix('lol') == ''

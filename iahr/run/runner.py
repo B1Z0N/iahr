@@ -1,6 +1,6 @@
-from ..utils import AccessList, ActionData, Delimiter, CommandDelimiter
-from ..utils import Tokenizer, parenthesize, ParseError
-from ..config import IahrConfig
+from iahr.utils import AccessList, ActionData, Delimiter, CommandDelimiter
+from iahr.utils import Tokenizer, parenthesize, ParseError
+from iahr.config import IahrConfig
 
 import re
 from typing import Callable
