@@ -34,7 +34,7 @@ local = localization[IahrConfig.LOCAL['lang']]
 
 
 def process_list(lst: str, is_cmds=False):
-    lst = lst.split()
+    lst = str(lst).split()
     if is_cmds:
         cmddel = IahrConfig.CMD
         for i, cmd in enumerate(lst):

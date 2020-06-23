@@ -32,42 +32,43 @@ async def commands(event, cmd=None):
 
 
 @TextSender(about=local['abouthandlers'], tags={DEFAULT_TAG})
-async def handlers(event, etype=None, hndl=None):
+async def handlers(event, prefix=None, hndl=None):
     app = IahrConfig.APP
-
-    if etype is None and hndl is not None:
-        return local['handlers']['wrongordering']
+    nosuchhndl = local['handlers']['nosuchhndl']
+    nosuchtype = local['handlers']['nosuchtype']
     
-    def for_etype(etype_name):
-        handlers = app.handlers[etype_name]
-        res = f'**{IahrConfig.PREFIXES[getattr(events, etype_name)]}**' + ':\n'
-        for name in handlers.keys():
-            res += f'  `{name}`'
 
-        return res
+    if prefix is None and hndl is not None:
+        return local['handlers']['wrongordering']
 
     if hndl is None:
-        if etype is None:
-            return '\n'.join(map(for_etype, app.handlers.keys()))
+        if prefix is None:
+            dct = { prefix : hndls.keys() for prefix, hndls in app.handlers.items() }
         else:
-            res, status = get_reverse_etype(etype)
-            return for_etype(res) if status else res
+            dct = app.handlers.get(prefix)
+            if dct is None:
+                return nosuchtype.format(etype=prefix)
+            dct = { prefix : dct.keys() }
+    else: # hndl is not None and prefix is not None
+        dct = app.handlers.get(prefix)
+        if dct is None:
+            return nosuchtype.format(etype=prefix)
+        dct = { 
+            prefix : [ 
+                (hndl, None)[dct.get(hndl) is None] for hndl in process_list(hndl)
+            ]
+        }
 
-    hndls, helplst = process_list(hndl), [ f'`{etype}`' + ':\n']
-    res, status = get_reverse_etype(etype)
-    if not status:
-        return res
-    dct = app.handlers[res]
-
-    for hndl in hndls:
-        val = dct.get(hndl)
-        res = '\t**{}**:\n{}\n'\
-            .format(hndl, '\n    ' + local['handlers']['nosuchhndl'] if val is None else val.help())
-        helplst.append(res)
-
-    res = '\n'.join(helplst)
+    res = ''
+    for prefix, names in dct.items():
+        res += f'**{prefix}**\n'
+        res += '\n\t' if names else ''
+        res += '\n    '.join(
+            nosuchhndl.format(name) if name is None else f'`{name}`' for name in names
+        )
+        res += '\n\n'
+    
     return res
-
 
 @TextSender(about=local['abouttags'], tags={DEFAULT_TAG})
 async def tags(event, tag=None):
@@ -81,7 +82,7 @@ async def tags(event, tag=None):
         val = app.tags.get(tag)
         res = f'**{tag}**:\n'
         if val is None:
-            res += local['nosuchtag'].format(tag)
+            res += local['nosuchtag'].format(tag=tag)
         else:
             res += '\n'.join(f'    **{cmd}**' for cmd in val.keys())
         helplst.append(res)

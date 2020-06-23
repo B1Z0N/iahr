@@ -227,7 +227,7 @@ def config(left=None,
     cfg._update(CommandDelimiter, cmd=cmd)
     cfg._update(UnknownLocalizationError.lang_from_str, local=local)
     cfg._update(prefixes_from_str, prefixes=prefixes)
-    cfg._update(reverse_prefixes_from_str, reverse_prefixes=prefixes)
+    cfg._update(reverse_prefixes_from_str, reverse_prefixes=cfg.PREFIXES)
     cfg._update(lambda x: x,
                 me=me,
                 others=others,

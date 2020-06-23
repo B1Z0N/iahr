@@ -13,7 +13,7 @@ localization['english'] = {
 'nosuchcmd' : """
     No such command(try checking full list: `.commands`)
 """,
-'nosuchtag' : 'No such tag: {tag}\n\ntry checking full list: `.tagsf`',
+'nosuchtag' : '\n    No such tag: **{tag}**\n\n    try checking full list: `.tags`',
 'abouthelp' : """
     Get general info about how to start
 """,
@@ -294,7 +294,7 @@ localization['russian'] = {
     Нет такой команды,
     попробуйте посмотреть их список: `.commands`
 """,
-'nosuchtag' : 'Нет такого тэга: {tag}\n\nпопробуйте посмотреть их список: `.tags`',
+'nosuchtag' : '\n    Нет такого тэга: **{tag}**\n\n    попробуйте посмотреть их список: `.tags`\n',
 'abouthelp' : """
     Общая информация о том с чего начать
 """,
@@ -358,7 +358,7 @@ localization['russian'] = {
 'handlers' : {
     'wrongordering' : 'Нельзя передать **hndl**, не указав **etype** сначала\n',
     'nosuchtype' : 'Нет такого типа события **{etype}**\n\nСмотрите **.handlers**!',
-    'nosuchhndl' : 'Нет такого хендлера, смотрите весь список: **.handlers**'
+    'nosuchhndl' : 'Нет такого хендлера **{hndl}**, смотрите весь список: **.handlers**'
 },
 'abouttags' : """
     Список тэгов или команд с этим тэгом
