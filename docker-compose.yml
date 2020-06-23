@@ -4,7 +4,16 @@ services:
   iahr_exmpl:
     build: .
     command: ["exmpl"]
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    volumes:
+      - ./exmpl/etc:/opt/app/exmpl/etc
 
   iahr_tests:
     build: .
     command: ["tests"]
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    volumes:
+      - ./tests/etc:/opt/app/tests/etc
+
