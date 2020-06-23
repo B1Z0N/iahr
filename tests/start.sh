@@ -1,9 +1,7 @@
 #!/bin/bash
 
-PYTHON=$(which python3)
+DIRECTORY=$(cd `dirname $0` && pwd)
 
-source "../venv/bin/activate"
-export PYTHONPATH="$(cd .. && pwd)"
+export PYTHONPATH="$(cd $DIRECTORY && cd .. && pwd)"
 
-$PYTHON -m pytest $@
-
+python3 -m pytest "$DIRECTORY" $@

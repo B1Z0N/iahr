@@ -12,6 +12,7 @@ WORKDIR /opt/app/
 ENV PIP_DIR=/root/.local/lib/python3.8/site-packages
 COPY iahr ./iahr
 COPY exmpl ./exmpl
+COPY .env ./exmpl/
 COPY --from=build $PIP_DIR $PIP_DIR
 CMD ls && cd exmpl && ./start.sh
 
