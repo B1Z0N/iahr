@@ -1,0 +1,8 @@
+.git/
+LICENSE
+*.session
+__pycache__/
+*.ogg
+.vscode/
+.github/
+*.sh
