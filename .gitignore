@@ -108,6 +108,7 @@ venv.bak/
 sessions/
 .idea/
 *.session
+*.session-journal
 my
 data
 .vscode
