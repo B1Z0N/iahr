@@ -5,10 +5,10 @@ trap "/bin/kill -s TERM -1" SIGTERM SIGQUIT
 
 case "$1" in
     '' | 'exmpl')
-        cd exmpl && ./start.sh
+        (cp .env exmpl && cd exmpl && ./start.sh)
     ;;
     'tests')
-        cd tests && ./start.sh
+        (cp .env tests && cd tests && ./start.sh)
     ;;
     *) exec "${@}" ;;
 esac
