@@ -6,7 +6,7 @@ RUN apt-get update
 
 FROM python:3.8.1 AS build
 # to suppress some installation warnings
-RUN export PATH="$PATH:/root/.local/bin"
+ENV PATH="/root/.local/bin:${PATH}"
 RUN python -m pip install --upgrade pip
 
 WORKDIR /opt/build
