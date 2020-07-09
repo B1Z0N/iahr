@@ -62,7 +62,7 @@ don't forget about your **IMAGINATION**!
     'abouthandlers':
     """
     Get the info about handlers.
-    Handler is non new message routine.
+    Handler is a reaction to some event:
 
         Handlers list(divided by event types):
 
@@ -70,11 +70,11 @@ don't forget about your **IMAGINATION**!
 
         Handlers on specific event type:
 
-        `.handlers onedit_`
+        `.handlers onedit`
 
         Info about handlers(specify event type):
 
-        `.handlers onedit_ [hndl1 hndl2]`
+        `.handlers onedit [hndl1 hndl2]`
 """,
     'handlers': {
         'wrongordering':
@@ -100,111 +100,12 @@ don't forget about your **IMAGINATION**!
     'disabled',
     'unknownactiontype':
     'Unknown type to operate on: **{}**\nMust be one of ["commands", "handlers", "tags"]',
-    'aboutallowusr':
-    """
-    Allow usr to run a command
-
-        by nick, id or phone number all comands:
-
-        `.allowusr uname`
-        
-        all users some commands
-        (not tagged with `admin`):
-        
-        `.allowusr * [cmd1 cmd2 cmd3]`
-        
-        message author or the user 
-        that you are replying to:
-        
-        `.allowusr cmd=command`
-
-    **You can't allow admin commands to all users**
-""",
-    'aboutallowchat':
-    """
-    Allow a command to be runned in a chat
-
-        by chatname or id all commands:
-        
-        `.allowchat chatname`
-        
-        all chats some commands
-        (not tagged with `admin`):
-        
-        `.allowchat * [cmd1 cmd2 cmd3]`
-        
-        the chat that you are writing this in:
-        
-        `.allowchat cmd=command`
-
-    **You can't allow admin commands in all chats**
-""",
-    'aboutbanusr':
-    """
-    Ban usr from running a command
-
-        by nick, id or phone number all comands:
-        
-        `.banusr uname`
-        
-        all users some commands:
-        
-        `.banusr * [cmd1 cmd2 cmd3]`
-        
-        message author or the user 
-        that you are replying to:
-        
-        `.banusr cmd=command`
-""",
-    'aboutbanchat':
-    """
-    Ban command from running in a chat
-
-        by chatname or id all commands:
-        
-        `.banchat chatname`
-        
-        all chats some commands:
-        
-        `.banchat * [cmd1 cmd2 cmd3]`
-        
-        the chat that you are writing this in:
-        
-        `.banchat cmd=command`
-""",
-    'aboutallowedchat':
-    """
-    Get the commands allowed in a chat
-
-        by chatname or id:
-        
-        `.allowedchat chatname command`
-        
-        in current chat:
-        
-        `.allowedchat cmd=command`
-        
-        list of chats, list of commands:
-        
-        `.allowedchat [chat1 chat2] [cmd1 cmd2 cmd3]`
-""",
-    'aboutallowedusr':
-    """
-    Get the commands allowed to a usr
-
-        by username, id or phone number:
-        
-        `.allowedusr usrname command`
-        
-        current user or the user 
-        that you are replying to:
-        
-        `.allowedusr cmd=command`
-        
-        list of users, list of commands:
-        
-        `.allowedusr [usr1 usr2] [cmd1 cmd2 cmd3]`
-""",
+    'aboutallowusr':'see **{new_msg}accesshelp**',
+    'aboutallowchat':'see **{new_msg}accesshelp**',
+    'aboutbanusr':'see **{new_msg}accesshelp**',
+    'aboutbanchat':'see **{new_msg}accesshelp**',
+    'aboutallowedchat':'see **{new_msg}accesshelp**',
+    'aboutallowedusr':'see **{new_msg}accesshelp**',
     'aboutignore':
     """
     Ignore a chat when processing commands from
@@ -299,6 +200,55 @@ The brackets will add up automatically:
     `{new_msg}do1 {new_msg}do2 arg1 {new_msg}do3`
         means
     `{left}{new_msg}do1 {left}{new_msg}do2 {left}arg1{right} {left}{new_msg}do3{right}{right}{right}`
+""",
+    'aboutaccesshelp':
+    """
+    Get help about access rights actions
+""",
+    'accesshelp':
+    r"""
+You can customize access level 
+to all your routines anytime.
+------------------------------------
+
+1. First you need to decide which 
+command to use, start typing '{new_msg}'
+2. Then select the access action 
+write one of three: 'ban', 'allow' or
+'allowed'(to find out the rights)
+3. Then continue and select one 
+of two: 'chat' or 'usr' entities
+
+For example: `{new_msg}allowedusr`
+Continue typing, tell what you need...
+------------------------------------
+
+Whatever command you've chosen in
+the previous paragraph, the interface 
+to it is all the same.
+
+It depends on type of routine,
+some examples:
+
+`{new_msg}allowchat commands {left}chat1 chat2{right} {left}synhelp help{right}`
+
+Or deduce entity from context,
+by using `{current}` wildcard.
+USR: usr you are replying to, or you
+CHAT: current chat
+
+`{new_msg}allowedusr handlers {current} onedit somehandler`
+
+Apply to all commands, handlers, tags:
+
+`{new_msg}banusr commands {current}`
+`{new_msg}allowedchat handlers onedit {current}`
+`{new_msg}banchat tags {current}`
+
+Use tags to access whole categories
+of commands/handlers:
+
+`{new_msg}allowchat tags $ {raw}{left}default admin{right}{raw}`
 """
 }
 
@@ -371,12 +321,12 @@ localization['russian'] = {
 
         Всё по конкретному типу события:
 
-        `.handlers onedit_`
+        `.handlers onedit`
 
         Информация по конкретным хендлерам
         (тип события - обязателен):
 
-        `.handlers onedit_ [hndl1 hndl2]`
+        `.handlers onedit [hndl1 hndl2]`
 """,
     'handlers': {
         'wrongordering':
@@ -402,114 +352,13 @@ localization['russian'] = {
     'разрешено',
     'disabled':
     'запрещено',
-    'unknownactiontype':
-    'Неизвестны тип: **{}**\nДолжен быть один из ["commands", "handlers", "tags"]',
-    'aboutallowusr':
-    """
-    Разрешить пользователю исполнять команду
-
-
-        по нику, id или по номеру телефона(все команды): 
-
-        `.allowusr uname`
-        
-        всем пользователям, список команд
-        (не тэгнутые `admin`):
-        
-        `.allowusr * [cmd1 cmd2 cmd3]`
-        
-        автору сообщения или человеку,
-        которому вы отвечаете(reply):
-        
-        `.allowusr cmd=command`
-
-    **Запрещено разрешать админ команду всем**
-""",
-    'aboutallowchat':
-    """
-    Разрешить исполнение команды в чате
-
-        по логину или по id чата, все команды:
-        
-        `.allowchat chatname`
-        
-        все чаты, нектороые команды
-        (не тэгнутые `admin`)
-        
-        `.allowchat * [cmd1 cmd2 cmd3]`
-        
-        этот чат:
-        
-        `.allowchat cmd=command`
-
-    **Запрещено разрешать админ команду всем**
-""",
-    'aboutbanusr':
-    """
-    Запретить пользователю исполнять команду
-
-        по нику или номеру телефона, все команды:
-        
-        `.banusr uname`
-
-        все пользователи, некоторые команды:
-
-        `.banusr * [cmd1 cmd2 cmd3]`
-        
-        автору сообщения или человеку, которому
-        вы отвечаете(reply):
-        
-        `.banusr cmd=command`
-""",
-    'aboutbanchat':
-    """
-    Запретить исполнение команды в чате
-
-        по логину или по id чата, все команды:
-        
-        `.banchat chatname`
-        
-        все чаты, некоторые команды:
-        
-        `.banchat * [cmd1 cmd2 cmd3]`
-        
-        этот чат:
-        
-        `.banchat cmd=command`
-""",
-    'aboutallowedchat':
-    """
-    Получить список команд, разрешенных в этом чате
-
-        по логину или по id чата:
-        
-        `.allowedchat chatname command`
-        
-        этот чат:
-        
-        `.allowedchat cmd=command`
-        
-        список чатов, список команд:
-        
-        `.allowedchat [chat1 chat2] [cmd1 cmd2 cmd3]`
-""",
-    'aboutallowedusr':
-    """
-    Получить список команд разрешенных пользователю
-
-        по нику, или номеру телефона:
-        
-        `.allowedusr usrname command`
-        
-        автора сообщения или человека, которому
-        вы отвечаете(reply):
-        
-        `.allowedusr cmd=command`
-        
-        список пользователей, список команд
-        
-        `.allowedusr [usr1 usr2] [cmd1 cmd2 cmd3]`
-""",
+    'unknownactiontype':'Неизвестны тип: **{}**\nДолжен быть один из ["commands", "handlers", "tags"]',
+    'aboutallowusr':'смотрите **accesshelp**',
+    'aboutallowchat':'смотрите **accesshelp**',
+    'aboutbanusr':'смотрите **accesshelp**',
+    'aboutbanchat':'смотрите **accesshelp**',
+    'aboutallowedchat':'смотрите **accesshelp**',
+    'aboutallowedusr':'смотрите **accesshelp**',
     'aboutignore':
     """
     Игнорировать сообщения от пользователей 
@@ -600,5 +449,56 @@ localization['russian'] = {
     `{new_msg}do1 {new_msg}do2 arg1 {new_msg}do3`
         то же самое что
     `{left}{new_msg}do1 {left}{new_msg}do2 {left}arg1{right} {left}{new_msg}do3{right}{right}{right}`
+""",
+    'aboutaccesshelp':
+    """
+    Получить информацию по командах прав доступа
+""",
+    'accesshelp':
+    r"""
+Вы можете изменять уровень доступа
+к любым вашим командам/хендлерам.
+------------------------------------
+
+1. Для начала нужно решить какую команду
+использовать, начните печатать '{new_msg}'
+2. Потом выберите одно из действий: 
+'ban', 'allow' или 'allowed'
+(последнее чтобы посмотреть права)
+3. Продолжайте, напечтайте одно из:
+'chat' или 'usr' сущностей 
+
+Например: `{new_msg}allowedusr`
+Продолжайте печатать что вам нужно...
+------------------------------------
+
+Какую бы команду вы не выбрали
+в предыдущем пункте, шаги далее
+будут теми же для всех их
+
+Всё зависит от типа команды, которую
+вы выберете:
+
+`{new_msg}allowchat commands {left}chat1 chat2{right} {left}synhelp help{right}`
+
+Можно попросить Iahr вычислить
+сущность из контекста, используя
+знак `{current}`
+USR: пользователь, которому вы отвечаете(reply),
+или вы(если вы никому не reply'ете)
+CHAT: чат, в которым вы это пишете
+
+`{new_msg}allowedusr handlers {current} onedit somehandler`
+
+Применить ко всем commands, handlers, tags:
+
+`{new_msg}banusr commands {current}`
+`{new_msg}allowedchat handlers onedit {current}`
+`{new_msg}banchat tags {current}`
+
+Используйте тэги чтобы применять
+команду к целым категориям:
+
+`{new_msg}allowchat tags $ {raw}{left}default admin{right}{raw}`
 """
 }

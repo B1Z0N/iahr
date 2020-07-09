@@ -118,6 +118,17 @@ async def synhelp():
                                    raw=cfg.RAW.original)
 
 
+@TextSender(take_event=False, about=local['aboutacesshelp'], tags={DEFAULT_TAG})
+async def accesshelp():
+    cfg = IahrConfig
+
+    return local['accesshelp'].format(new_msg=cfg.CMD.original,
+                                   left=cfg.LEFT.original,
+                                   right=cfg.RIGHT.original,
+                                   raw=cfg.RAW.original,
+                                   current=cfg.CUSTOM['current_entity'])
+
+
 @VoidSender('allowchat',
             about=local['aboutallowchat'],
             tags={DEFAULT_TAG, ADMIN_TAG})
