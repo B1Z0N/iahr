@@ -100,12 +100,10 @@ don't forget about your **IMAGINATION**!
     'disabled',
     'unknownactiontype':
     'Unknown type to operate on: **{}**\nMust be one of ["commands", "handlers", "tags"]',
-    'aboutallowusr':'see **{new_msg}accesshelp**',
-    'aboutallowchat':'see **{new_msg}accesshelp**',
-    'aboutbanusr':'see **{new_msg}accesshelp**',
-    'aboutbanchat':'see **{new_msg}accesshelp**',
-    'aboutallowedchat':'see **{new_msg}accesshelp**',
-    'aboutallowedusr':'see **{new_msg}accesshelp**',
+    'seeaccesshelp':
+    """
+    See **accesshelp**
+"""
     'aboutignore':
     """
     Ignore a chat when processing commands from
@@ -353,12 +351,10 @@ localization['russian'] = {
     'disabled':
     'запрещено',
     'unknownactiontype':'Неизвестны тип: **{}**\nДолжен быть один из ["commands", "handlers", "tags"]',
-    'aboutallowusr':'смотрите **accesshelp**',
-    'aboutallowchat':'смотрите **accesshelp**',
-    'aboutbanusr':'смотрите **accesshelp**',
-    'aboutbanchat':'смотрите **accesshelp**',
-    'aboutallowedchat':'смотрите **accesshelp**',
-    'aboutallowedusr':'смотрите **accesshelp**',
+    'seeaccesshelp':
+    """
+    Смотрите **accesshelp**
+""",
     'aboutignore':
     """
     Игнорировать сообщения от пользователей 

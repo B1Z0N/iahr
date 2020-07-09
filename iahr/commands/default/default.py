@@ -118,7 +118,7 @@ async def synhelp():
                                    raw=cfg.RAW.original)
 
 
-@TextSender(take_event=False, about=local['aboutacesshelp'], tags={DEFAULT_TAG})
+@TextSender(take_event=False, about=local['aboutaccesshelp'], tags={DEFAULT_TAG})
 async def accesshelp():
     cfg = IahrConfig
 
@@ -130,7 +130,7 @@ async def accesshelp():
 
 
 @VoidSender('allowchat',
-            about=local['aboutallowchat'],
+            about=local['seeaccesshelp'],
             tags={DEFAULT_TAG, ADMIN_TAG})
 async def allowchat(event, act_t, chat, *args, admintoo='False', **kwargs):
     res = await generic_access_action(event,
@@ -146,7 +146,7 @@ async def allowchat(event, act_t, chat, *args, admintoo='False', **kwargs):
 
 
 @VoidSender('banchat',
-            about=local['aboutbanchat'],
+            about=local['seeaccesshelp'],
             tags={DEFAULT_TAG, ADMIN_TAG})
 async def banchat(event, act_t, chat, *args, admintoo='False', **kwargs):
     res = await generic_access_action(event,
@@ -162,7 +162,7 @@ async def banchat(event, act_t, chat, *args, admintoo='False', **kwargs):
 
 
 @VoidSender('allowusr',
-            about=local['aboutallowusr'],
+            about=local['seeaccesshelp'],
             tags={DEFAULT_TAG, ADMIN_TAG})
 async def allowusr(event, act_t, usr, *args, admintoo='False', **kwargs):
     res = await generic_access_action(event,
@@ -178,7 +178,7 @@ async def allowusr(event, act_t, usr, *args, admintoo='False', **kwargs):
 
 
 @VoidSender('banusr',
-            about=local['aboutbanusr'],
+            about=local['seeaccesshelp'],
             tags={DEFAULT_TAG, ADMIN_TAG})
 async def banusr(event, act_t, usr, *args, admintoo='False', **kwargs):
     res = await generic_access_action(event,
@@ -193,7 +193,7 @@ async def banusr(event, act_t, usr, *args, admintoo='False', **kwargs):
         await event.message.reply(res)
 
 
-@TextSender('allowedusr', about=local['aboutallowedusr'], tags={DEFAULT_TAG})
+@TextSender('allowedusr', about=local['seeaccesshelp'], tags={DEFAULT_TAG})
 async def allowedusr(event, act_t, usr, *args, **kwargs):
     res = await generic_access_action(event,
                                       'is_allowed_usr',
@@ -209,7 +209,7 @@ async def allowedusr(event, act_t, usr, *args, **kwargs):
     return await perm_format(event, res)
 
 
-@TextSender('allowedchat', about=local['aboutallowedchat'], tags={DEFAULT_TAG})
+@TextSender('allowedchat', about=local['seeaccesshelp'], tags={DEFAULT_TAG})
 async def allowedchat(event, act_t, chat, *args, **kwargs):
     res = await generic_access_action(event,
                                       'is_allowed_chat',
