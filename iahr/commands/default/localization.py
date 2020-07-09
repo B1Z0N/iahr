@@ -103,7 +103,7 @@ don't forget about your **IMAGINATION**!
     'seeaccesshelp':
     """
     See **accesshelp**
-"""
+""",
     'aboutignore':
     """
     Ignore a chat when processing commands from
