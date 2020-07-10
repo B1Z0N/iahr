@@ -1,4 +1,32 @@
-# localization for default routines
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.3" />
+<title>iahr.commands.default.localization API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>iahr.commands.default.localization</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># localization for default routines
 from iahr.config import IahrConfig
 
 localization = {}
@@ -7,19 +35,19 @@ localization = {}
 # English
 ##################################################
 
-localization['english'] = {
-    'nosuchcmd':
-    """
+localization[&#39;english&#39;] = {
+    &#39;nosuchcmd&#39;:
+    &#34;&#34;&#34;
     No such command(try checking full list: `.commands`)
-""",
-    'nosuchtag':
-    '\n    No such tag: **{tag}**\n\n    try checking full list: `.tags`',
-    'abouthelp':
-    """
+&#34;&#34;&#34;,
+    &#39;nosuchtag&#39;:
+    &#39;\n    No such tag: **{tag}**\n\n    try checking full list: `.tags`&#39;,
+    &#39;abouthelp&#39;:
+    &#34;&#34;&#34;
     Get general info about how to start
-""",
-    'help':
-    r"""
+&#34;&#34;&#34;,
+    &#39;help&#39;:
+    r&#34;&#34;&#34;
 Hy, my name is [iahr](https://github.com/B1Z0N/iahr/). 
 
 ------------------------------------
@@ -45,10 +73,10 @@ with this tag:
 ------------------------------------
 
 Hey, **buddy**, use me tenderly and 
-don't forget about your **IMAGINATION**!
-""",
-    'aboutcommands':
-    """
+don&#39;t forget about your **IMAGINATION**!
+&#34;&#34;&#34;,
+    &#39;aboutcommands&#39;:
+    &#34;&#34;&#34;
     Get the list of all commands or info about command
 
         Commands list:
@@ -58,9 +86,9 @@ don't forget about your **IMAGINATION**!
         Info about command:
 
         `.commands commands`
-""",
-    'abouthandlers':
-    """
+&#34;&#34;&#34;,
+    &#39;abouthandlers&#39;:
+    &#34;&#34;&#34;
     Get the info about handlers.
     Handler is a reaction to some event:
 
@@ -75,15 +103,15 @@ don't forget about your **IMAGINATION**!
         Info about handlers(specify event type):
 
         `.handlers onedit [hndl1 hndl2]`
-""",
-    'handlers': {
-        'wrongordering':
-        'You can\'t pass handlers, not specifying event type first\n',
-        'nosuchtype': 'No such event type **{etype}**\n\nCheck **.handlers**!',
-        'nosuchhndl': 'No such handler, try checking full list: **.handlers**'
+&#34;&#34;&#34;,
+    &#39;handlers&#39;: {
+        &#39;wrongordering&#39;:
+        &#39;You can\&#39;t pass handlers, not specifying event type first\n&#39;,
+        &#39;nosuchtype&#39;: &#39;No such event type **{etype}**\n\nCheck **.handlers**!&#39;,
+        &#39;nosuchhndl&#39;: &#39;No such handler, try checking full list: **.handlers**&#39;
     },
-    'abouttags':
-    """
+    &#39;abouttags&#39;:
+    &#34;&#34;&#34;
     Get the list of all tags or list of commands tagged,
 
         Tags list:
@@ -93,19 +121,19 @@ don't forget about your **IMAGINATION**!
         Commands tagged with `default`:
 
         `.tags default`
-""",
-    'enabled':
-    'enabled',
-    'disabled':
-    'disabled',
-    'unknownactiontype':
-    'Unknown type to operate on: **{}**\nMust be one of ["commands", "handlers", "tags"]',
-    'seeaccesshelp':
-    """
+&#34;&#34;&#34;,
+    &#39;enabled&#39;:
+    &#39;enabled&#39;,
+    &#39;disabled&#39;:
+    &#39;disabled&#39;,
+    &#39;unknownactiontype&#39;:
+    &#39;Unknown type to operate on: **{}**\nMust be one of [&#34;commands&#34;, &#34;handlers&#34;, &#34;tags&#34;]&#39;,
+    &#39;seeaccesshelp&#39;:
+    &#34;&#34;&#34;
     See **accesshelp**
-""",
-    'aboutignore':
-    """
+&#34;&#34;&#34;,
+    &#39;aboutignore&#39;:
+    &#34;&#34;&#34;
     Ignore a chat when processing commands from
     banned users. Reduces spam level
 
@@ -120,9 +148,9 @@ don't forget about your **IMAGINATION**!
         the chat that you are writing this in:
         
         `.ignore`
-""",
-    'aboutverbose':
-    """
+&#34;&#34;&#34;,
+    &#39;aboutverbose&#39;:
+    &#34;&#34;&#34;
     Enable chat when processing commands from
     banned users. Increases spam level, but
     also increases clarity
@@ -138,18 +166,18 @@ don't forget about your **IMAGINATION**!
         the chat that you are writing this in:
         
         `.unignore`
-""",
-    'aboutsynhelp':
-    """
+&#34;&#34;&#34;,
+    &#39;aboutsynhelp&#39;:
+    &#34;&#34;&#34;
     Get help about syntax rules
-""",
-    'synhelp':
-    r"""
+&#34;&#34;&#34;,
+    &#39;synhelp&#39;:
+    r&#34;&#34;&#34;
 Hy, my name is [iahr](https://github.com/B1Z0N/iahr/). 
 
 ------------------------------------
 
-All commands start with "`{new_msg}`",
+All commands start with &#34;`{new_msg}`&#34;,
 arguments can be passed too: 
 
     `{new_msg}commands help` or `{new_msg}commands {left}help{right}`
@@ -157,7 +185,7 @@ arguments can be passed too:
 ------------------------------------
 
 Pros of using brackets is that you can 
-pass args with spaces, but don't forget 
+pass args with spaces, but don&#39;t forget 
 to escape special symbols in brackets:
 
     `{new_msg}commands {left}very weird command \\{new_msg}\\{left}\\{right}{right}`
@@ -198,30 +226,30 @@ The brackets will add up automatically:
     `{new_msg}do1 {new_msg}do2 arg1 {new_msg}do3`
         means
     `{left}{new_msg}do1 {left}{new_msg}do2 {left}arg1{right} {left}{new_msg}do3{right}{right}{right}`
-""",
-    'aboutaccesshelp':
-    """
+&#34;&#34;&#34;,
+    &#39;aboutaccesshelp&#39;:
+    &#34;&#34;&#34;
     Get help about access rights actions
-""",
-    'accesshelp':
-    r"""
+&#34;&#34;&#34;,
+    &#39;accesshelp&#39;:
+    r&#34;&#34;&#34;
 You can customize access level 
 to all your routines anytime.
 ------------------------------------
 
 1. First you need to decide which 
-command to use, start typing '{new_msg}'
+command to use, start typing &#39;{new_msg}&#39;
 2. Then select the access action 
-write one of three: 'ban', 'allow' or
-'allowed'(to find out the rights)
+write one of three: &#39;ban&#39;, &#39;allow&#39; or
+&#39;allowed&#39;(to find out the rights)
 3. Then continue and select one 
-of two: 'chat' or 'usr' entities
+of two: &#39;chat&#39; or &#39;usr&#39; entities
 
 For example: `{new_msg}allowedusr`
 Continue typing, tell what you need...
 ------------------------------------
 
-Whatever command you've chosen in
+Whatever command you&#39;ve chosen in
 the previous paragraph, the interface 
 to it is all the same.
 
@@ -247,27 +275,27 @@ Use tags to access whole categories
 of commands/handlers:
 
 `{new_msg}allowchat tags $ {raw}{left}default admin{right}{raw}`
-"""
+&#34;&#34;&#34;
 }
 
 ##################################################
 # Russian
 ##################################################
 
-localization['russian'] = {
-    'nosuchcmd':
-    """
+localization[&#39;russian&#39;] = {
+    &#39;nosuchcmd&#39;:
+    &#34;&#34;&#34;
     Нет такой команды,
     попробуйте посмотреть их список: `.commands`
-""",
-    'nosuchtag':
-    '\n    Нет такого тэга: **{tag}**\n\n    попробуйте посмотреть их список: `.tags`\n',
-    'abouthelp':
-    """
+&#34;&#34;&#34;,
+    &#39;nosuchtag&#39;:
+    &#39;\n    Нет такого тэга: **{tag}**\n\n    попробуйте посмотреть их список: `.tags`\n&#39;,
+    &#39;abouthelp&#39;:
+    &#34;&#34;&#34;
     Общая информация о том с чего начать
-""",
-    'help':
-    r"""
+&#34;&#34;&#34;,
+    &#39;help&#39;:
+    r&#34;&#34;&#34;
 Привет, меня зовут [iahr](https://github.com/B1Z0N/iahr/). 
 
 ------------------------------------
@@ -294,9 +322,9 @@ localization['russian'] = {
 
 Хей, **дружище**, используй меня нежно
 и не забывай про свое **ВООБРАЖЕНИЕ**!
-""",
-    'aboutcommands':
-    """
+&#34;&#34;&#34;,
+    &#39;aboutcommands&#39;:
+    &#34;&#34;&#34;
     Список всех команд или информация по команде
 
         Список команд:
@@ -306,9 +334,9 @@ localization['russian'] = {
         Информация по команде:
 
         `.commands commands`
-""",
-    'abouthandlers':
-    """
+&#34;&#34;&#34;,
+    &#39;abouthandlers&#39;:
+    &#34;&#34;&#34;
     Информация про хендлеры.
     Хендлер - команда, котороую нельзя
     комбинировать и использовать явно.
@@ -325,17 +353,17 @@ localization['russian'] = {
         (тип события - обязателен):
 
         `.handlers onedit [hndl1 hndl2]`
-""",
-    'handlers': {
-        'wrongordering':
-        'Нельзя передать **hndl**, не указав **etype** сначала\n',
-        'nosuchtype':
-        'Нет такого типа события **{etype}**\n\nСмотрите **.handlers**!',
-        'nosuchhndl':
-        'Нет такого хендлера **{hndl}**, смотрите весь список: **.handlers**'
+&#34;&#34;&#34;,
+    &#39;handlers&#39;: {
+        &#39;wrongordering&#39;:
+        &#39;Нельзя передать **hndl**, не указав **etype** сначала\n&#39;,
+        &#39;nosuchtype&#39;:
+        &#39;Нет такого типа события **{etype}**\n\nСмотрите **.handlers**!&#39;,
+        &#39;nosuchhndl&#39;:
+        &#39;Нет такого хендлера **{hndl}**, смотрите весь список: **.handlers**&#39;
     },
-    'abouttags':
-    """
+    &#39;abouttags&#39;:
+    &#34;&#34;&#34;
     Список тэгов или команд с этим тэгом
 
         Список тэгов:
@@ -345,19 +373,18 @@ localization['russian'] = {
         Список команд помеченых `default`:
 
         `.tags default`
-""",
-    'enabled':
-    'разрешено',
-    'disabled':
-    'запрещено',
-    'unknownactiontype':
-    'Неизвестны тип: **{}**\nДолжен быть один из ["commands", "handlers", "tags"]',
-    'seeaccesshelp':
-    """
+&#34;&#34;&#34;,
+    &#39;enabled&#39;:
+    &#39;разрешено&#39;,
+    &#39;disabled&#39;:
+    &#39;запрещено&#39;,
+    &#39;unknownactiontype&#39;:&#39;Неизвестны тип: **{}**\nДолжен быть один из [&#34;commands&#34;, &#34;handlers&#34;, &#34;tags&#34;]&#39;,
+    &#39;seeaccesshelp&#39;:
+    &#34;&#34;&#34;
     Смотрите **accesshelp**
-""",
-    'aboutignore':
-    """
+&#34;&#34;&#34;,
+    &#39;aboutignore&#39;:
+    &#34;&#34;&#34;
     Игнорировать сообщения от пользователей 
     без доступа. Уменьшает уровень спама
 
@@ -372,9 +399,9 @@ localization['russian'] = {
         этот чат:
         
         `.ignore`
-""",
-    'aboutverbose':
-    """
+&#34;&#34;&#34;,
+    &#39;aboutverbose&#39;:
+    &#34;&#34;&#34;
     Реагирвать на сообщения от пользователей 
     без доступа. Увеличивает уровень спама,
     повышает ясность
@@ -390,14 +417,14 @@ localization['russian'] = {
         этот чат:
         
         `.unignore`
-""",
-    'aboutsynhelp':
-    """
+&#34;&#34;&#34;,
+    &#39;aboutsynhelp&#39;:
+    &#34;&#34;&#34;
     Получить информацию по правилам синтаксиса
-""",
-    'synhelp':
-    r"""
-Все команды начинаются с "`{new_msg}`",
+&#34;&#34;&#34;,
+    &#39;synhelp&#39;:
+    r&#34;&#34;&#34;
+Все команды начинаются с &#34;`{new_msg}`&#34;,
 вы можете передавать аргументы: 
 
     `{new_msg}commands help` или `{new_msg}commands {left}help{right}`
@@ -446,24 +473,24 @@ localization['russian'] = {
     `{new_msg}do1 {new_msg}do2 arg1 {new_msg}do3`
         то же самое что
     `{left}{new_msg}do1 {left}{new_msg}do2 {left}arg1{right} {left}{new_msg}do3{right}{right}{right}`
-""",
-    'aboutaccesshelp':
-    """
+&#34;&#34;&#34;,
+    &#39;aboutaccesshelp&#39;:
+    &#34;&#34;&#34;
     Получить информацию по командах прав доступа
-""",
-    'accesshelp':
-    r"""
+&#34;&#34;&#34;,
+    &#39;accesshelp&#39;:
+    r&#34;&#34;&#34;
 Вы можете изменять уровень доступа
 к любым вашим командам/хендлерам.
 ------------------------------------
 
 1. Для начала нужно решить какую команду
-использовать, начните печатать '{new_msg}'
+использовать, начните печатать &#39;{new_msg}&#39;
 2. Потом выберите одно из действий: 
-'ban', 'allow' или 'allowed'
+&#39;ban&#39;, &#39;allow&#39; или &#39;allowed&#39;
 (последнее чтобы посмотреть права)
 3. Продолжайте, напечтайте одно из:
-'chat' или 'usr' сущностей 
+&#39;chat&#39; или &#39;usr&#39; сущностей 
 
 Например: `{new_msg}allowedusr`
 Продолжайте печатать что вам нужно...
@@ -482,7 +509,7 @@ localization['russian'] = {
 сущность из контекста, используя
 знак `{current}`
 USR: пользователь, которому вы отвечаете(reply),
-или вы(если вы никому не reply'ете)
+или вы(если вы никому не reply&#39;ете)
 CHAT: чат, в которым вы это пишете
 
 `{new_msg}allowedusr handlers {current} onedit somehandler`
@@ -497,5 +524,35 @@ CHAT: чат, в которым вы это пишете
 команду к целым категориям:
 
 `{new_msg}allowchat tags $ {raw}{left}default admin{right}{raw}`
-"""
-}
+&#34;&#34;&#34;
+}</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="iahr.commands.default" href="index.html">iahr.commands.default</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.3</a>.</p>
+</footer>
+</body>
+</html>

@@ -203,7 +203,7 @@ class Manager(ABCManager):
     async def exec(self, event, qstr=None):
         action = await ActionData.from_event(event)
         is_ignored = not self.is_ignored_chat(action.chatid)
-    
+
         if qstr is not None:
             return await self.exec_new_msg(event, qstr, action, is_ignored)
         else:
