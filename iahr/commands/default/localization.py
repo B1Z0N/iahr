@@ -171,14 +171,8 @@ Also there are `raw args`:
 ------------------------------------
 
 You could use keyword args:
-    allow me to run `commands` command
 
-    `{new_msg}allowusr usr=me cmd=commands`
-
-    allow ... to run all commands
-    (not tagged with `admin`)
-
-    `{new_msg}allowusr [usr=wery weird user with = sign]`
+    `{new_msg}cmd kwarg1=val1 kwarg2=val2`
 
 Or even like this:
 
@@ -421,13 +415,7 @@ localization['russian'] = {
 ------------------------------------
 
 Вы можете использовать именованые аргументы:
-    разрешить себе использовать команду `commands`
-
-    `{new_msg}allowusr usr=me cmd=commands`
-
-    разрешить ... использовать все команды(не тэгнутые admin)
-
-    `{new_msg}allowusr [usr=ochen stranniy polsovatel s znAkom =]`
+    `{new_msg}cmd kwarg1=val1 kwarg2=val2`
 
 Или даже так:
 
@@ -436,7 +424,7 @@ localization['russian'] = {
 ------------------------------------
 
 И самое важное, вы можете
-обьединат команды в цепочку,
+обьединять команды в цепочку,
 если она поддерживают друг друга:
 
     `{new_msg}do1 {left}{new_msg}do2 {left}arg1{right}{right} {left}{new_msg}do3{right}`
