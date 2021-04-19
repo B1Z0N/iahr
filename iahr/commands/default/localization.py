@@ -111,15 +111,15 @@ don't forget about your **IMAGINATION**!
 
         by chatname or id all commands:
         
-        `.ignore chatname`
+        `.errignore chatname`
         
         all chats:
         
-        `.ignore *`
+        `.errignore *`
         
         the chat that you are writing this in:
         
-        `.ignore`
+        `.errignore`
 """,
     'aboutverbose':
     """
@@ -129,15 +129,15 @@ don't forget about your **IMAGINATION**!
 
         by chatname or id all commands:
         
-        `.unignore chatname`
+        `.errverbose chatname`
         
         all chats:
         
-        `.unignore *`
+        `.errverbose *`
         
         the chat that you are writing this in:
         
-        `.unignore`
+        `.errverbose`
 """,
     'aboutsynhelp':
     """
@@ -357,15 +357,15 @@ localization['russian'] = {
 
         по логину или по id чата:
         
-        `.ignore chatname`
+        `.errignore chatname`
         
         все чаты:
         
-        `.ignore *`
+        `.errignore *`
         
         этот чат:
         
-        `.ignore`
+        `.errignore $`
 """,
     'aboutverbose':
     """
@@ -375,15 +375,15 @@ localization['russian'] = {
 
         по логину или по id чата:
         
-        `.unignore chatname`
+        `.errverbose chatname`
         
         все чаты:
         
-        `.unignore *`
+        `.errverbose *`
         
         этот чат:
         
-        `.unignore`
+        `.errverbose $`
 """,
     'aboutsynhelp':
     """

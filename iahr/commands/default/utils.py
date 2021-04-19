@@ -2,7 +2,7 @@ from telethon import events
 
 from iahr.config import IahrConfig
 from iahr.commands.default.localization import localization
-from iahr.utils import AccessList
+from iahr.utils import AccessList, EventService
 
 from typing import Union, Mapping, Sequence
 
@@ -56,23 +56,6 @@ async def __process_entities(event, entities: str):
 __is_integer = lambda x: str(x).lstrip('-').isdigit()
 
 to_bool = lambda bstr: str(bstr).lower() in ['true', 'yes', 'y']
-
-
-async def usr_from_event(event):
-    reply = await event.message.get_reply_message()
-    me = await AccessList.check_me(event.client)
-    if reply is None:
-        res = int(event.message.from_id)
-    else:
-        res = int(reply.from_id)
-    return me(res)
-
-
-async def chat_from_event(event):
-    me = await AccessList.check_me(event.client)
-    chat = await event.message.get_chat()
-    return me(chat.id)
-
 
 # backend for .{allow|ban|allowed}{chat|usr} commands
 async def commands_access_action(event,
@@ -148,6 +131,8 @@ async def tags_access_action(event,
                              entity,
                              tag=None,
                              admintoo=False):
+
+    print(event, action, entity, tag, admintoo, sep='\n')
     app = IahrConfig.APP
     entities = await __process_entities(event, entity)
 
@@ -158,18 +143,25 @@ async def tags_access_action(event,
         tags = process_list(tag)
 
     entres = {}
+    admin_commands = set(app.tags[ADMIN_TAG].keys())    
+    print(admin_commands)
     for ent in entities:
         tagres = {}
         for tag in tags:
-            applies = tag != ADMIN_TAG or not all_tags or admintoo
-            dct = app.tags.get(tag)
-            if dct is None:
-                tagres[tag] = False
+            if (tag == ADMIN_TAG and all_tags) and not admintoo:
                 continue
-            tagres[tag] = True
-            for name, routine in dct.items():
-                tagres[tag] = tagres[tag] and getattr(routine, action)(ent)
+            elif (dct := app.tags.get(tag)) is None:
+                tagres[tag] = False
+            else:
+                tagres[tag] = True
+                for name, routine in dct.items():
+                    if name in admin_commands and tag != ADMIN_TAG:
+                        continue
+                    tagres[tag] = getattr(routine, action)(ent) and tagres[tag]
         entres[ent] = tagres
+
+    import pprint
+    pprint.PrettyPrinter(indent=4).pprint(entres)
     return entres
 
 
@@ -193,9 +185,10 @@ async def generic_access_action(event, action, action_type, ent, *args,
                                 **kwargs):
     if ent == IahrConfig.CUSTOM['current_entity']:
         if action.endswith('chat'):
-            ent = await chat_from_event(event)
+            ent = await EventService.chatid_from(event)
         elif action.endswith('usr'):
-            ent = await usr_from_event(event)
+            ent = await EventService.userid_from(event, deduce=True)
+
 
     if action_type == 'commands':
         return await commands_access_action(event, action, ent, *args,
@@ -214,7 +207,7 @@ async def ignore_action(event, chat, action):
     action = getattr(app, action)
 
     if chat == IahrConfig.CUSTOM['current_entity']:
-        chat = await chat_from_event(event)
+        chat = await EventService.chatid_from(event)
         action(chat)
         return
 

@@ -2,6 +2,7 @@ from telethon import events
 
 from iahr.utils import Delimiter, CommandDelimiter
 from iahr.utils import parenthesize, Delayed, SingletonMeta
+from iahr.exception import IahrBaseError
 from iahr import localization
 
 import re, logging, json, os
@@ -24,7 +25,7 @@ LOG_FNAME = 'iahr.log'
 ##################################################
 
 
-class IahrConfigError(RuntimeError):
+class IahrConfigError(IahrBaseError):
     """
         Base exception class for this module
     """
@@ -148,7 +149,7 @@ def update_add_pars(left, right, cmd, raw):
     return parenthesize(left, right, cmd, raw)
 
 
-def update_logger(fmt, datefmt, out):
+def update_logger(fmt, datefmt, out, lvl: str = None):
     if out in (sys.stdout, sys.stderr):
         handler_cls = logging.StreamHandler
     elif type(out) == str:
@@ -157,8 +158,10 @@ def update_logger(fmt, datefmt, out):
         raise RuntimeError(
             "out should be one of this: sys.stdout, sys.stdin, `filename`")
 
+    lvl = getattr(logging, str(lvl), logging.INFO)
+
     logger = logging.getLogger('iahr')
-    logger.setLevel(logging.INFO)
+    logger.setLevel(lvl)
     formatter = logging.Formatter(fmt, datefmt)
     handler = handler_cls(out)
     handler.setFormatter(formatter)
@@ -208,10 +211,10 @@ def config(left=None,
            others=None,
            log_format=None,
            log_datetime_format=None,
+           log_lvl=None,
            local=None,
            data_folder=None,
-           custom=None,
-           mode=None):
+           custom=None):
     """
         Single entry to framework configuration, 
         just run this with some of updated values and 
@@ -232,7 +235,7 @@ def config(left=None,
                 log_datetime_format=log_datetime_format,
                 data_folder=data_folder,
                 custom=custom,
-                mode=mode)
+                log_lvl=log_lvl)
 
     os.makedirs(cfg.DATA_FOLDER, exist_ok=True)
     cfg.SESSION_FNAME = os.path.join(cfg.DATA_FOLDER, SESSION_FNAME)
@@ -241,7 +244,7 @@ def config(left=None,
     cfg.COMMAND_RE = update_command_re(cfg.CMD)
     cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.CMD, cfg.RAW)
     cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT,
-                               cfg.LOG_OUT)
+                               cfg.LOG_OUT, cfg.LOG_LVL)
 
 
 def reset():
@@ -253,8 +256,8 @@ def reset():
 
     log_format = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
     log_datetime_format = '%m/%d/%Y %I:%M:%S %p'
-    IahrConfig.LOGGER = update_logger(log_format, log_datetime_format,
-                                      sys.stdout)
+    log_lvl = 'INFO'
+    IahrConfig.LOGGER = update_logger(log_format, log_datetime_format, sys.stdout, log_lvl)
 
     config(
         left='[',
@@ -269,14 +272,14 @@ def reset():
         others='*',
         log_format=log_format,
         log_datetime_format=log_datetime_format,
+        log_lvl=log_lvl,
         local='english',
         data_folder=DATA_FOLDER,
         custom={  # custom user config dictionary
             # entity to deduce user of chat in access rights actions
             # (e.g. `allowchat`, `banusr`)
-            'current_entity': '$'
-        },
-        mode='RELEASE')
+            'current_entity': '$',
+        })
 
 
 ##################################################

@@ -104,7 +104,7 @@ async def ignore_chat(event, chat):
 @VoidSender('errverbose',
             about=local['aboutverbose'],
             tags={DEFAULT_TAG, ADMIN_TAG})
-async def unignore_chat(event, chat):
+async def errverbose_chat(event, chat):
     await ignore_action(event, chat, 'verbose_chat')
 
 

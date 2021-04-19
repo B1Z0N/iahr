@@ -1,10 +1,12 @@
 from telethon import events
 
 from iahr import run
-from iahr.utils import Delimiter, CommandDelimiter, ev_to_type, ev_prefix
+from iahr.utils import Delimiter, CommandDelimiter, EventService
 from iahr.config import IahrConfig
+from iahr.reg.senders import ReadonlyEventError
 
 import re
+import traceback
 from abc import ABC, abstractmethod
 
 
@@ -47,8 +49,8 @@ class Register(ABCRegister):
             Generic command registering
         """
         IahrConfig.LOGGER.info(f'registering:name={name}:about={about}')
-        etype = ev_to_type(etype)
-        name = ev_prefix(name) + name
+        etype = EventService.to_type(etype)
+        name = EventService.prefix(name) + name
 
         self.app.add(name, handler, about, etype, tags)
 
@@ -86,14 +88,14 @@ class Register(ABCRegister):
                     await event.reply(
                         IahrConfig.LOCAL['Incompatible commands'].format(
                             e.args[0]))
-                    if IahrConfig.MODE == 'DEBUG':
-                        traceback.print_exc()
+                    IahrConfig.LOGGER.debug(traceback.print_exc())
+                except ReadonlyEventError as e:
+                    IahrConfig.LOGGER.debug(e)
                 else:
                     await sender.send()
         except Exception as e:
             IahrConfig.LOGGER.error('exception', exc_info=True)
-            if IahrConfig.MODE == 'DEBUG':
-                traceback.print_exc()
+            IahrConfig.LOGGER.debug(traceback.print_exc())
 
     async def run_others(self, event):
         try:

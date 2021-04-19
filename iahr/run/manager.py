@@ -165,7 +165,7 @@ class ABCManager(ABC):
     ##################################################
 
     def is_ignored_chat(self, chat: str):
-        return self.chatlist.is_allowed(chat)
+        return not self.chatlist.is_allowed(chat)
 
     def verbose_chat(self, chat: str):
         return self.chatlist.allow(chat)
@@ -202,7 +202,8 @@ class Manager(ABCManager):
 
     async def exec(self, event, qstr=None):
         action = await ActionData.from_event(event)
-        is_ignored = not self.is_ignored_chat(action.chatid)
+        IahrConfig.LOGGER.debug(f'full event info:event={event}:action={action}')
+        is_ignored = self.is_ignored_chat(action.chatid)
 
         if qstr is not None:
             return await self.exec_new_msg(event, qstr, action, is_ignored)

@@ -1,6 +1,9 @@
 from telethon import events
 
+from iahr.exception import IahrBaseError
+
 from dataclasses import dataclass
+from typing import Optional
 import re, json, inspect
 
 
@@ -84,7 +87,7 @@ class SingletonMeta(type):
         return self._instance
 
 
-class ParseError(Exception):
+class ParseError(IahrBaseError):
     def __init__(self, s):
         super().__init__(IahrConfig.LOCAL['ParseError'].format(s))
 
@@ -287,6 +290,58 @@ class Tokenizer:
 from iahr.config import IahrConfig
 
 
+class EventService:
+    @staticmethod
+    async def check_me(client):
+        me = await client.get_me()
+        myid = me.id
+
+        def check(eid):
+            return IahrConfig.ME if eid == myid else eid
+
+        return check
+
+    @classmethod
+    async def userid_from(cls, event, deduce=False) -> Optional[int]:
+        me = await cls.check_me(event.client)
+        if deduce is True and (reply := await event.message.get_reply_message()) is not None:
+            IahrConfig.LOGGER.debug(f'getting reply:reply={reply}')
+            res = int(reply.peer_id.user_id)
+        elif (author := event.message.from_id) is not None:
+            IahrConfig.LOGGER.debug(f'getting message author:message={event.message}:author={author}')
+            res = int(author.user_id)
+        else:
+            return
+
+        return me(res)
+
+    @classmethod
+    async def chatid_from(cls, event) -> int:
+        me = await cls.check_me(event.client)
+        chat = await event.message.get_chat()
+        return me(chat.id)
+
+    @staticmethod
+    def to_type(event) -> str:
+        """
+            Return type of this event. 
+            event - type or instance of an event
+        """
+        if not isinstance(event, type):
+            return type(event)
+        return event
+
+    @staticmethod
+    def prefix(etype: str) -> str:
+        """
+            Get prefix to different types of events
+        """
+        etype = EventService.to_type(etype)
+        pr = IahrConfig.PREFIXES.get(etype)
+        return '' if pr is None else pr
+
+
+
 class AccessList:
     """
         Users and groups access manager
@@ -295,25 +350,21 @@ class AccessList:
 
     @classmethod
     def is_special(cls, ent):
-        return ent in (IahrConfig.OTHERS, IahrConfig.ME)
+        return ent in (IahrConfig.ME, IahrConfig.OTHERS)
 
     def __init__(self, allow_others=False, allow_selfact=False):
-
-        self.whitelist = set()
-        self.blacklist = set()
+        self.whitelist, self.blacklist = set(), set()
         self.allow_others = allow_others
         self.selfact = {'allow': allow_selfact, 'selfban': False}
 
     def allow(self, entity: str):
         if entity == IahrConfig.ME:
             if self.selfact['allow']:
-                self.selfact['selfban'] = True
+                self.selfact['selfban'] = False
             return
 
         if entity == IahrConfig.OTHERS:
-            self.whitelist = set()
-            self.blacklist = set()
-            self.allow_others = True
+            self.whitelist, self.blacklist, self.allow_others = set(), set(), True
         elif self.allow_others is False:
             self.whitelist.add(entity)
         elif entity in self.blacklist:
@@ -326,8 +377,7 @@ class AccessList:
             return
 
         if entity == IahrConfig.OTHERS:
-            self.whitelist = self.blacklist = set()
-            self.allow_others = False
+            self.whitelist, self.blacklist, self.allow_others = set(), set(), False
         elif self.allow_others is True:
             self.blacklist.add(entity)
         elif entity in self.whitelist:
@@ -346,16 +396,6 @@ class AccessList:
     def __repr__(self):
         return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {}, selfact: {})'\
                 .format(self.whitelist, self.blacklist, self.allow_others, self.selfact)
-
-    @classmethod
-    async def check_me(cls, client):
-        me = await client.get_me()
-        myid = me.id
-
-        def check(eid):
-            return IahrConfig.ME if eid == myid else eid
-
-        return check
 
     class ALEncoder(json.JSONEncoder):
         def default(self, obj):
@@ -381,12 +421,24 @@ class AccessList:
         def object_hook(self, dct):
             if 'AccessList' in dct:
                 alst, dct = AccessList(), dct['AccessList']
-                alst.allow_others = dct['others']
-                alst.selfact = dct['selfact']
-                alst.whitelist = set(dct['whitelist'])
-                alst.blacklist = set(dct['blacklist'])
+                alst.allow_others, alst.selfact = dct['others'], dct['selfact']
+                alst.whitelist, alst.blacklist = set(dct['whitelist']), set(dct['blacklist'])
                 return alst
             return dct
+
+
+class UnsupportedEventError(IahrBaseError):
+    MESSAGE_EVENTS = {etype.Event for etype in [events.NewMessage, events.MessageEdited]}
+    OTHER_EVENTS = {etype.Event for etype in [events.MessageRead, events.MessageDeleted]}
+    SUPPORTED_EVENTS = MESSAGE_EVENTS.union(OTHER_EVENTS)
+
+    def __init__(self, etype: str):
+        super().__init__(f'Unsupported event type: {etype}, try one of these: {self.SUPPORTED_EVENTS}')
+    
+    @classmethod
+    def check(cls, event):
+        if (etype := type(event)) not in cls.SUPPORTED_EVENTS:
+            raise cls(etype)
 
 
 @dataclass
@@ -395,33 +447,15 @@ class ActionData:
         Contains event and shortcut info about it's author
     """
     event: events.common.EventCommon
-    uid: int
+    uid: Optional[int]
     chatid: int
-
-    MESSAGE_T = {
-        etype.Event
-        for etype in [
-            events.NewMessage, events.MessageDeleted, events.MessageEdited,
-            events.MessageRead
-        ]
-    }
-
-    OTHER_T = {}
 
     @classmethod
     async def from_event(cls, event):
-        me = await AccessList.check_me(event.client)
-        cid = me((await event.get_chat()).id)
-        etype = type(event)
+        cid = await EventService.chatid_from(event)
+        uid = await EventService.userid_from(event)
 
-        if etype in cls.MESSAGE_T:
-            print(event)
-            uid = me(event.message.from_id)
-        elif etype in cls.OTHER_T:
-            # no definition of user, just pass `me`
-            uid = IahrConfig.ME
-        else:
-            raise RuntimeError('Event type `{etype}` is currently unsupported')
+        UnsupportedEventError.check(event)
 
         return cls(event, uid, cid)
 
@@ -451,22 +485,3 @@ def argstr(fun, remove_event=True):
         res += ' **' + spec.varkw
 
     return res
-
-
-def ev_to_type(event):
-    """
-        Return type of this event. 
-        event - type or instance of an event
-    """
-    if not isinstance(event, type):
-        return type(event)
-    return event
-
-
-def ev_prefix(etype):
-    """
-        Get prefix to different types of events
-    """
-    etype = ev_to_type(etype)
-    pr = IahrConfig.PREFIXES.get(etype)
-    return '' if pr is None else pr

@@ -1,12 +1,13 @@
 from iahr.utils import AccessList, ActionData, Delimiter, CommandDelimiter
 from iahr.utils import Tokenizer, parenthesize, ParseError
 from iahr.config import IahrConfig
+from iahr.exception import IahrBaseError
 
 import re
 from typing import Callable
 
 
-class ExecutionError(RuntimeError):
+class ExecutionError(IahrBaseError):
     """
         Raise when next sender doesn't accept args from previous one
         or when wrong arguments were passed to the command
@@ -156,6 +157,7 @@ class Routine:
 
     def allow_usr(self, usr: str):
         self.usraccess.allow(usr)
+        print(usr, self.usraccess)
 
     def ban_usr(self, usr: str):
         self.usraccess.ban(usr)
@@ -180,8 +182,7 @@ class Routine:
             return
 
         if not self.is_allowed_chat(chat) or not self.is_allowed_usr(usr):
-            if not (self.chataccess.is_self(usr)
-                    and self.usraccess.is_self(usr)):
+            if not (self.chataccess.is_self(usr) and self.usraccess.is_self(usr)):
                 return
 
         return self.handler
