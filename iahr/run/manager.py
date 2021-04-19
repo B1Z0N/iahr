@@ -223,9 +223,10 @@ class Manager(ABCManager):
         prefix = IahrConfig.PREFIXES[getattr(events, etype)]
         handlers = self.handlers[prefix]
 
-        for handler, routine in handlers.items():
+        for name, routine in handlers.items():
             handler = routine.get_handler(action.uid, action.chatid)
             if handler is None:
+                IahrConfig.LOGGER.debug(f'skipping handler:handler={name}')
                 continue
 
             sender = await handler(event)

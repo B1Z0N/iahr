@@ -178,8 +178,7 @@ class Routine:
         """
             Try to get handler if allowed
         """
-        if usr is None or chat is None:
-            return
+        IahrConfig.LOGGER.debug(f'getting handler:usr={usr}:chat={chat}')
 
         if not self.is_allowed_chat(chat) or not self.is_allowed_usr(usr):
             if not (self.chataccess.is_self(usr) and self.usraccess.is_self(usr)):

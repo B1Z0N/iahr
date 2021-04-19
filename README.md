@@ -304,17 +304,17 @@ To run a command both user and chat need to be allowed to run this command(excep
 
         by chatname or id all commands:
         
-        `.ignore chatname`
+        `.errignore chatname`
         
         all chats:
         
-        `.ignore *`
+        `.errignore *`
         
         the chat that you are writing this in:
         
-        `.ignore`
+        `.errignore`
 ```
-* `unignore`
+* `errverbose`
 ```
     Enable chat when processing commands from
     banned users. Increases spam level, but
@@ -322,15 +322,15 @@ To run a command both user and chat need to be allowed to run this command(excep
 
         by chatname or id all commands:
         
-        `.unignore chatname`
+        `.errverbose chatname`
         
         all chats:
         
-        `.unignore *`
+        `.errverbose *`
         
         the chat that you are writing this in:
         
-        `.unignore`
+        `.errverbose`
 ```
 
 # How to customize

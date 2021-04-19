@@ -1,6 +1,6 @@
 from iahr.utils import Delimiter, CommandDelimiter, \
-Delayed, SingletonMeta, parenthesize, Tokenizer, AccessList,\
-ActionData, ParseError, ev_to_type, ev_prefix
+Delayed, SingletonMeta, parenthesize, Tokenizer, EventService, AccessList,\
+ActionData, ParseError
 
 from iahr.config import IahrConfig
 
@@ -141,8 +141,8 @@ class TestAccessList:
 
 #    @pytest.mark.asyncio
 #    async def test_check_me(self, client1, client2):
-#        check_me1 = await AccessList.check_me(client1)
-#        check_me2 = await AccessList.check_me(client2)
+#        check_me1 = await EventService.check_me(client1)
+#        check_me2 = await EventService.check_me(client2)
 #        me1 = await client1.get_me()
 #        me2 = await client2.get_me()
 
@@ -261,26 +261,16 @@ def test_tokenizer_parse_error(tokenize, input):
         tokenize(input)
 
 
-def ev_to_type(event):
-    """
-        Return type of this event. 
-        event - type or instance of an event
-    """
-    if not isinstance(event, type):
-        return type(event)
-    return event
-
-
 def test_ev_to_type():
     for etype in IahrConfig.PREFIXES.keys():
-        assert ev_to_type(etype) == etype
-        assert ev_to_type(etype()) == etype
+        assert EventService.to_type(etype) == etype
+        assert EventService.to_type(etype()) == etype
 
 
 def test_ev_prefix():
     for etype in IahrConfig.PREFIXES.keys():
         res = IahrConfig.PREFIXES.get(etype)
-        assert ev_prefix(etype) == res
-        assert ev_prefix(etype()) == res
+        assert EventService.prefix(etype) == res
+        assert EventService.prefix(etype()) == res
 
-    assert ev_prefix('lol') == ''
+    assert EventService.prefix('lol') == ''

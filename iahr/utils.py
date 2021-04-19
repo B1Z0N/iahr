@@ -1,4 +1,5 @@
 from telethon import events
+from telethon.tl.types import PeerUser
 
 from iahr.exception import IahrBaseError
 
@@ -304,14 +305,16 @@ class EventService:
     @classmethod
     async def userid_from(cls, event, deduce=False) -> Optional[int]:
         me = await cls.check_me(event.client)
+
         if deduce is True and (reply := await event.message.get_reply_message()) is not None:
             IahrConfig.LOGGER.debug(f'getting reply:reply={reply}')
             res = int(reply.peer_id.user_id)
-        elif (author := event.message.from_id) is not None:
+        elif (author := event.message.from_id) is not None or (author := event.message.peer_id) is not None:
             IahrConfig.LOGGER.debug(f'getting message author:message={event.message}:author={author}')
-            res = int(author.user_id)
-        else:
-            return
+            if isinstance(author, PeerUser):
+                res = int(author.user_id)
+            else: res = IahrConfig.NOONE
+        else: res = IahrConfig.NOONE
 
         return me(res)
 
@@ -350,17 +353,20 @@ class AccessList:
 
     @classmethod
     def is_special(cls, ent):
-        return ent in (IahrConfig.ME, IahrConfig.OTHERS)
+        return ent in (IahrConfig.ME, IahrConfig.OTHERS, IahrConfig.NOONE)
 
-    def __init__(self, allow_others=False, allow_selfact=False):
+    def __init__(self, allow_others=False, allow_noone=False, allow_selfact=False):
         self.whitelist, self.blacklist = set(), set()
-        self.allow_others = allow_others
+        self.allow_others, self.allow_noone = allow_others, allow_noone
         self.selfact = {'allow': allow_selfact, 'selfban': False}
 
     def allow(self, entity: str):
         if entity == IahrConfig.ME:
             if self.selfact['allow']:
                 self.selfact['selfban'] = False
+            return
+        elif entity == IahrConfig.NOONE:
+            self.allow_noone = True
             return
 
         if entity == IahrConfig.OTHERS:
@@ -375,6 +381,9 @@ class AccessList:
             if self.selfact['allow']:
                 self.selfact['selfban'] = True
             return
+        elif entity == IahrConfig.NOONE:
+            self.allow_noone = False
+            return
 
         if entity == IahrConfig.OTHERS:
             self.whitelist, self.blacklist, self.allow_others = set(), set(), False
@@ -386,6 +395,8 @@ class AccessList:
     def is_allowed(self, entity: str):
         if entity == IahrConfig.ME:
             return not self.selfact['selfban']
+        elif entity == IahrConfig.NOONE:
+            return self.allow_noone
 
         return (self.allow_others and entity not in self.blacklist)\
                 or (not self.allow_others and entity in self.whitelist)
@@ -394,8 +405,8 @@ class AccessList:
         return entity == IahrConfig.ME and not self.selfact['selfban']
 
     def __repr__(self):
-        return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {}, selfact: {})'\
-                .format(self.whitelist, self.blacklist, self.allow_others, self.selfact)
+        return 'AccessList(whitelist: {}, blacklist: {}, allow_others: {}, allow_noone: {}, selfact: {})'\
+                .format(self.whitelist, self.blacklist, self.allow_others, self.allow_noone, self.selfact)
 
     class ALEncoder(json.JSONEncoder):
         def default(self, obj):
@@ -403,6 +414,7 @@ class AccessList:
                 return {
                     'AccessList': {
                         'others': obj.allow_others,
+                        'noone': obj.allow_noone,
                         'selfact': obj.selfact,
                         'whitelist': list(obj.whitelist),
                         'blacklist': list(obj.blacklist),
@@ -421,7 +433,7 @@ class AccessList:
         def object_hook(self, dct):
             if 'AccessList' in dct:
                 alst, dct = AccessList(), dct['AccessList']
-                alst.allow_others, alst.selfact = dct['others'], dct['selfact']
+                alst.allow_others, alst.allow_noone, alst.selfact = dct['others'], dct['noone'], dct['selfact']
                 alst.whitelist, alst.blacklist = set(dct['whitelist']), set(dct['blacklist'])
                 return alst
             return dct
@@ -452,10 +464,10 @@ class ActionData:
 
     @classmethod
     async def from_event(cls, event):
+        UnsupportedEventError.check(event)
+
         cid = await EventService.chatid_from(event)
         uid = await EventService.userid_from(event)
-
-        UnsupportedEventError.check(event)
 
         return cls(event, uid, cid)
 

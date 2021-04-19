@@ -189,7 +189,6 @@ async def generic_access_action(event, action, action_type, ent, *args,
         elif action.endswith('usr'):
             ent = await EventService.userid_from(event, deduce=True)
 
-
     if action_type == 'commands':
         return await commands_access_action(event, action, ent, *args,
                                             **kwargs)
@@ -211,6 +210,6 @@ async def ignore_action(event, chat, action):
         action(chat)
         return
 
-    chats = await __process_entities(event, chat)
+    chats = __process_entities(chat)
     for chat in chats:
         action(chat)

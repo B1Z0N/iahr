@@ -3,7 +3,6 @@ from telethon import events
 from iahr import run
 from iahr.utils import Delimiter, CommandDelimiter, EventService
 from iahr.config import IahrConfig
-from iahr.reg.senders import ReadonlyEventError
 
 import re
 import traceback
@@ -89,8 +88,6 @@ class Register(ABCRegister):
                         IahrConfig.LOCAL['Incompatible commands'].format(
                             e.args[0]))
                     IahrConfig.LOGGER.debug(traceback.print_exc())
-                except ReadonlyEventError as e:
-                    IahrConfig.LOGGER.debug(e)
                 else:
                     await sender.send()
         except Exception as e:
@@ -102,5 +99,4 @@ class Register(ABCRegister):
             await self.app.exec(event)
         except Exception as e:
             IahrConfig.LOGGER.error('exception', exc_info=True)
-            if IahrConfig.MODE == 'DEBUG':
-                traceback.print_exc()
+            IahrConfig.LOGGER.debug(traceback.print_exc())

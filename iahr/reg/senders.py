@@ -10,11 +10,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 
-class ReadonlyEventError(IahrBaseError):
-    def __init__(self, event):
-        super().__init__("Can't react because this event is readonly: {event}")
-
-
 @dataclass
 class MultiArgs:
     """
@@ -36,20 +31,19 @@ class ABCSender(ABC):
         whether it's sending to chat or serves as input to other
         command.
     """
-    def __init__(self, fun, pass_event=True, multiret=False, readonly=False):
+    def __init__(self, fun, pass_event=True, multiret=False):
         """
             1. fun - actual handler
             2. pass_event - pass or not to pass event to fun when calling 
             3. multiret - surround func return with MultiArgs
-            4. readonly - will function be reacting to events or just read them
         """
         self.fun = fun
-        self.pass_event, self.multiret, self.readonly = pass_event, multiret, readonly
+        self.pass_event, self.multiret = pass_event, multiret
         self.event, self.res = None, None
 
     def __str__(self):
-        return '{{ fun: {}, passevent: {}, multiret: {}, readonly: {}, res: {} }}'.format(
-            self.fun, self.pass_event, self.multiret, self.readonly, self.res)
+        return '{{ fun: {}, passevent: {}, multiret: {}, res: {} }}'.format(
+            self.fun, self.pass_event, self.multiret, self.res)
 
     @abstractmethod
     async def send(self):
@@ -68,9 +62,6 @@ class ABCSender(ABC):
         """
         self.event = event
 
-        if not self.readonly and await EventService.userid_from(event) is None:
-            raise IahrReadonlyEventError(event)
-
         if self.pass_event:
             self.res = await self.fun(event, *args, **kwargs)
         else:
@@ -85,7 +76,7 @@ class ABCSender(ABC):
 
     def __repr__(self):
         clsname = self.__class__.__name__
-        return f'{clsname}(pass_event:{self.pass_event}, multiret:{self.multiret}, readonly:{self.readonly}, res:{self.res})'
+        return f'{clsname}(pass_event:{self.pass_event}, multiret:{self.multiret}, res:{self.res})'
 
 
 def create_sender(name, sendf):
@@ -99,7 +90,6 @@ def create_sender(name, sendf):
                          take_event=True,
                          multiret=False,
                          on_event=None,
-                         readonly=False,
                          tags=None):
         """
             Parameterized decorator based on command name and it's description
@@ -121,7 +111,7 @@ def create_sender(name, sendf):
             on_event = events.NewMessage if on_event is None else on_event
             tags = set() if tags is None else set(tags)
 
-            wrapped = wraps(handler)(Sender(handler, take_event, multiret, readonly))
+            wrapped = wraps(handler)(Sender(handler, take_event, multiret))
 
             about = '' if about is None else about
             about = '`{}`\n{}'.format(
