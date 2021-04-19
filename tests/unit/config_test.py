@@ -29,12 +29,13 @@ def test_config():
         prefixes=PREFIXES,
         me='my',
         others='/',
+        noone='*',
         log_format='%(name)s',
         log_datetime_format='%m',
+        log_lvl='DEBUG',
         local='russian',
         data_folder='folder',
-        custom={'current_entity': '_'},
-        mode='DEBUG')
+        custom={'current_entity': '_'})
 
     assert icfg.LEFT.original == '{'
     assert icfg.RIGHT.original == '}'
@@ -45,6 +46,7 @@ def test_config():
         zip(TRUE_PREFIXES.values(), TRUE_PREFIXES.keys()))
     assert icfg.ME == 'my'
     assert icfg.OTHERS == '/'
+    assert icfg.NOONE == '*'
     assert icfg.LOG_FORMAT == '%(name)s'
     assert icfg.LOG_DATETIME_FORMAT == '%m'
     assert icfg.COMMAND_RE == config.update_command_re(icfg.CMD)
@@ -55,7 +57,7 @@ def test_config():
 
     assert icfg.LOGGER == config.update_logger(icfg.LOG_FORMAT,
                                                icfg.LOG_DATETIME_FORMAT,
-                                               icfg.LOG_OUT)
+                                               icfg.LOG_OUT, icfg.LOG_LVL)
     assert prev_add_pars != icfg.ADD_PARS
 
     config.reset()
