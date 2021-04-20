@@ -5,10 +5,10 @@ trap "/bin/kill -s TERM -1" SIGTERM SIGQUIT
 
 case "$1" in
     '' | 'exmpl')
-        (cp .env exmpl && cd exmpl && ./start.sh)
+        (cp .env exmpl && cd exmpl && python3 main.py)
     ;;
     'tests')
-        (cp .env tests && cd tests && ./start.sh)
+        (cp .env tests && python3 -m pytest ./tests)
     ;;
     *) exec "${@}" ;;
 esac

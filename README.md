@@ -51,17 +51,13 @@ cp .env_exmpl .env
 
 # fulfill .env with your data
 # ...
-# build container
-
-docker build . --tag iahr
-
 # run exmpl(as a daemon)
 
-docker run -v "$(pwd)"/exmpl:/opt/app/exmpl -it iahr exmpl
+docker-compose up iahr_exmpl
 
 # run tests(optional)
 
-docker run -v "$(pwd)"/tests:/opt/app/tests -it iahr tests
+docker-compose up iahr_tests
 ```
 
 P. S. try adding sudo if something is faulty

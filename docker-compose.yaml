@@ -1,0 +1,27 @@
+version: "3"    
+
+services:
+    iahr_exmpl:
+        build: .
+        restart: always
+        network_mode: host
+        stdin_open: true # docker run -i
+        tty: true        # docker run -t
+        volumes:
+            - ./exmpl:/opt/app/exmpl
+            - ./iahr:/opt/app/iahr
+            - ./scripts:/opt/app/scripts
+        container_name: iahr_exmpl
+        command: exmpl
+    iahr_tests:
+        build: .
+        restart: always
+        network_mode: host
+        stdin_open: true # docker run -i
+        tty: true        # docker run -t
+        volumes:
+            - ./tests:/opt/app/tests
+            - ./iahr:/opt/app/iahr
+            - ./scripts:/opt/app/scripts
+        container_name: iahr_tests
+        command: tests
