@@ -12,7 +12,6 @@ from iahr import init  # iahr
 
 
 def make_client():
-    global TG_API_ID, TG_API_HASH, TG_SESSION_PATH
     client = TelegramClient(TG_SESSION_PATH, TG_API_ID, TG_API_HASH)
     client.parse_mode = 'markdown'
     return client
