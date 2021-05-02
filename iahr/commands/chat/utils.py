@@ -1,8 +1,8 @@
 from telethon import events, tl
 
 from iahr.config import IahrConfig
-from iahr.commands.chat.localization import localization
 from iahr.utils import AccessList, EventService
+from .localization import localization
 
 from typing import Union, Mapping, Sequence
 

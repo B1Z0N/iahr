@@ -8,10 +8,15 @@ localization = {}
 ##################################################
 
 localization['english'] = {
-    'tagall': {
-        'about' : 'Tag all participants in a chat',
-        'toomuch' : 'Too much participants, should be no more than {}'
-    }
+    'aboutcrop': """
+    Crop audio track.
+""",
+    'aboutreverse': """
+    Reverse an audio track
+""",
+    'aboutdistort': """
+    Distort an audio track
+""",
 }
 
 ##################################################
@@ -19,8 +24,13 @@ localization['english'] = {
 ##################################################
 
 localization['russian'] = {
-    'tagall': {
-        'about' : 'Тэгнуть всех учасников чата',
-        'toomuch' : 'Слишком много учасников, должно быть не больше {}'
-    }
+    'aboutcrop': """
+    Обрезать аудио
+""",
+    'aboutreverse': """
+    Аудио в обратном порядке
+""",
+    'aboutdistort': """
+    Добавить шума в аудио
+""",
 }

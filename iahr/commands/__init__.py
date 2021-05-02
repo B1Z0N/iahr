@@ -1,2 +1,2 @@
 from .default import default
-from .chatrelated import chatrelated
+from .chat import chat

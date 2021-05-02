@@ -1,4 +1,4 @@
-from telethon import events
+from telethon import events, tl
 from telethon.tl.types import PeerUser
 
 from iahr.exception import IahrBaseError
