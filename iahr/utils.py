@@ -497,3 +497,25 @@ def argstr(fun, remove_event=True):
         res += ' **' + spec.varkw
 
     return res
+
+
+class ParseModeSetter:
+    """
+    `with` context manager to handle temporary custom client parse mode
+    """
+    def __init__(self, event, parse_mode):
+        self.event = event
+        self.parse_mode = parse_mode
+        self.prev_mode = event.client.parse_mode
+    
+    def __enter__(self):
+        self.event.client.parse_mode = self.parse_mode
+        return self.event
+
+    def __exit__(self, exc_type, exc_value, tb):
+        if exc_type is not None:
+            # traceback.print_exception(exc_type, exc_value, tb)
+            return
+
+        self.event.client.parse_mode = self.prev_mode
+        return True

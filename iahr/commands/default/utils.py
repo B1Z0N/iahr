@@ -21,8 +21,6 @@ admin_commands = {
     {'allowusr', 'allowchat', 'banusr', 'banchat', 'errignore', 'errverbose'}
 }
 
-local = localization[IahrConfig.LOCAL['lang']]
-
 ##################################################
 # Utility functions
 ##################################################

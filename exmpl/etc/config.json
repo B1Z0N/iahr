@@ -13,7 +13,8 @@
     "log_datetime_format": "%m/%d/%Y %I: %M: %S %p",
     "local": "russian",
     "custom" : {
-        "current_entity" : "$"
+        "current_entity" : "$",
+        "tagall_max_number" : 50
     },
     "log_lvl" : "DEBUG"
 }
