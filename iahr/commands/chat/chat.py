@@ -2,7 +2,7 @@ from telethon import events
 
 from iahr.reg import TextSender, VoidSender, MultiArgs
 from iahr.config import IahrConfig
-from iahr.utils import AccessList, EventService, ParseModeSetter
+from iahr.utils import AccessList, EventService
 
 from .utils import mention, local, CHAT_TAG
 
