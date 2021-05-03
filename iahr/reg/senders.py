@@ -142,6 +142,11 @@ async def any_send(event, *args, **kwargs):
         Shortcut for sending response to the same chat
         the event occured on
     """
+    if IahrConfig.EDIT_TO_RESPOND is True:
+        me = await EventService.userid_from(event)
+        if me == 'me':
+            await event.message.edit(*args, **kwargs)
+            return
     await event.message.reply(*args, **kwargs)
 
 

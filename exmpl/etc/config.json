@@ -17,5 +17,6 @@
         "tagall_max_number" : 50
     },
     "log_lvl" : "DEBUG",
-    "media_folder" : "media"
+    "media_folder" : "media",
+    "edit_to_respond" : true
 }

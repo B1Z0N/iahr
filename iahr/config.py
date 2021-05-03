@@ -216,6 +216,7 @@ def config(left=None,
            local=None,
            data_folder=None,
            media_folder=None,
+           edit_to_respond=None,
            custom=None):
     """
         Single entry to framework configuration, 
@@ -239,6 +240,7 @@ def config(left=None,
                 data_folder=data_folder,
                 media_folder=media_folder,
                 custom=custom,
+                edit_to_respond=edit_to_respond,
                 log_lvl=log_lvl)
 
     os.makedirs(cfg.DATA_FOLDER, exist_ok=True)
@@ -283,6 +285,7 @@ def reset():
         local='english',
         data_folder=DATA_FOLDER,
         media_folder='media',
+        edit_to_respond=False,
         custom={  # custom user config dictionary
             # entity to deduce user of chat in access rights actions
             # (e.g. `allowchat`, `banusr`)
