@@ -290,6 +290,9 @@ def reset():
             # entity to deduce user of chat in access rights actions
             # (e.g. `allowchat`, `banusr`)
             'current_entity': '$',
+            'tagall_max_number' : 50,
+            'openonline_max_size_mb' : 15,
+            'enable_gdrive' : True
         })
 
 

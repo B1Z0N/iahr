@@ -36,7 +36,3 @@ def create_gdrive_folder(drive, folder_name):
     file0 = drive.CreateFile(file_metadata)
     file0.Upload()
     return file0['id']
-
-TELEGRAM_TO_GOOGLE_FORMATS = {
-    'doc'
-}

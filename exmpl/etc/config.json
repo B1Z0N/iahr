@@ -14,7 +14,9 @@
     "local": "russian",
     "custom" : {
         "current_entity" : "$",
-        "tagall_max_number" : 50
+        "tagall_max_number" : 50,
+        "openonline_max_size_mb" : 15,
+        "enable_gdrive" : true
     },
     "log_lvl" : "DEBUG",
     "media_folder" : "media",

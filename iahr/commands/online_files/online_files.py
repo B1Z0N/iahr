@@ -5,7 +5,7 @@ import mimetypes, os
 from iahr.reg import TextSender, VoidSender, MultiArgs, any_send
 from iahr.config import IahrConfig
 from iahr.commands.exception import IahrBuiltinCommandError
-from iahr.utils import AccessList, EventService
+from iahr.utils import AccessList, EventService, async_wrap
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
@@ -17,18 +17,13 @@ from .utils import local, create_gdrive_folder
 # Routines themselves
 ##################################################
 
-MIMETYPES = {
-    'gdocs' : 'application/vnd.google-apps.document',
-    'gsheets' : 'application/vnd.google-apps.spreadsheet',
-    'gslides' : 'application/vnd.google-apps.presentation',
-}
-
 # creates local webserver and auto handles authentication.
 gauth = GoogleAuth()
 gauth.LocalWebserverAuth()
 drive = GoogleDrive(gauth)
 folder_id = create_gdrive_folder(drive, 'iahr_folder')
 
+@async_wrap
 def upload_to_gdrive(path):
     file = drive.CreateFile({
         'title' : os.path.basename(path),
@@ -45,6 +40,11 @@ def upload_to_gdrive(path):
 async def openonline(event):
     if (reply := await event.message.get_reply_message()) is not None:
         doc = await reply.download_media(file=IahrConfig.MEDIA_FOLDER)
-        return upload_to_gdrive(doc)
+        if (current := os.path.getsize(doc)/(1024*1024)) > \
+            (maxsize := IahrConfig.CUSTOM.get('openonline_max_size_mb', 15)):
+            raise IahrBuiltinCommandError('Too large file size({}), should be less than {}'.format(
+                current, maxsize
+            ))
+        return await upload_to_gdrive(doc)
     
     raise IahrBuiltinCommandError('No reply in the event, can\'t deduce document.')
