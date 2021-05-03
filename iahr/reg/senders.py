@@ -8,7 +8,9 @@ from iahr.exception import IahrBaseError
 from functools import wraps
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Union, Callable
 
+import inspect
 
 @dataclass
 class MultiArgs:
@@ -18,12 +20,14 @@ class MultiArgs:
     """
     args: list
 
-    def __str__(self):
+    def get(self):
         if len(self.args) == 1:
-            return str(self.args[0])
+            return self.args[0]
         else:
-            return str(self.args)
+            return self.args
 
+    def __str__(self):
+        return str(self.get())
 
 class ABCSender(ABC):
     """
@@ -54,6 +58,15 @@ class ABCSender(ABC):
         """
         pass
 
+    async def invoke(self, *args, **kwargs):
+        """
+            Invoke the actual funciton and store it's result in self.res
+        """
+        if self.pass_event:
+            self.res = await self.fun(self.event, *args, **kwargs)
+        else:
+            self.res = await self.fun(*args, **kwargs)
+
     async def __call__(self, event, *args, **kwargs):
         """
             Provide sender with:
@@ -61,11 +74,7 @@ class ABCSender(ABC):
             2. Event object - to use it in sending an output(final step)
         """
         self.event = event
-
-        if self.pass_event:
-            self.res = await self.fun(event, *args, **kwargs)
-        else:
-            self.res = await self.fun(*args, **kwargs)
+        await self.invoke(*args, **kwargs)
 
         if self.multiret is True:
             self.res = MultiArgs(self.res)
@@ -79,11 +88,14 @@ class ABCSender(ABC):
         return f'{clsname}(pass_event:{self.pass_event}, multiret:{self.multiret}, res:{self.res})'
 
 
-def create_sender(name, sendf):
+def create_sender(sender: Union[Callable, ABCSender], name: str=None):
     """
         ABCSender concrete subtypes factory
     """
-    Sender = type(name, (ABCSender, ), {'send': sendf})
+    if inspect.isclass(sender) and issubclass(sender, ABCSender):
+        Sender, name = sender, sender.__name__
+    else:
+        Sender = type(name, (ABCSender, ), {'send': sender})
 
     def create_decorator(name=None,
                          about=None,
@@ -139,18 +151,18 @@ async def __text_send(self):
     await any_send(self.event, res)
 
 
-TextSender = create_sender('TextSender', __text_send)
+TextSender = create_sender(__text_send, 'TextSender')
 
 
 async def __media_send(self):
     await any_send(self.event, file=self.res.args[0])
 
 
-MediaSender = create_sender('MediaSender', __media_send)
+MediaSender = create_sender(__media_send, 'MediaSender')
 
 
 async def __void_send(self):
     pass
 
 
-VoidSender = create_sender('VoidSender', __void_send)
+VoidSender = create_sender(__void_send, 'VoidSender')
