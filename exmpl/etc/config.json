@@ -16,5 +16,6 @@
         "current_entity" : "$",
         "tagall_max_number" : 50
     },
-    "log_lvl" : "DEBUG"
+    "log_lvl" : "DEBUG",
+    "media_folder" : "media"
 }

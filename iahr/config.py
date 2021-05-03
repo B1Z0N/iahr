@@ -215,6 +215,7 @@ def config(left=None,
            log_lvl=None,
            local=None,
            data_folder=None,
+           media_folder=None,
            custom=None):
     """
         Single entry to framework configuration, 
@@ -236,6 +237,7 @@ def config(left=None,
                 log_format=log_format,
                 log_datetime_format=log_datetime_format,
                 data_folder=data_folder,
+                media_folder=media_folder,
                 custom=custom,
                 log_lvl=log_lvl)
 
@@ -247,6 +249,8 @@ def config(left=None,
     cfg.ADD_PARS = update_add_pars(cfg.LEFT, cfg.RIGHT, cfg.CMD, cfg.RAW)
     cfg.LOGGER = update_logger(cfg.LOG_FORMAT, cfg.LOG_DATETIME_FORMAT,
                                cfg.LOG_OUT, cfg.LOG_LVL)
+
+    os.makedirs(cfg.MEDIA_FOLDER, exist_ok=True)
 
 
 def reset():
@@ -278,6 +282,7 @@ def reset():
         log_lvl=log_lvl,
         local='english',
         data_folder=DATA_FOLDER,
+        media_folder='media',
         custom={  # custom user config dictionary
             # entity to deduce user of chat in access rights actions
             # (e.g. `allowchat`, `banusr`)

@@ -17,6 +17,9 @@ localization['english'] = {
     'aboutdistort': """
     Distort an audio track
 """,
+    'aboutspeak': """
+    Text to voice
+""",
 }
 
 ##################################################
@@ -32,5 +35,8 @@ localization['russian'] = {
 """,
     'aboutdistort': """
     Добавить шума в аудио
+""",
+    'aboutspeak': """
+    Текст в голос
 """,
 }

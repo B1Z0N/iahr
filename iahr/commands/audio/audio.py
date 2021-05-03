@@ -1,12 +1,13 @@
 from telethon import events
 
 from pydub import AudioSegment
+from pydub.generators import WhiteNoise
 
 from iahr.reg import MultiArgs, MediaSender
 from iahr.config import IahrConfig
 from iahr.utils import AccessList, EventService
 
-from .utils import local, AUDIO_TAG, audio_specific
+from .utils import local, AUDIO_TAG, AudioSender, FileAudioSegment, get_ms
 
 
 ##################################################
@@ -14,17 +15,20 @@ from .utils import local, AUDIO_TAG, audio_specific
 ##################################################
 
 
-# @MediaSender(about=local['aboutcrop'], tags={AUDIO_TAG}, name='audiocrop')
-# @audio_specific
-# async def crop(track: AudioSegment, start, stop):
-#     pass
+@AudioSender(about=local['aboutcrop'], tags={AUDIO_TAG}, name='audiocrop')
+async def crop(audiof: FileAudioSegment, start, stop):
+    start, stop = get_ms(start), get_ms(stop)
+    return audiof.track[start:stop]
 
+@AudioSender(about=local['aboutreverse'], tags={AUDIO_TAG}, name='audioreverse')
+async def reverse(audiof: FileAudioSegment):
+    return audiof.track.reverse()
 
-@MediaSender(about=local['aboutreverse'], tags={AUDIO_TAG}, name='audioreverse')
-@audio_specific
-async def reverse(track: AudioSegment):
-    return track.reverse()
+@AudioSender(about=local['aboutdistort'], tags={AUDIO_TAG}, name='audiodistort')
+async def distort(audiof: FileAudioSegment):
+    noise = WhiteNoise().to_audio_segment(duration=len(audiof.track))
+    return audiof.track.overlay(noise)
 
-# @MediaSender(about=local['distort'], tags={AUDIO_TAG}, name='audiodistort')
-# async def distort(event, track):
-#     pass
+@AudioSender(about=local['aboutspeak'], tags={AUDIO_TAG}, name='speak')
+async def speak(txt: str):
+    pass
