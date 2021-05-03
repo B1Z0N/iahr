@@ -52,6 +52,7 @@ class FileAudioSegment:
         self.track = track
         return self
 
+
 @create_sender
 class AudioSender(ABCSender):
 
@@ -73,9 +74,6 @@ class AudioSender(ABCSender):
         elif (reply := await self.event.message.get_reply_message()) is not None:
             audio = reply.document
 
-            if audio.mime_type is None:
-                raise IahrBuiltinCommandError('Not an audio format')
-
             if audio.mime_type.split('/')[0] != 'audio':
                 raise IahrBuiltinCommandError(f'Not an audio format: {typ}.')
             
@@ -85,7 +83,6 @@ class AudioSender(ABCSender):
             self.res = await self.fun(*arsg, **kwargs)
             # raise IahrBuiltinCommandError('No voice and no audio file found in the event.')
 
-import re
 
 def get_ms(t: str) -> int:
     if t.endswith('ms'):
