@@ -70,18 +70,23 @@ class ABCSender(ABC):
     async def __call__(self, event, *args, **kwargs):
         """
             Provide sender with:
+
             1. Command result - to use it in command composition
             2. Event object - to use it in sending an output(final step)
+
+            Create new sender from current for this event.
         """
-        self.event = event
-        await self.invoke(*args, **kwargs)
+        new = type(self)(self.fun, self.pass_event, self.multiret)
+        
+        new.event = event
+        await new.invoke(*args, **kwargs)
 
-        if self.multiret is True:
-            self.res = MultiArgs(self.res)
-        elif type(self.res) != MultiArgs:
-            self.res = MultiArgs([self.res] if self.res is not None else [])
+        if new.multiret is True:
+            new.res = MultiArgs(new.res)
+        elif type(new.res) != MultiArgs:
+            new.res = MultiArgs([new.res] if new.res is not None else [])
 
-        return self
+        return new
 
     def __repr__(self):
         clsname = self.__class__.__name__
