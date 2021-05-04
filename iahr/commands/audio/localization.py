@@ -20,6 +20,9 @@ localization['english'] = {
     'aboutspeak': """
     Text to voice
 """,
+    'notanaudio': """
+    Not an audio format, but "{}"
+"""
 }
 
 ##################################################
@@ -39,4 +42,7 @@ localization['russian'] = {
     'aboutspeak': """
     Текст в голос
 """,
+    'notanaudio': """
+    Документ не в аудио формате, а "{}"
+"""
 }

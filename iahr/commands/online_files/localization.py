@@ -12,7 +12,7 @@ localization['english'] = {
     Open the file in online service
 
     (Google Docs, Sheets and Slides currently supported)
-"""
+""",
 }
 
 ##################################################
@@ -24,5 +24,5 @@ localization['russian'] = {
     Открыть файл в онлайн сервисе
     
     (Google Docs, Sheets и Google Slides доступны)
-"""
+""",
 }

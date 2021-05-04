@@ -15,6 +15,7 @@
     "custom" : {
         "current_entity" : "$",
         "tagall_max_number" : 50,
+        "audio_file_max_size_mb" : 15,
         "openonline_max_size_mb" : 15,
         "enable_gdrive" : true
     },

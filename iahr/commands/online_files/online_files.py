@@ -4,7 +4,7 @@ import mimetypes, os
 
 from iahr.reg import TextSender, VoidSender, MultiArgs, any_send
 from iahr.config import IahrConfig
-from iahr.commands.exception import IahrBuiltinCommandError
+from iahr.commands.exception import IahrBuiltinCommandError, IahrCantDeduceDocumentError, IahrDocumentSizeTooLarge
 from iahr.utils import AccessList, EventService, async_wrap
 
 from pydrive.auth import GoogleAuth
@@ -39,12 +39,9 @@ def upload_to_gdrive(path):
 @TextSender(about=local['aboutopenonline'])
 async def openonline(event):
     if (reply := await event.message.get_reply_message()) is not None:
+        IahrDocumentSizeTooLarge.check(reply.document.size, 'openonline_max_size_mb', 15)
+
         doc = await reply.download_media(file=IahrConfig.MEDIA_FOLDER)
-        if (current := os.path.getsize(doc)/(1024*1024)) > \
-            (maxsize := IahrConfig.CUSTOM.get('openonline_max_size_mb', 15)):
-            raise IahrBuiltinCommandError('Too large file size({}), should be less than {}'.format(
-                current, maxsize
-            ))
-        return await upload_to_gdrive(doc)
+        return (await upload_to_gdrive(doc), os.remove(doc))[0]
     
-    raise IahrBuiltinCommandError('No reply in the event, can\'t deduce document.')
+    raise IahrCantDeduceDocumentError()

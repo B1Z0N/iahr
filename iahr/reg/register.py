@@ -1,5 +1,6 @@
 from telethon import events
 
+from iahr.exception import IahrBaseError
 from iahr import run
 from iahr.utils import Delimiter, CommandDelimiter, EventService
 from iahr.config import IahrConfig
@@ -88,6 +89,8 @@ class Register(ABCRegister):
                         IahrConfig.LOCAL['Incompatible commands'].format(
                             e.args[0]))
                     IahrConfig.LOGGER.debug(traceback.print_exc())
+                except IahrBaseError as e:
+                    await event.reply(str(e))
                 else:
                     await sender.send()
         except Exception as e:
