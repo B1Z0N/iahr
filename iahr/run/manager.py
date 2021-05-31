@@ -202,7 +202,8 @@ class Manager(ABCManager):
 
     async def exec(self, event, qstr=None):
         action = await ActionData.from_event(event)
-        IahrConfig.LOGGER.debug(f'full event info:event={event}:action={action}')
+        IahrConfig.LOGGER.debug(
+            f'full event info:event={event}:action={action}')
         is_ignored = self.is_ignored_chat(action.chatid)
 
         if qstr is not None:

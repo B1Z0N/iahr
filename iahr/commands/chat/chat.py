@@ -6,7 +6,6 @@ from iahr.utils import AccessList, EventService
 
 from .utils import mention, local, CHAT_TAG
 
-
 ##################################################
 # Routines themselves
 ##################################################
@@ -22,7 +21,7 @@ async def tagall(event):
         await any_send(event, local['tagall']['toomuch'].format(max_users))
     else:
         await any_send(event,
-                ' '.join(
-                    EventService.mention(u, with_link=True) for u in users if not u.bot and not u.is_self
-                ), parse_mode = 'html'
-            )
+                       ' '.join(
+                           EventService.mention(u, with_link=True)
+                           for u in users if not u.bot and not u.is_self),
+                       parse_mode='html')

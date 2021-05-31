@@ -12,6 +12,7 @@ from typing import Union, Callable
 
 import inspect
 
+
 @dataclass
 class MultiArgs:
     """
@@ -28,6 +29,7 @@ class MultiArgs:
 
     def __str__(self):
         return str(self.get())
+
 
 class ABCSender(ABC):
     """
@@ -77,7 +79,7 @@ class ABCSender(ABC):
             Create new sender from current for this event.
         """
         new = type(self)(self.fun, self.pass_event, self.multiret)
-        
+
         new.event = event
         await new.invoke(*args, **kwargs)
 
@@ -93,7 +95,7 @@ class ABCSender(ABC):
         return f'{clsname}(pass_event:{self.pass_event}, multiret:{self.multiret}, res:{self.res})'
 
 
-def create_sender(sender: Union[Callable, ABCSender], name: str=None):
+def create_sender(sender: Union[Callable, ABCSender], name: str = None):
     """
         ABCSender concrete subtypes factory
     """

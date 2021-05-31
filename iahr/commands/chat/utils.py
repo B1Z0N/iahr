@@ -8,16 +8,13 @@ from typing import Union, Mapping, Sequence
 
 import traceback
 
-
 ##################################################
 # Constants
 ##################################################
 
-
 CHAT_TAG = 'chat'
 
 local = localization[IahrConfig.LOCAL['lang']]
-
 
 ##################################################
 # Utility functions

@@ -8,7 +8,6 @@ from typing import Union, Mapping, Sequence
 
 import traceback
 
-
 ##################################################
 # Constants
 ##################################################
@@ -21,14 +20,17 @@ local = localization[IahrConfig.LOCAL['lang']]
 
 
 def create_gdrive_folder(drive, folder_name):
-    folders = (drive.ListFile  ({'q': "mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList())
+    folders = (drive.ListFile({
+        'q':
+        "mimeType='application/vnd.google-apps.folder' and trashed=false"
+    }).GetList())
 
-    titles =  [x['title'] for x in folders]
+    titles = [x['title'] for x in folders]
     if folder_name in titles:
         for item in folders:
             if item['title'] == folder_name:
                 return item['id']
-  
+
     file_metadata = {
         'title': folder_name,
         'mimeType': 'application/vnd.google-apps.folder'

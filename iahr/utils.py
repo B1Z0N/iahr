@@ -18,7 +18,8 @@ def async_wrap(func):
             loop = asyncio.get_event_loop()
         pfunc = partial(func, *args, **kwargs)
         return await loop.run_in_executor(executor, pfunc)
-    return run 
+
+    return run
 
 
 class Delimiter:
@@ -319,15 +320,21 @@ class EventService:
     async def userid_from(cls, event, deduce=False) -> Optional[int]:
         me = await cls.check_me(event.client)
 
-        if deduce is True and (reply := await event.message.get_reply_message()) is not None:
+        if deduce is True and (reply := await
+                               event.message.get_reply_message()) is not None:
             IahrConfig.LOGGER.debug(f'getting reply:reply={reply}')
             res = int(reply.from_id.user_id)
-        elif (author := event.message.from_id) is not None or (author := event.message.peer_id) is not None:
-            IahrConfig.LOGGER.debug(f'getting message author:message={event.message}:author={author}')
+        elif (author := event.message.from_id) is not None or (
+                author := event.message.peer_id) is not None:
+            IahrConfig.LOGGER.debug(
+                f'getting message author:message={event.message}:author={author}'
+            )
             if isinstance(author, PeerUser):
                 res = int(author.user_id)
-            else: res = IahrConfig.NOONE
-        else: res = IahrConfig.NOONE
+            else:
+                res = IahrConfig.NOONE
+        else:
+            res = IahrConfig.NOONE
 
         return me(res)
 
@@ -368,7 +375,6 @@ class EventService:
         return name
 
 
-
 class AccessList:
     """
         Users and groups access manager
@@ -379,7 +385,10 @@ class AccessList:
     def is_special(cls, ent):
         return ent in (IahrConfig.ME, IahrConfig.OTHERS, IahrConfig.NOONE)
 
-    def __init__(self, allow_others=False, allow_noone=False, allow_selfact=False):
+    def __init__(self,
+                 allow_others=False,
+                 allow_noone=False,
+                 allow_selfact=False):
         self.whitelist, self.blacklist = set(), set()
         self.allow_others, self.allow_noone = allow_others, allow_noone
         self.selfact = {'allow': allow_selfact, 'selfban': False}
@@ -394,7 +403,8 @@ class AccessList:
             return
 
         if entity == IahrConfig.OTHERS:
-            self.whitelist, self.blacklist, self.allow_others = set(), set(), True
+            self.whitelist, self.blacklist, self.allow_others = set(), set(
+            ), True
         elif self.allow_others is False:
             self.whitelist.add(entity)
         elif entity in self.blacklist:
@@ -410,7 +420,8 @@ class AccessList:
             return
 
         if entity == IahrConfig.OTHERS:
-            self.whitelist, self.blacklist, self.allow_others = set(), set(), False
+            self.whitelist, self.blacklist, self.allow_others = set(), set(
+            ), False
         elif self.allow_others is True:
             self.blacklist.add(entity)
         elif entity in self.whitelist:
@@ -457,20 +468,30 @@ class AccessList:
         def object_hook(self, dct):
             if 'AccessList' in dct:
                 alst, dct = AccessList(), dct['AccessList']
-                alst.allow_others, alst.allow_noone, alst.selfact = dct['others'], dct['noone'], dct['selfact']
-                alst.whitelist, alst.blacklist = set(dct['whitelist']), set(dct['blacklist'])
+                alst.allow_others, alst.allow_noone, alst.selfact = dct[
+                    'others'], dct['noone'], dct['selfact']
+                alst.whitelist, alst.blacklist = set(dct['whitelist']), set(
+                    dct['blacklist'])
                 return alst
             return dct
 
 
 class IahrUnsupportedEventError(IahrBaseError):
-    MESSAGE_EVENTS = {etype.Event for etype in [events.NewMessage, events.MessageEdited]}
-    OTHER_EVENTS = {etype.Event for etype in [events.MessageRead, events.MessageDeleted]}
+    MESSAGE_EVENTS = {
+        etype.Event
+        for etype in [events.NewMessage, events.MessageEdited]
+    }
+    OTHER_EVENTS = {
+        etype.Event
+        for etype in [events.MessageRead, events.MessageDeleted]
+    }
     SUPPORTED_EVENTS = MESSAGE_EVENTS.union(OTHER_EVENTS)
 
     def __init__(self, etype: str):
-        super().__init__(f'Unsupported event type: {etype}, try one of these: {self.SUPPORTED_EVENTS}')
-    
+        super().__init__(
+            f'Unsupported event type: {etype}, try one of these: {self.SUPPORTED_EVENTS}'
+        )
+
     @classmethod
     def check(cls, event):
         if (etype := type(event)) not in cls.SUPPORTED_EVENTS:
@@ -521,4 +542,3 @@ def argstr(fun, remove_event=True):
         res += ' **' + spec.varkw
 
     return res
-

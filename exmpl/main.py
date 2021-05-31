@@ -1,5 +1,6 @@
 from os import path, getenv  # env vars to tell where the iahr data
 from dotenv import load_dotenv  # telethon session file is being stored
+
 load_dotenv()  # and some tg secrets to initialize client
 
 TG_API_ID = getenv('TG_API_ID')

@@ -265,7 +265,8 @@ def reset():
     log_format = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(funcName)s:%(message)s:'
     log_datetime_format = '%m/%d/%Y %I:%M:%S %p'
     log_lvl = 'INFO'
-    IahrConfig.LOGGER = update_logger(log_format, log_datetime_format, sys.stdout, log_lvl)
+    IahrConfig.LOGGER = update_logger(log_format, log_datetime_format,
+                                      sys.stdout, log_lvl)
 
     config(
         left='[',
@@ -290,9 +291,9 @@ def reset():
             # entity to deduce user of chat in access rights actions
             # (e.g. `allowchat`, `banusr`)
             'current_entity': '$',
-            'tagall_max_number' : 50,
-            'openonline_max_size_mb' : 15,
-            'enable_gdrive' : True
+            'tagall_max_number': 50,
+            'openonline_max_size_mb': 15,
+            'enable_gdrive': True
         })
 
 

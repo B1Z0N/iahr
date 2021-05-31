@@ -9,10 +9,10 @@ localization = {}
 
 localization['english'] = {
     'tagall': {
-        'about' : """
+        'about': """
     Tag all participants in a chat
 """,
-        'toomuch' : """
+        'toomuch': """
     Too much participants, should be no more than {}
 """,
     }
@@ -24,10 +24,10 @@ localization['english'] = {
 
 localization['russian'] = {
     'tagall': {
-        'about' : """
+        'about': """
     Тэгнуть всех учасников чата
 """,
-        'toomuch' : """
+        'toomuch': """
     Слишком много учасников, должно быть не больше {}
 """
     }

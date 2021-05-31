@@ -55,6 +55,7 @@ __is_integer = lambda x: str(x).lstrip('-').isdigit()
 
 to_bool = lambda bstr: str(bstr).lower() in ['true', 'yes', 'y']
 
+
 # backend for .{allow|ban|allowed}{chat|usr} commands
 async def commands_access_action(event,
                                  action: str,
@@ -141,7 +142,7 @@ async def tags_access_action(event,
         tags = process_list(tag)
 
     entres = {}
-    admin_commands = set(app.tags[ADMIN_TAG].keys())    
+    admin_commands = set(app.tags[ADMIN_TAG].keys())
     print(admin_commands)
     for ent in entities:
         tagres = {}
