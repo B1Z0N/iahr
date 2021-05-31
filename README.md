@@ -500,11 +500,13 @@ Right now there are lots of unit tests. Endpoint is a full test coverage. We nee
 
 * Script to generate `README.md` from code
 * Generate [docs](https://b1z0n.github.io/iahr/) on commit
+* Reformat code on commit
 * Enable to easily run docker from vscode
 * Add site that allows users to easily 
   * configure and create `iahr` telegram client from web gui
   * manage commands(for example access rights) from gui
   * share command sets and include it to their own clients
+* Rerun after code changes script
 
 ### Command ideas
 
@@ -513,18 +515,29 @@ Right now there are lots of unit tests. Endpoint is a full test coverage. We nee
 * Change `tagall` to create multiple messages so that it works
 * Simplify access rights commands interface
 * Add commands to get access rights user and chat lists for specific command
-* Command that lets you define global constants
+* Command that lets you define global constants(text, media, people)
 * Remove messages after specific time passed
+* Text to voice
+* Sticker quotes and it's search
+* Overlay two audios
 
 ### Core features
 
 * Dynamic command creation(see branch [alias](https://github.com/B1Z0N/iahr/tree/alias))
 
   something like `.alias r[oneword x: .concat .split $1]r`  and then `.oneword [nice nice day] => niceniceday`
+* Autocompletion like in shell with help of some special character(e.g. '-')
+* Does tags enough? If no, you can always implement modules.
+* Save data in telegram, like a permanent storage(implement a db interface?)
+* Formalization of parsing algorithm with lex/yacc
 
 ### Documentation
 
 * Document all config.json
+
+### Tests
+
+* Mock telegram api integration tests
 
 # Naming
 
