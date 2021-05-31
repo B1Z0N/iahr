@@ -3,14 +3,14 @@ from telethon import events
 from iahr.utils import SingletonMeta, ActionData, AccessList
 from iahr.config import IahrConfig, IahrConfigError
 from iahr.run.runner import Executer, Query, Routine
-from iahr.run.runner import ExecutionError, CommandSyntaxError, PermissionsError, NonExistantCommandError, IgnoreError
+from iahr.run.runner import IahrExecutionError, IahrCommandSyntaxError, IahrPermissionsError, IahrNonExistantCommandError, IahrIgnoreError
 
 from typing import Iterable, Union, Callable
 from abc import ABC, abstractmethod
 import json, os, atexit
 
 
-class PrefixMismatchError(IahrConfigError):
+class IahrPrefixMismatchError(IahrConfigError):
     """
         Exception to raise, when IahrConfig.PREFIXES were changed
         but session file remains with old ones
@@ -113,7 +113,7 @@ class ABCManager(ABC):
                 handlers = dct['handlers']
                 commands = dct['commands']
 
-                PrefixMismatchError.check_events(handlers.keys())
+                IahrPrefixMismatchError.check_events(handlers.keys())
 
                 return commands, handlers
         else:

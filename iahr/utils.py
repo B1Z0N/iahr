@@ -101,7 +101,7 @@ class SingletonMeta(type):
         return self._instance
 
 
-class ParseError(IahrBaseError):
+class IahrParseError(IahrBaseError):
     def __init__(self, s):
         super().__init__(IahrConfig.LOCAL['ParseError'].format(s))
 
@@ -162,7 +162,7 @@ def parenthesize(ldel, rdel, cmd_del, raw_del):
             i += 1
         if i == len(s):
             msg = errstr(s, errstart, errstart + 2)
-            raise ParseError(IahrConfig.LOCAL['Unbalanced raw'].format(
+            raise IahrParseError(IahrConfig.LOCAL['Unbalanced raw'].format(
                 f'"{raw}{left} {right}{raw}":\n\n{msg}'))
         return surround(full_escape(s[start:i])), i + 2
 
@@ -173,7 +173,7 @@ def parenthesize(ldel, rdel, cmd_del, raw_del):
         while not is_right(s, i):
             if len(s) == i:
                 msg = errstr(s, errstart - 1, errstart)
-                raise ParseError(IahrConfig.LOCAL['Unbalanced'].format(
+                raise IahrParseError(IahrConfig.LOCAL['Unbalanced'].format(
                     f'{left} {right}"\n\n{msg}'))
 
             if is_left_raw(s, i):
@@ -238,7 +238,7 @@ class Tokenizer:
         ty, name = next(toks)
         children = []
         if ty != 'WORD':
-            raise ParseError(IahrConfig.LOCAL['Brackets should start'])
+            raise IahrParseError(IahrConfig.LOCAL['Brackets should start'])
 
         while True:
             ty, s = next(toks)
@@ -257,7 +257,7 @@ class Tokenizer:
         """
         ty, _ = next(toks)
         if ty != '(':
-            raise ParseError(IahrConfig.LOCAL['Surround tokens'])
+            raise IahrParseError(IahrConfig.LOCAL['Surround tokens'])
         return cls.parse_inner(toks)
 
     def perform(self):
@@ -321,7 +321,7 @@ class EventService:
 
         if deduce is True and (reply := await event.message.get_reply_message()) is not None:
             IahrConfig.LOGGER.debug(f'getting reply:reply={reply}')
-            res = int(reply.peer_id.user_id)
+            res = int(reply.from_id.user_id)
         elif (author := event.message.from_id) is not None or (author := event.message.peer_id) is not None:
             IahrConfig.LOGGER.debug(f'getting message author:message={event.message}:author={author}')
             if isinstance(author, PeerUser):
@@ -463,7 +463,7 @@ class AccessList:
             return dct
 
 
-class UnsupportedEventError(IahrBaseError):
+class IahrUnsupportedEventError(IahrBaseError):
     MESSAGE_EVENTS = {etype.Event for etype in [events.NewMessage, events.MessageEdited]}
     OTHER_EVENTS = {etype.Event for etype in [events.MessageRead, events.MessageDeleted]}
     SUPPORTED_EVENTS = MESSAGE_EVENTS.union(OTHER_EVENTS)
@@ -488,7 +488,7 @@ class ActionData:
 
     @classmethod
     async def from_event(cls, event):
-        UnsupportedEventError.check(event)
+        IahrUnsupportedEventError.check(event)
 
         cid = await EventService.chatid_from(event)
         uid = await EventService.userid_from(event)

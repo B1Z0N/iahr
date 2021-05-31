@@ -32,7 +32,7 @@ class IahrConfigError(IahrBaseError):
     pass
 
 
-class EventsError(IahrConfigError):
+class IahrEventsError(IahrConfigError):
     """
         Exception to raise when events
         are not ok
@@ -62,7 +62,7 @@ class EventsError(IahrConfigError):
             raise cls(events)
 
 
-class UnknownLocalizationError(IahrConfigError):
+class IahrUnknownLocalizationError(IahrConfigError):
     """
         Exception to raise when no such
         language available in iahr.localization module
@@ -171,7 +171,7 @@ def update_logger(fmt, datefmt, out, lvl: str = None):
 
 
 def prefixes_from_str(prefixes):
-    EventsError.check_events(set(prefixes.keys()))
+    IahrEventsError.check_events(set(prefixes.keys()))
 
     return {getattr(events, key): val for key, val in prefixes.items()}
 
@@ -228,7 +228,7 @@ def config(left=None,
 
     cfg._update(Delimiter, left=left, right=right, raw=raw)
     cfg._update(CommandDelimiter, cmd=cmd)
-    cfg._update(UnknownLocalizationError.lang_from_str, local=local)
+    cfg._update(IahrUnknownLocalizationError.lang_from_str, local=local)
     cfg._update(prefixes_from_str, prefixes=prefixes)
     cfg._update(reverse_prefixes_from_str, reverse_prefixes=cfg.PREFIXES)
     cfg._update(lambda x: x,

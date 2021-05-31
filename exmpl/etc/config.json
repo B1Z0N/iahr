@@ -11,7 +11,7 @@
     "noone": "-",
     "log_format": "%(asctime)s: %(name)s: %(levelname)s: %(module)s: %(funcName)s: %(message)s: ",
     "log_datetime_format": "%m/%d/%Y %I: %M: %S %p",
-    "local": "russian",
+    "local": "english",
     "custom" : {
         "current_entity" : "$",
         "tagall_max_number" : 50,
@@ -21,5 +21,5 @@
     },
     "log_lvl" : "DEBUG",
     "media_folder" : "media",
-    "edit_to_respond" : true
+    "edit_to_respond" : false
 }

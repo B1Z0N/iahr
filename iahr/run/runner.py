@@ -1,5 +1,5 @@
 from iahr.utils import AccessList, ActionData, Delimiter, CommandDelimiter
-from iahr.utils import Tokenizer, parenthesize, ParseError
+from iahr.utils import Tokenizer, parenthesize, IahrParseError
 from iahr.config import IahrConfig
 from iahr.exception import IahrBaseError
 
@@ -7,7 +7,7 @@ import re
 from typing import Callable
 
 
-class ExecutionError(IahrBaseError):
+class IahrExecutionError(IahrBaseError):
     """
         Raise when next sender doesn't accept args from previous one
         or when wrong arguments were passed to the command
@@ -16,7 +16,7 @@ class ExecutionError(IahrBaseError):
     pass
 
 
-class CommandSyntaxError(ExecutionError):
+class IahrCommandSyntaxError(IahrExecutionError):
     """ 
         Plug exception to tell that some input is faulty 
     """
@@ -24,7 +24,7 @@ class CommandSyntaxError(ExecutionError):
         super().__init__(IahrConfig.LOCAL['CommandSyntaxError'].format(str(e)))
 
 
-class PermissionsError(ExecutionError):
+class IahrPermissionsError(IahrExecutionError):
     """
         Exception telling that this user or this chat can't use particular command
     """
@@ -32,7 +32,7 @@ class PermissionsError(ExecutionError):
         super().__init__(IahrConfig.LOCAL['PermissionsError'].format(command))
 
 
-class IgnoreError(ExecutionError):
+class IahrIgnoreError(IahrExecutionError):
     """
         Exception telling that this message should be ignored
     """
@@ -41,7 +41,7 @@ class IgnoreError(ExecutionError):
         super().__init__(IahrConfig.LOCAL['IgnoreError'].format(chat))
 
 
-class NonExistantCommandError(ExecutionError):
+class IahrNonExistantCommandError(IahrExecutionError):
     """
         Exception telling that this command is not registered yet
     """
@@ -86,8 +86,8 @@ class Query:
             IahrConfig.LOGGER.info(f'parenthesized query:{qstr}')
             tree = Tokenizer.from_str(qstr, IahrConfig.LEFT, IahrConfig.RIGHT)
             IahrConfig.LOGGER.info(f'query tree:{tree}')
-        except ParseError as e:
-            raise CommandSyntaxError(str(e))
+        except IahrParseError as e:
+            raise IahrCommandSyntaxError(str(e))
 
         self = cls.__to_q(tree)
         self.original = qstr
@@ -225,9 +225,9 @@ class Executer:
     async def run(self):
         try:
             return await self.__run(self.query, self.dict, self.action)
-        except (PermissionsError, NonExistantCommandError) as e:
+        except (IahrPermissionsError, IahrNonExistantCommandError) as e:
             if self.is_ignored_chat:
-                raise IgnoreError(self.action.chatid)
+                raise IahrIgnoreError(self.action.chatid)
             else:
                 raise e
 
@@ -264,12 +264,12 @@ class Executer:
         except KeyError:
             IahrConfig.LOGGER.error(
                 f'getting handler:no such command registered:{id_msg}')
-            raise NonExistantCommandError(query.command)
+            raise IahrNonExistantCommandError(query.command)
 
         if handler is None:
             IahrConfig.LOGGER.warning(
                 f'executer:getting handler:not permitted:{id_msg}')
-            raise PermissionsError(query.command)
+            raise IahrPermissionsError(query.command)
 
         try:
             args, kwargs = await self.__process_args(query.args, query.kwargs,
@@ -278,7 +278,7 @@ class Executer:
             return await handler(action.event, *args, **kwargs)
         except (AttributeError, ValueError, TypeError) as e:
             IahrConfig.LOGGER.error(f'userspace error:err={e}:{id_msg}')
-            raise ExecutionError(self.query.original)
+            raise IahrExecutionError(self.query.original)
 
     def __repr__(self):
         return f'Executer(query={self.query}, dict={self.dict}, action={self.action})'

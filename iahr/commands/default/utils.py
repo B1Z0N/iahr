@@ -208,6 +208,6 @@ async def ignore_action(event, chat, action):
         action(chat)
         return
 
-    chats = __process_entities(chat)
+    chats = __process_entities(event, chat)
     for chat in chats:
         action(chat)

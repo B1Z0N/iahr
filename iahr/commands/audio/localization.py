@@ -9,7 +9,15 @@ localization = {}
 
 localization['english'] = {
     'aboutcrop': """
-    Crop audio track.
+    Crop an  audio track.
+
+    Example:
+
+    `.audiocrop 2s 5s`
+        
+    the same
+
+    `.audiocrop 2000 5000`
 """,
     'aboutreverse': """
     Reverse an audio track
@@ -32,6 +40,14 @@ localization['english'] = {
 localization['russian'] = {
     'aboutcrop': """
     Обрезать аудио
+
+    Например:
+
+    `.audiocrop 2s 5s`
+        
+    то же самое
+
+    `.audiocrop 2000 5000`
 """,
     'aboutreverse': """
     Аудио в обратном порядке

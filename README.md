@@ -202,6 +202,12 @@ To run a command both user and chat need to be allowed to run this command(excep
 ```
     Info about syntax rules and some usage examples
 ```
+* `acceshelp`
+
+```
+	Get help about access rights actions
+```
+
 * `commands`
 ```
     Get the list of all commands or info about command
@@ -289,11 +295,7 @@ To run a command both user and chat need to be allowed to run this command(excep
 
     .allowchat tags $ r[default admin]r
 ```
-* `accesshelp`
-```
-    Get help about access rights commands
-```
-* `ignore`
+* `errignore`
 ```
     Ignore a chat when processing commands from
     banned users. Reduces spam level
@@ -329,6 +331,48 @@ To run a command both user and chat need to be allowed to run this command(excep
         `.errverbose`
 ```
 
+### Useful custom commands
+
+* `tagall`
+
+```
+    Tag all participants in a chat
+```
+
+* `openonline`
+
+```
+	Open the file in online service
+
+    (Google Docs, Sheets and Slides currently supported)
+```
+
+* `audiocrop`
+
+```
+	Crop an  audio track.
+
+    Example:
+
+    .audiocrop 2s 5s
+        
+    the same
+
+    .audiocrop 2000 5000
+```
+
+*  `audioreverse`
+
+```    Reverse an audio track
+	Reverse an audio track
+```
+
+*  `audiodistort`
+
+```
+	Distort an audio track
+```
+
 # How to customize
 
 ## Env
@@ -351,7 +395,7 @@ It's path is `${IAHR_DATA_FOLDER}/iahr.session`.
 
 # How to extend
 
-## Creating senders
+## Creating senders as functions
 
 No words, just action. For example, here are how `MediaSender` defined.
 
@@ -371,6 +415,10 @@ MediaSender = create_sender('MediaSender', __media_send)
 And that's it. You could register new functions with `@MediaSender`.
 
 **Note**: args and kwargs you pass to `any_send` after event are all that you pass to [event.message.reply](https://docs.telethon.dev/en/latest/modules/events.html?highlight=reply#telethon.events.chataction.ChatAction.Event.reply). 
+
+## Creating senders as classes
+
+Take a look on the [AudioSender](https://github.com/B1Z0N/iahr/blob/77cedfe264ffb9e9121bcf61bd95242859239df8/iahr/commands/audio/utils.py#L57) class.
 
 ## Other ways
 
@@ -442,15 +490,35 @@ Right now there are lots of unit tests. Endpoint is a full test coverage. We nee
 
 ## Ideas
 
-* Dynamic command creation(see branch [alias](https://github.com/B1Z0N/iahr/tree/alias))
-
-  ​	something like `.alias r[oneword x: .concat .split $1]r`
-
-  ​	and then `.oneword [nice nice day] => niceniceday`
+### Build and deployment related
 
 * Script to generate `README.md` from code
+* Generate [docs](https://b1z0n.github.io/iahr/) on commit
+* Enable to easily run docker from vscode
+* Add site that allows users to easily 
+  * configure and create `iahr` telegram client from web gui
+  * manage commands(for example access rights) from gui
+  * share command sets and include it to their own clients
 
-* Script to surround bare docker run with
+### Command ideas
+
+* Command that allows to execute regex
+* Typing in chat for specific time
+* Change `tagall` to create multiple messages so that it works
+* Simplify access rights commands interface
+* Add commands to get access rights user and chat lists for specific command
+* Command that lets you define global constants
+* Remove messages after specific time passed
+
+### Core features
+
+* Dynamic command creation(see branch [alias](https://github.com/B1Z0N/iahr/tree/alias))
+
+  something like `.alias r[oneword x: .concat .split $1]r`  and then `.oneword [nice nice day] => niceniceday`
+
+### Documentation
+
+* Document all config.json
 
 # Naming
 

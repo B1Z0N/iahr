@@ -1,8 +1,8 @@
 import pytest
 
 from iahr.run import Query, Routine, Executer
-from iahr.run import CommandSyntaxError, PermissionsError, \
-    ExecutionError, NonExistantCommandError
+from iahr.run import IahrCommandSyntaxError, IahrPermissionsError, \
+    IahrExecutionError, IahrNonExistantCommandError
 
 from iahr.config import IahrConfig
 from iahr.utils import ActionData
@@ -120,7 +120,7 @@ def test_query_from_str(input, result):
 @pytest.mark.parametrize(
     'input', ['.do [1', '.do [1 [2', '.do r[1', '.do r[1]', '.do r[r[]]'])
 def test_query_command_syntax_error(input):
-    with pytest.raises(CommandSyntaxError):
+    with pytest.raises(IahrCommandSyntaxError):
         Query.from_str(input)
 
 
@@ -159,14 +159,14 @@ def commands(allowall, allargs):
 
 
 @pytest.mark.parametrize('errinput, exception', [
-    ('.do3', NonExistantCommandError),
-    ('.do .do1 .do3', NonExistantCommandError),
-    ('.doperm', PermissionsError),
-    ('.do .doperm .do3', PermissionsError),
-    ('.incompatible2', ExecutionError),
-    ('.incompatible2 .incompatible1', ExecutionError),
-    ('.incompatible .incompatible2', ExecutionError),
-    ('.incompatible2 .incompatible2 1 2', ExecutionError),
+    ('.do3', IahrNonExistantCommandError),
+    ('.do .do1 .do3', IahrNonExistantCommandError),
+    ('.doperm', IahrPermissionsError),
+    ('.do .doperm .do3', IahrPermissionsError),
+    ('.incompatible2', IahrExecutionError),
+    ('.incompatible2 .incompatible1', IahrExecutionError),
+    ('.incompatible .incompatible2', IahrExecutionError),
+    ('.incompatible2 .incompatible2 1 2', IahrExecutionError),
 ])
 @pytest.mark.asyncio
 async def test_executer_errors(errinput, exception, action, commands):

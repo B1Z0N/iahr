@@ -10,7 +10,7 @@ import traceback
 from abc import ABC, abstractmethod
 
 
-class RoutineRegisterError(Exception):
+class IahrRoutineRegisterError(IahrBaseError):
     pass
 
 
@@ -70,20 +70,20 @@ class Register(ABCRegister):
             if IahrConfig.CMD.is_command(txt):
                 try:
                     sender = await self.app.exec(event, txt)
-                except run.NonExistantCommandError as e:
+                except run.IahrNonExistantCommandError as e:
                     IahrConfig.LOGGER.error(f'{e}')
                     await event.reply(str(e) + IahrConfig.LOCAL['See cmds'])
-                except run.CommandSyntaxError as e:
+                except run.IahrCommandSyntaxError as e:
                     IahrConfig.LOGGER.error(f'{e}')
                     await event.reply(str(e) + IahrConfig.LOCAL['See synhelp'])
-                except run.PermissionsError as e:
+                except run.IahrPermissionsError as e:
                     IahrConfig.LOGGER.error(f'{e}')
                     msg = str(e) + IahrConfig.LOCAL['See allowedusr']
                     await event.reply(msg)
-                except run.IgnoreError as e:
+                except run.IahrIgnoreError as e:
                     IahrConfig.LOGGER.info(
                         f'Empty handler due to chat {e.chat} ignore')
-                except run.ExecutionError as e:
+                except run.IahrExecutionError as e:
                     IahrConfig.LOGGER.error(str(e))
                     await event.reply(
                         IahrConfig.LOCAL['Incompatible commands'].format(
