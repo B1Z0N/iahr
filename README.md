@@ -520,6 +520,7 @@ Right now there are lots of unit tests. Endpoint is a full test coverage. We nee
 * Text to voice
 * Sticker quotes and it's search
 * Overlay two audios
+* Get user location on premise
 
 ### Core features
 
