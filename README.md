@@ -2,6 +2,25 @@
 
 Telegram chat command execution framework based on telethon library
 
+## Quick simple demo
+
+Basically this allows you to turn any(or all of them) telegram chat into REPL where you call a command and this app from under your account responds to you with the result. 
+
+You can call a commands predefined in your files with `.` operator:
+
+<img width="1121" alt="image" src="https://github.com/B1Z0N/iahr/assets/32279961/1e5b9453-71dd-4f4f-b6ab-8cdad4ccef57">
+
+But it is much more than that! This projects provides:
+
+- Built-in access permitions. Yes, you may allow/ban other users to call your commands. Just like in Linux.
+- Built-in help on commands.
+- Allows you to access any of Telegram API via [Telethon library](https://docs.telethon.dev/en/stable/). Like invoke a command once someone edits a message. Or change image in your profile whenever someone else does this.
+- Grants solid support for logging.
+- Graceful and in-chat handling of errors.
+- Serialization and deserialization of state on exit.
+- Localization to popular languages.
+- You may customize nearly EVERYTHING(yes, even syntax) via config.
+
 ## Warning
 
 Be careful, do not violate Telegram's [Terms of service](https://core.telegram.org/api/terms).
@@ -12,6 +31,7 @@ Be careful, do not violate Telegram's [Terms of service](https://core.telegram.o
 
 - [About](#about)
   * [Warning](#warning)
+  * [Quick simple demo](#quick-simple-demo)
 - [Contents](#contents)
 - [How to start](#how-to-start)
   * [Docker](#docker)
@@ -47,6 +67,8 @@ Be careful, do not violate Telegram's [Terms of service](https://core.telegram.o
     + [Documentation](#documentation)
 - [Naming](#naming)
 - [Thanks](#thanks)
+
+# What is it
 
 # How to start
 
